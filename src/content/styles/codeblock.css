@@ -1,0 +1,208 @@
+/* 代码块美化样式 */
+
+/* 主容器 */
+.wx-enhanced-code-block {
+  box-sizing: border-box; 
+  border: 1px solid rgba(0, 0, 0, 0.04); 
+  font-family: Menlo, Monaco, "Courier New", monospace; 
+  font-size: 12.6px; 
+  margin: 10px 8px; 
+  color: rgb(201, 209, 217); 
+  background: rgb(13, 17, 23); 
+  text-align: left; 
+  line-height: 1.5; 
+  overflow-x: auto; 
+  border-radius: 8px; 
+  padding: 0px !important;
+  position: relative;
+}
+
+/* Mac窗口按钮 */
+.wx-code-mac-buttons {
+  box-sizing: border-box; 
+  border-width: 0px; 
+  border-style: solid; 
+  border-color: rgb(229, 229, 229); 
+  display: flex; 
+  padding: 10px 14px 0px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  pointer-events: none; /* 确保不影响代码块的点击和编辑 */
+}
+
+/* 代码内容 */
+.wx-enhanced-code-block code {
+  box-sizing: border-box; 
+  border-width: 0px; 
+  border-style: solid; 
+  border-color: rgb(229, 229, 229); 
+  font-family: "Fira Code", Menlo, "Operator Mono", Consolas, Monaco, monospace; 
+  font-size: 11.34px; 
+  display: block; 
+  padding: 1.5em 1em 1em; /* 增加顶部空间，为Mac按钮预留空间 */
+  overflow-x: auto; 
+  text-indent: 0px; 
+  text-align: left; 
+  line-height: 1.75; 
+  margin: 0px; 
+  white-space: pre-wrap; 
+  overflow-wrap: break-word;
+  position: relative;
+  z-index: 0;
+  min-height: 2em;
+}
+
+/* 确保代码块内的编辑功能正常 */
+.wx-enhanced-code-block [contenteditable="true"] {
+  outline: none;
+  caret-color: white; /* 设置光标颜色为白色，以便在深色背景上可见 */
+}
+
+/* 隐藏容器 */
+.wx-original-content,
+.wx-highlight-container {
+  display: none !important;
+}
+
+/* 语法高亮样式 */
+
+/* 关键字 */
+.wx-code-keyword {
+  color: rgb(255, 123, 114);
+}
+
+/* 字符串 */
+.wx-code-string {
+  color: rgb(165, 214, 127);
+}
+
+/* 注释 */
+.wx-code-comment {
+  color: rgb(139, 148, 158);
+  font-style: italic;
+}
+
+/* 数字 */
+.wx-code-number {
+  color: rgb(209, 154, 102);
+}
+
+/* 函数 */
+.wx-code-function {
+  color: rgb(210, 168, 255);
+}
+
+/* 代码块设置面板样式 */
+.wx-code-settings-panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 500px;
+  max-width: 90%;
+  max-height: 90vh;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 10001;
+  padding: 20px;
+  overflow-y: auto;
+  display: none;
+}
+
+.wx-code-settings-panel h2 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+}
+
+.wx-code-settings-group {
+  margin-bottom: 20px;
+}
+
+.wx-code-settings-group h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+}
+
+.wx-code-settings-form label {
+  display: inline-block;
+  margin-right: 10px;
+  margin-bottom: 5px;
+  color: #333;
+}
+
+.wx-code-settings-form input[type="text"],
+.wx-code-settings-form textarea {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.wx-code-settings-form textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.wx-code-settings-buttons {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.wx-code-settings-buttons button {
+  padding: 8px 16px;
+  margin-left: 10px;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.wx-code-settings-save {
+  background-color: #1a73e8;
+  color: white;
+}
+
+.wx-code-settings-save:hover {
+  background-color: #1669d9;
+}
+
+.wx-code-settings-cancel {
+  background-color: #f1f3f4;
+  color: #333;
+}
+
+.wx-code-settings-cancel:hover {
+  background-color: #e8eaed;
+}
+
+/* 代码块设置按钮 */
+.wx-code-settings-button {
+  background-color: #f1f3f4;
+  color: #333;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 8px 12px;
+  margin-top: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.wx-code-settings-button:hover {
+  background-color: #e8eaed;
+}

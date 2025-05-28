@@ -1,0 +1,46 @@
+# 构建输出目录
+# build/ # 对于Chrome扩展，可能需要包含构建输出目录以方便直接使用
+
+# Node.js 依赖
+node_modules/
+
+# npm 日志文件
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 环境变量文件
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# 编辑器目录和文件
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# 操作系统文件
+.DS_Store
+Thumbs.db
+
+# 临时文件
+*.log
+*.tmp
+*.temp
+tmp/
+temp/
+
+# 打包文件
+*.zip
+*.rar
+*.tar.gz
+
+# 调试文件
+*.map
+
+# 本地配置文件
+.npmrc
+.yarnrc

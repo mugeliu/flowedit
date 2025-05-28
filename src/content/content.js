@@ -4,6 +4,7 @@
 import './styles/toolbar.css';
 import './styles/settings.css';
 import './styles/draggable.css';
+import './styles/codeblock.css';
 
 // 导入组件和工具函数
 import { findEditor, applyCustomCss } from './utils/dom.js';
@@ -11,6 +12,8 @@ import { loadFromStorage, STORAGE_KEYS } from './utils/storage.js';
 import { FloatingToolbar } from './components/FloatingToolbar.js';
 import { SettingsPanel } from './components/SettingsPanel.js';
 import { DraggableButton } from './components/DraggableButton.js';
+import { CodeBlockEnhancer } from './features/CodeBlockEnhancer.js';
+import { CodeBlockSettings } from './components/CodeBlockSettings.js';
 
 /**
  * 插件主类
@@ -23,6 +26,8 @@ class WxFloatingToolbarPlugin {
     this.floatingToolbar = null;
     this.settingsPanel = null;
     this.draggableButton = null;
+    this.codeBlockEnhancer = null;
+    this.codeBlockSettings = null;
     this.findEditorInterval = null;
     
     // 默认样式设置
@@ -87,6 +92,13 @@ class WxFloatingToolbarPlugin {
         this.floatingToolbar = new FloatingToolbar(this.editor, this.styleSettings);
         this.floatingToolbar.create();
         
+        // 初始化代码块增强功能
+        this.codeBlockEnhancer = new CodeBlockEnhancer(this.editor);
+        this.codeBlockEnhancer.init();
+        
+        // 初始化代码块设置面板
+        this.codeBlockSettings = new CodeBlockSettings(this.codeBlockEnhancer);
+        
         console.log('浮动工具栏插件初始化完成');
       }
     }, 1000);
@@ -104,28 +116,50 @@ class WxFloatingToolbarPlugin {
    * 设置按钮点击事件处理
    */
   onSettingsButtonClick() {
-    this.settingsPanel.show();
-    
-    // 监听设置变化
-    const settingsChangeHandler = () => {
-      const newSettings = this.settingsPanel.getSettings();
-      this.updateStyleSettings(newSettings);
-    };
-    
-    // 添加一次性事件监听
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.type === 'attributes' && 
-            mutation.attributeName === 'style' && 
-            mutation.target === this.settingsPanel.panel && 
-            this.settingsPanel.panel.style.display === 'none') {
-          settingsChangeHandler();
-          observer.disconnect();
-        }
+    // 显示设置面板
+    if (this.settingsPanel) {
+      this.settingsPanel.show();
+      
+      // 添加代码块设置按钮
+      const codeBlockButton = document.createElement('button');
+      codeBlockButton.className = 'wx-settings-button wx-code-settings-button';
+      codeBlockButton.textContent = '代码块样式设置';
+      codeBlockButton.addEventListener('click', () => {
+        // 隐藏主设置面板
+        this.settingsPanel.hide();
+        // 显示代码块设置面板
+        this.codeBlockSettings.show();
       });
-    });
-    
-    observer.observe(this.settingsPanel.panel, { attributes: true });
+      
+      // 将按钮添加到设置面板
+      const buttonContainer = this.settingsPanel.panelElement.querySelector('.wx-settings-buttons') || this.settingsPanel.panelElement;
+      if (buttonContainer && !buttonContainer.querySelector('.wx-code-settings-button')) {
+        buttonContainer.appendChild(codeBlockButton);
+      }
+      
+      // 监听设置变化
+      const settingsChangeHandler = () => {
+        const newSettings = this.settingsPanel.getSettings();
+        this.updateStyleSettings(newSettings);
+      };
+      
+      // 添加一次性事件监听
+      if (this.settingsPanel.panel) {
+        const observer = new MutationObserver((mutations) => {
+          mutations.forEach((mutation) => {
+            if (mutation.type === 'attributes' && 
+                mutation.attributeName === 'style' && 
+                mutation.target === this.settingsPanel.panel && 
+                this.settingsPanel.panel.style.display === 'none') {
+              settingsChangeHandler();
+              observer.disconnect();
+            }
+          });
+        });
+        
+        observer.observe(this.settingsPanel.panel, { attributes: true });
+      }
+    }
   }
   
   /**
