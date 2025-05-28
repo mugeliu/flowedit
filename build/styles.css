@@ -1,0 +1,409 @@
+/* 可拖动的悬浮设置按钮样式 */
+.wx-floating-settings-container {
+  position: fixed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  background-color: #fff;
+  border-radius: 50%;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+  width: 50px;
+  height: 50px;
+  cursor: move;
+  user-select: none;
+  touch-action: none;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.wx-floating-settings-container:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.wx-floating-settings-container.wx-dragging {
+  opacity: 0.9;
+  transform: scale(1.1);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.wx-floating-settings-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent;
+  color: #4C4D4E;
+  border: none;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+.wx-floating-settings-button:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.wx-floating-settings-button svg {
+  width: 24px;
+  height: 24px;
+}
+/* 浮动工具栏样式 */
+.wx-floating-toolbar {
+  position: fixed;
+  display: flex;
+  align-items: center;
+  background-color: white;
+  border-radius: 4px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  padding: 6px 8px;
+  z-index: 9999;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  animation: toolbar-fade-in 0.2s ease-out forwards;
+}
+
+@keyframes toolbar-fade-in {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 工具栏按钮样式 */
+.wx-toolbar-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  margin: 0 2px;
+  padding: 0 8px;
+  background-color: transparent;
+  border: none;
+  border-radius: 4px;
+  color: #333;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.wx-toolbar-button:hover {
+  background-color: #f0f0f0;
+}
+
+.wx-toolbar-button:active {
+  background-color: #e0e0e0;
+}
+
+/* 工具栏按钮特殊样式 */
+.wx-toolbar-button[title="一级标题"],
+.wx-toolbar-button[title="二级标题"],
+.wx-toolbar-button[title="三级标题"],
+.wx-toolbar-button[title="四级标题"] {
+  font-weight: bold;
+}
+
+.wx-toolbar-button[title="一级标题"] {
+  font-size: 18px;
+}
+
+.wx-toolbar-button[title="二级标题"] {
+  font-size: 16px;
+}
+
+.wx-toolbar-button[title="三级标题"] {
+  font-size: 14px;
+}
+
+.wx-toolbar-button[title="四级标题"] {
+  font-size: 13px;
+}
+
+.wx-toolbar-button[title="行内代码"] {
+  font-family: monospace;
+  background-color: rgba(175, 184, 193, 0.2);
+  padding: 0 4px;
+  border-radius: 3px;
+}
+
+/* 工具栏分隔线 */
+.wx-toolbar-separator {
+  width: 1px;
+  height: 20px;
+  margin: 0 4px;
+  background-color: #e0e0e0;
+}
+
+/* 工具栏箭头 */
+.wx-floating-toolbar::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -8px;
+  border-width: 8px;
+  border-style: solid;
+  border-color: white transparent transparent transparent;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.1));
+}
+
+.wx-floating-toolbar.position-bottom::after {
+  top: auto;
+  bottom: 100%;
+  border-color: transparent transparent white transparent;
+}
+
+/* 应用样式的元素 */
+.wx-heading-1 {
+  font-size: 30px !important;
+  font-weight: bold !important;
+  line-height: 1.3 !important;
+  margin: 16px 0 4px !important;
+}
+
+.wx-heading-2 {
+  font-size: 24px !important;
+  font-weight: bold !important;
+  line-height: 1.3 !important;
+  margin: 14px 0 4px !important;
+}
+
+.wx-heading-3 {
+  font-size: 20px !important;
+  font-weight: bold !important;
+  line-height: 1.3 !important;
+  margin: 12px 0 4px !important;
+}
+
+.wx-heading-4 {
+  font-size: 16px !important;
+  font-weight: bold !important;
+  line-height: 1.3 !important;
+  margin: 10px 0 4px !important;
+}
+
+.wx-code {
+  font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace !important;
+  background-color: rgba(175, 184, 193, 0.2) !important;
+  padding: 0.2em 0.4em !important;
+  border-radius: 3px !important;
+  font-size: 85% !important;
+  white-space: nowrap !important;
+}
+
+/* 确保微信编辑器中的样式能正常应用 */
+span[textstyle] {
+  display: inline !important;
+}
+
+/* 防止微信编辑器重置我们的样式 */
+[contenteditable="true"] span[textstyle] {
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  font-style: inherit;
+  color: inherit;
+  background-color: inherit;
+  border-radius: inherit;
+  padding: inherit;
+}
+/* 样式设置面板 */
+.wx-style-settings-panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 500px;
+  max-width: 90%;
+  max-height: 90vh;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 10000;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.wx-style-settings-panel h2 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+}
+
+.wx-style-settings-panel h3 {
+  margin-top: 15px;
+  margin-bottom: 10px;
+  font-size: 16px;
+  font-weight: bold;
+  color: #555;
+}
+
+.wx-settings-section {
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: #f9f9f9;
+  border-radius: 5px;
+}
+
+.wx-settings-description {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+.wx-settings-group {
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+}
+
+.wx-settings-group label {
+  width: 80px;
+  font-size: 14px;
+  color: #555;
+}
+
+.wx-settings-group input,
+.wx-settings-group select {
+  flex: 1;
+  padding: 6px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.wx-settings-group input:focus,
+.wx-settings-group select:focus {
+  outline: none;
+  border-color: #4d90fe;
+}
+
+.wx-custom-css-textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 13px;
+  resize: vertical;
+  margin-bottom: 10px;
+}
+
+.wx-custom-css-textarea:focus {
+  outline: none;
+  border-color: #4d90fe;
+}
+
+.wx-settings-button-group {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid #eee;
+}
+
+.wx-settings-save-button,
+.wx-settings-cancel-button,
+.wx-settings-reset-button,
+.wx-settings-apply-button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  margin-left: 10px;
+  transition: background-color 0.2s;
+}
+
+.wx-settings-save-button {
+  background-color: #4d90fe;
+  color: white;
+}
+
+.wx-settings-save-button:hover {
+  background-color: #3a7cf8;
+}
+
+.wx-settings-cancel-button {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+.wx-settings-cancel-button:hover {
+  background-color: #e0e0e0;
+}
+
+.wx-settings-reset-button {
+  background-color: #f44336;
+  color: white;
+}
+
+.wx-settings-reset-button:hover {
+  background-color: #e53935;
+}
+
+.wx-settings-apply-button {
+  background-color: #4caf50;
+  color: white;
+  margin-left: 0;
+}
+
+.wx-settings-apply-button:hover {
+  background-color: #43a047;
+}
+
+.wx-settings-close-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 30px;
+  height: 30px;
+  background-color: transparent;
+  border: none;
+  border-radius: 50%;
+  font-size: 20px;
+  line-height: 1;
+  color: #999;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.wx-settings-close-button:hover {
+  background-color: #f0f0f0;
+  color: #666;
+}
+
+/* 标签页样式 */
+.wx-settings-tabs {
+  display: flex;
+  border-bottom: 1px solid #ddd;
+  margin-bottom: 20px;
+}
+
+.wx-settings-tab-button {
+  padding: 10px 20px;
+  background-color: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font-size: 14px;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.wx-settings-tab-button:hover {
+  color: #333;
+}
+
+.wx-settings-tab-button.wx-settings-tab-active {
+  color: #4d90fe;
+  border-bottom-color: #4d90fe;
+}
+
+.wx-settings-tab-panel {
+  display: none;
+}

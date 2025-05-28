@@ -1,0 +1,51 @@
+/* 可拖动的悬浮设置按钮样式 */
+.wx-floating-settings-container {
+  position: fixed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  background-color: #fff;
+  border-radius: 50%;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+  width: 50px;
+  height: 50px;
+  cursor: move;
+  user-select: none;
+  touch-action: none;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.wx-floating-settings-container:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.wx-floating-settings-container.wx-dragging {
+  opacity: 0.9;
+  transform: scale(1.1);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.wx-floating-settings-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent;
+  color: #4C4D4E;
+  border: none;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+.wx-floating-settings-button:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.wx-floating-settings-button svg {
+  width: 24px;
+  height: 24px;
+}

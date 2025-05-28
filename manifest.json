@@ -1,0 +1,45 @@
+{
+  "manifest_version": 3,
+  "name": "微信公众号浮动工具栏",
+  "version": "1.1",
+  "description": "在微信公众号编辑器中选中文本后显示浮动工具栏，快速应用标题和格式化样式",
+  "icons": {
+    "16": "assets/icons/icon16.png",
+    "48": "assets/icons/icon48.png",
+    "128": "assets/icons/icon128.png"
+  },
+  "action": {
+    "default_icon": {
+      "16": "assets/icons/icon16.png",
+      "48": "assets/icons/icon48.png",
+      "128": "assets/icons/icon128.png"
+    }
+  },
+  "background": {
+    "service_worker": "src/background/background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://mp.weixin.qq.com/cgi-bin/appmsg*"],
+      "js": ["src/content/content.js"],
+      "css": [
+        "src/content/styles/toolbar.css",
+        "src/content/styles/settings.css",
+        "src/content/styles/draggable.css"
+      ]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "src/content/styles/*.css",
+        "src/content/components/*.js",
+        "src/content/utils/*.js"
+      ],
+      "matches": ["*://mp.weixin.qq.com/*"]
+    }
+  ],
+  "permissions": ["activeTab", "storage"],
+  "host_permissions": ["*://mp.weixin.qq.com/cgi-bin/appmsg*"]
+}
