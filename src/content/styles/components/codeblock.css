@@ -1,0 +1,239 @@
+/* 代码块样式 */
+@import url('../base/variables.css');
+
+/* 基础代码块样式 */
+.wx-code-block {
+  position: relative;
+  margin: var(--spacing-md) 0;
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+  font-family: var(--font-family-mono);
+  line-height: 1.5;
+  background-color: #282c34;
+  color: #abb2bf;
+}
+
+/* 代码块内容 */
+.wx-code-block-content {
+  padding: var(--spacing-md);
+  overflow-x: auto;
+  tab-size: 4;
+  white-space: pre;
+}
+
+/* 代码块标题栏 */
+.wx-code-block-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-xs) var(--spacing-md);
+  background-color: rgba(0, 0, 0, 0.2);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.wx-code-block-language {
+  font-size: var(--font-size-sm);
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+}
+
+.wx-code-block-actions {
+  display: flex;
+  align-items: center;
+}
+
+.wx-code-block-button {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  padding: var(--spacing-xs);
+  margin-left: var(--spacing-xs);
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wx-code-block-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.wx-code-block-button svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* 行号样式 */
+.wx-code-block-with-lines {
+  display: flex;
+}
+
+.wx-code-block-line-numbers {
+  padding: var(--spacing-md) var(--spacing-sm) var(--spacing-md) var(--spacing-md);
+  background-color: rgba(0, 0, 0, 0.2);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.4);
+  text-align: right;
+  user-select: none;
+  min-width: 40px;
+}
+
+.wx-code-block-line-number {
+  display: block;
+  line-height: 1.5;
+  font-size: 90%;
+}
+
+/* 代码高亮样式 - 基于 One Dark 主题 */
+.wx-code-block-dark {
+  background-color: #282c34;
+  color: #abb2bf;
+}
+
+.wx-code-block-light {
+  background-color: #fafafa;
+  color: #383a42;
+}
+
+/* 代码高亮 - 暗色主题 */
+.wx-code-block-dark .token.comment,
+.wx-code-block-dark .token.prolog,
+.wx-code-block-dark .token.doctype,
+.wx-code-block-dark .token.cdata {
+  color: #5c6370;
+}
+
+.wx-code-block-dark .token.punctuation {
+  color: #abb2bf;
+}
+
+.wx-code-block-dark .token.selector,
+.wx-code-block-dark .token.tag {
+  color: #e06c75;
+}
+
+.wx-code-block-dark .token.property,
+.wx-code-block-dark .token.boolean,
+.wx-code-block-dark .token.number,
+.wx-code-block-dark .token.constant,
+.wx-code-block-dark .token.symbol,
+.wx-code-block-dark .token.attr-name,
+.wx-code-block-dark .token.deleted {
+  color: #d19a66;
+}
+
+.wx-code-block-dark .token.string,
+.wx-code-block-dark .token.char,
+.wx-code-block-dark .token.attr-value,
+.wx-code-block-dark .token.builtin,
+.wx-code-block-dark .token.inserted {
+  color: #98c379;
+}
+
+.wx-code-block-dark .token.operator,
+.wx-code-block-dark .token.entity,
+.wx-code-block-dark .token.url,
+.wx-code-block-dark .language-css .token.string,
+.wx-code-block-dark .style .token.string {
+  color: #56b6c2;
+}
+
+.wx-code-block-dark .token.atrule,
+.wx-code-block-dark .token.keyword {
+  color: #c678dd;
+}
+
+.wx-code-block-dark .token.function,
+.wx-code-block-dark .token.class-name {
+  color: #61afef;
+}
+
+.wx-code-block-dark .token.regex,
+.wx-code-block-dark .token.important,
+.wx-code-block-dark .token.variable {
+  color: #c678dd;
+}
+
+/* 代码高亮 - 亮色主题 */
+.wx-code-block-light .token.comment,
+.wx-code-block-light .token.prolog,
+.wx-code-block-light .token.doctype,
+.wx-code-block-light .token.cdata {
+  color: #a0a1a7;
+}
+
+.wx-code-block-light .token.punctuation {
+  color: #383a42;
+}
+
+.wx-code-block-light .token.selector,
+.wx-code-block-light .token.tag {
+  color: #e45649;
+}
+
+.wx-code-block-light .token.property,
+.wx-code-block-light .token.boolean,
+.wx-code-block-light .token.number,
+.wx-code-block-light .token.constant,
+.wx-code-block-light .token.symbol,
+.wx-code-block-light .token.attr-name,
+.wx-code-block-light .token.deleted {
+  color: #986801;
+}
+
+.wx-code-block-light .token.string,
+.wx-code-block-light .token.char,
+.wx-code-block-light .token.attr-value,
+.wx-code-block-light .token.builtin,
+.wx-code-block-light .token.inserted {
+  color: #50a14f;
+}
+
+.wx-code-block-light .token.operator,
+.wx-code-block-light .token.entity,
+.wx-code-block-light .token.url,
+.wx-code-block-light .language-css .token.string,
+.wx-code-block-light .style .token.string {
+  color: #0184bc;
+}
+
+.wx-code-block-light .token.atrule,
+.wx-code-block-light .token.keyword {
+  color: #a626a4;
+}
+
+.wx-code-block-light .token.function,
+.wx-code-block-light .token.class-name {
+  color: #4078f2;
+}
+
+.wx-code-block-light .token.regex,
+.wx-code-block-light .token.important,
+.wx-code-block-light .token.variable {
+  color: #e45649;
+}
+
+/* 复制提示 */
+.wx-code-block-copy-tooltip {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: rgba(0, 0, 0, 0.8);
+  color: var(--white);
+  border-radius: 0 0 0 var(--border-radius-sm);
+  font-size: var(--font-size-sm);
+  opacity: 0;
+  transform: translateY(-100%);
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
+  pointer-events: none;
+}
+
+.wx-code-block-copy-tooltip.visible {
+  opacity: 1;
+  transform: translateY(0);
+}

@@ -1,0 +1,222 @@
+/* 通知样式 */
+@import url('../base/variables.css');
+
+/* 通知容器 */
+.wx-notification-container {
+  position: fixed;
+  z-index: var(--z-index-popover);
+  display: flex;
+  flex-direction: column;
+  max-width: 350px;
+  max-height: 100vh;
+  overflow-y: auto;
+  padding: var(--spacing-md);
+  pointer-events: none; /* 允许点击通知下方的元素 */
+}
+
+/* 通知容器位置 */
+.wx-notification-container-top-right {
+  top: 0;
+  right: 0;
+}
+
+.wx-notification-container-top-left {
+  top: 0;
+  left: 0;
+}
+
+.wx-notification-container-bottom-right {
+  bottom: 0;
+  right: 0;
+}
+
+.wx-notification-container-bottom-left {
+  bottom: 0;
+  left: 0;
+}
+
+.wx-notification-container-top-center {
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.wx-notification-container-bottom-center {
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* 通知项 */
+.wx-notification {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-sm);
+  border-radius: var(--border-radius-md);
+  background-color: var(--white);
+  box-shadow: var(--shadow-lg);
+  pointer-events: auto; /* 确保通知可点击 */
+  transform: translateX(100%);
+  opacity: 0;
+  transition: transform var(--transition-normal), opacity var(--transition-normal);
+}
+
+/* 通知显示动画 */
+.wx-notification-show {
+  transform: translateX(0);
+  opacity: 1;
+}
+
+/* 通知关闭动画 */
+.wx-notification-close {
+  transform: translateX(100%);
+  opacity: 0;
+}
+
+/* 左侧位置的通知动画 */
+.wx-notification-container-top-left .wx-notification,
+.wx-notification-container-bottom-left .wx-notification {
+  transform: translateX(-100%);
+}
+
+.wx-notification-container-top-left .wx-notification-show,
+.wx-notification-container-bottom-left .wx-notification-show {
+  transform: translateX(0);
+}
+
+.wx-notification-container-top-left .wx-notification-close,
+.wx-notification-container-bottom-left .wx-notification-close {
+  transform: translateX(-100%);
+}
+
+/* 中间位置的通知动画 */
+.wx-notification-container-top-center .wx-notification,
+.wx-notification-container-bottom-center .wx-notification {
+  transform: translateY(-100%);
+}
+
+.wx-notification-container-top-center .wx-notification-show,
+.wx-notification-container-bottom-center .wx-notification-show {
+  transform: translateY(0);
+}
+
+.wx-notification-container-top-center .wx-notification-close,
+.wx-notification-container-bottom-center .wx-notification-close {
+  transform: translateY(-100%);
+}
+
+.wx-notification-container-bottom-center .wx-notification {
+  transform: translateY(100%);
+}
+
+.wx-notification-container-bottom-center .wx-notification-close {
+  transform: translateY(100%);
+}
+
+/* 通知图标 */
+.wx-notification-icon {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  margin-right: var(--spacing-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wx-notification-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* 通知内容 */
+.wx-notification-content {
+  flex-grow: 1;
+  margin-right: var(--spacing-sm);
+}
+
+.wx-notification-title {
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-base);
+  margin-bottom: var(--spacing-xs);
+  color: var(--gray-900);
+}
+
+.wx-notification-message {
+  font-size: var(--font-size-sm);
+  color: var(--gray-700);
+  line-height: 1.5;
+}
+
+/* 通知关闭按钮 */
+.wx-notification-close {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  background: none;
+  border: none;
+  color: var(--gray-600);
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--transition-fast);
+}
+
+.wx-notification-close:hover {
+  color: var(--gray-900);
+}
+
+.wx-notification-close svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* 通知类型样式 */
+.wx-notification-info .wx-notification-icon {
+  color: var(--info-color);
+}
+
+.wx-notification-success .wx-notification-icon {
+  color: var(--success-color);
+}
+
+.wx-notification-warning .wx-notification-icon {
+  color: var(--warning-color);
+}
+
+.wx-notification-error .wx-notification-icon {
+  color: var(--danger-color);
+}
+
+/* 通知类型边框样式 */
+.wx-notification-info {
+  border-left: 4px solid var(--info-color);
+}
+
+.wx-notification-success {
+  border-left: 4px solid var(--success-color);
+}
+
+.wx-notification-warning {
+  border-left: 4px solid var(--warning-color);
+}
+
+.wx-notification-error {
+  border-left: 4px solid var(--danger-color);
+}
+
+/* 响应式样式 */
+@media (max-width: 768px) {
+  .wx-notification-container {
+    max-width: 90vw;
+    padding: var(--spacing-sm);
+  }
+  
+  .wx-notification {
+    padding: var(--spacing-sm);
+  }
+}

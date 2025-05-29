@@ -1,0 +1,78 @@
+/* 开关按钮样式 */
+.wx-switch-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  z-index: 999;
+  font-size: 14px;
+  color: #333;
+  padding: 5px 10px;
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 4px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  user-select: none;
+  margin: 5px 10px;
+  max-width: 120px;
+  float: right;
+  clear: both;
+}
+
+.wx-switch-checkbox {
+  display: none;
+}
+
+.wx-switch-label {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 20px;
+  background-color: #ccc;
+  border-radius: 20px;
+  transition: all 0.3s;
+  cursor: pointer;
+}
+
+.wx-switch-slider {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: white;
+  transition: all 0.3s;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.wx-switch-checkbox:checked + .wx-switch-label {
+  background-color: #4CAF50;
+}
+
+.wx-switch-checkbox:checked + .wx-switch-label .wx-switch-slider {
+  transform: translateX(20px);
+}
+
+.wx-switch-label:hover {
+  opacity: 0.8;
+}
+
+/* 适应不同位置的样式 */
+.wx-switch-container.top-right {
+  top: 10px;
+  right: 20px;
+}
+
+.wx-switch-container.top-left {
+  top: 10px;
+  left: 20px;
+}
+
+.wx-switch-container.bottom-right {
+  bottom: 10px;
+  right: 20px;
+}
+
+.wx-switch-container.bottom-left {
+  bottom: 10px;
+  left: 20px;
+}

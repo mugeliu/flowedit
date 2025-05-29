@@ -1,0 +1,79 @@
+/* 主样式文件 */
+/* 导入所有样式组件 */
+
+/* 基础样式 */
+@import url('./base/reset.css');
+@import url('./base/variables.css');
+
+/* 组件样式 */
+@import url('./components/toolbar.css');
+@import url('./components/switch.css');
+@import url('./components/draggable.css');
+@import url('./components/settings.css');
+@import url('./components/codeblock.css');
+@import url('./components/modal.css');
+@import url('./components/tooltip.css');
+@import url('./components/notification.css');
+
+/* 全局样式 */
+.wx-hidden {
+  display: none !important;
+}
+
+.wx-visible {
+  display: block !important;
+}
+
+.wx-fade-in {
+  animation: wx-fade-in var(--transition-normal) ease-out forwards;
+}
+
+.wx-fade-out {
+  animation: wx-fade-out var(--transition-normal) ease-out forwards;
+}
+
+@keyframes wx-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes wx-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* 确保我们的样式不会被微信编辑器覆盖 */
+.wx-editor-enhanced {
+  /* 这个类将应用于编辑器容器，以确保我们的样式优先级更高 */
+  position: relative;
+  z-index: 1;
+}
+
+/* 响应式样式 */
+@media (max-width: 768px) {
+  .wx-settings-panel {
+    width: 90vw;
+    max-height: 80vh;
+  }
+  
+  .wx-draggable-button {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .wx-draggable-button svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+/* 打印样式 */
+@media print {
+  .wx-draggable-container,
+  .wx-switch-container,
+  .wx-settings-panel,
+  .wx-settings-backdrop,
+  .wx-floating-toolbar {
+    display: none !important;
+  }
+}

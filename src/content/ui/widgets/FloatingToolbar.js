@@ -1,7 +1,8 @@
 // 浮动工具栏组件
 // 负责创建和管理浮动工具栏
 
-import { replaceSelection } from '../utils/dom.js';
+import { CONFIG } from '../../core/config.js';
+import { replaceSelection } from '../../utils/dom.js';
 
 /**
  * 浮动工具栏类
@@ -37,6 +38,14 @@ export class FloatingToolbar {
    * 创建工具栏
    */
   create() {
+    // 检查是否已经存在工具栏
+    const existingToolbar = document.querySelector('.wx-floating-toolbar');
+    if (existingToolbar) {
+      console.log('浮动工具栏已存在，不重复创建');
+      this.toolbarElement = existingToolbar;
+      return this.toolbarElement;
+    }
+    
     // 创建工具栏容器
     this.toolbarElement = document.createElement('div');
     this.toolbarElement.className = 'wx-floating-toolbar';
@@ -82,6 +91,7 @@ export class FloatingToolbar {
     });
     
     console.log('浮动工具栏已创建');
+    return this.toolbarElement;
   }
   
   /**
@@ -125,7 +135,7 @@ export class FloatingToolbar {
       
       // 显示工具栏
       this.show();
-    }, 300); // 300毫秒延迟，等待选择完成
+    }, CONFIG.TIMEOUTS.SELECTION_DELAY); // 延迟，等待选择完成
   }
   
   /**
@@ -207,23 +217,21 @@ export class FloatingToolbar {
       });
     }
     
+    // 添加自定义类名，用于CSS选择器
+    textStyleSpan.classList.add(`wx-heading-${level}`);
+    
     // 设置文本内容
     textStyleSpan.textContent = selectedText;
     
-    // 创建外层span
-    const outerSpan = document.createElement('span');
-    outerSpan.setAttribute('leaf', '');
-    outerSpan.appendChild(textStyleSpan);
-    
-    // 替换选中内容
-    replaceSelection(outerSpan, this.currentSelection);
+    // 替换选中的文本
+    replaceSelection(textStyleSpan, this.currentSelection);
     
     // 隐藏工具栏
     this.hide();
   }
   
   /**
-   * 应用代码样式
+   * 应用行内代码样式
    */
   applyCodeStyle() {
     if (!this.currentSelection) return;
@@ -247,16 +255,14 @@ export class FloatingToolbar {
       });
     }
     
+    // 添加自定义类名，用于CSS选择器
+    codeStyleSpan.classList.add('wx-code');
+    
     // 设置文本内容
     codeStyleSpan.textContent = selectedText;
     
-    // 创建外层span
-    const outerSpan = document.createElement('span');
-    outerSpan.setAttribute('leaf', '');
-    outerSpan.appendChild(codeStyleSpan);
-    
-    // 替换选中内容
-    replaceSelection(outerSpan, this.currentSelection);
+    // 替换选中的文本
+    replaceSelection(codeStyleSpan, this.currentSelection);
     
     // 隐藏工具栏
     this.hide();
@@ -303,10 +309,14 @@ export class FloatingToolbar {
    * 销毁工具栏
    */
   destroy() {
-    if (this.toolbarElement) {
-      document.removeEventListener('selectionchange', this.handleSelectionChange);
-      this.toolbarElement.remove();
-      this.toolbarElement = null;
+    // 移除事件监听
+    document.removeEventListener('selectionchange', this.handleSelectionChange);
+    
+    // 移除工具栏元素
+    if (this.toolbarElement && this.toolbarElement.parentNode) {
+      this.toolbarElement.parentNode.removeChild(this.toolbarElement);
     }
+    
+    console.log('浮动工具栏已销毁');
   }
 }

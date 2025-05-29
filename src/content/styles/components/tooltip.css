@@ -1,0 +1,129 @@
+/* 工具提示样式 */
+@import url('../base/variables.css');
+
+.wx-tooltip {
+  position: absolute;
+  z-index: var(--z-index-tooltip);
+  max-width: 200px;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: var(--gray-800);
+  color: var(--white);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-normal);
+  line-height: 1.4;
+  border-radius: var(--border-radius-sm);
+  box-shadow: var(--shadow-md);
+  pointer-events: none;
+  opacity: 0.9;
+  animation: tooltip-fade-in var(--transition-fast) ease-out forwards;
+}
+
+@keyframes tooltip-fade-in {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 0.9; transform: scale(1); }
+}
+
+/* 工具提示箭头 */
+.wx-tooltip-arrow {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background-color: var(--gray-800);
+  transform: rotate(45deg);
+}
+
+/* 顶部工具提示 */
+.wx-tooltip-top .wx-tooltip-arrow {
+  bottom: -4px;
+  left: 50%;
+  margin-left: -4px;
+}
+
+/* 右侧工具提示 */
+.wx-tooltip-right .wx-tooltip-arrow {
+  left: -4px;
+  top: 50%;
+  margin-top: -4px;
+}
+
+/* 底部工具提示 */
+.wx-tooltip-bottom .wx-tooltip-arrow {
+  top: -4px;
+  left: 50%;
+  margin-left: -4px;
+}
+
+/* 左侧工具提示 */
+.wx-tooltip-left .wx-tooltip-arrow {
+  right: -4px;
+  top: 50%;
+  margin-top: -4px;
+}
+
+/* 工具提示变体 */
+.wx-tooltip-primary {
+  background-color: var(--primary-color);
+}
+
+.wx-tooltip-primary .wx-tooltip-arrow {
+  background-color: var(--primary-color);
+}
+
+.wx-tooltip-secondary {
+  background-color: var(--secondary-color);
+}
+
+.wx-tooltip-secondary .wx-tooltip-arrow {
+  background-color: var(--secondary-color);
+}
+
+.wx-tooltip-success {
+  background-color: var(--success-color);
+}
+
+.wx-tooltip-success .wx-tooltip-arrow {
+  background-color: var(--success-color);
+}
+
+.wx-tooltip-warning {
+  background-color: var(--warning-color);
+  color: var(--gray-900);
+}
+
+.wx-tooltip-warning .wx-tooltip-arrow {
+  background-color: var(--warning-color);
+}
+
+.wx-tooltip-danger {
+  background-color: var(--danger-color);
+}
+
+.wx-tooltip-danger .wx-tooltip-arrow {
+  background-color: var(--danger-color);
+}
+
+/* 工具提示大小变体 */
+.wx-tooltip-sm {
+  padding: 2px 6px;
+  font-size: 10px;
+}
+
+.wx-tooltip-lg {
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--font-size-base);
+  max-width: 300px;
+}
+
+/* 工具提示动画 */
+.wx-tooltip-fade-in {
+  animation: tooltip-fade-in var(--transition-fast) ease-out forwards;
+}
+
+.wx-tooltip-fade-out {
+  animation: tooltip-fade-out var(--transition-fast) ease-out forwards;
+}
+
+@keyframes tooltip-fade-out {
+  from { opacity: 0.9; transform: scale(1); }
+  to { opacity: 0; transform: scale(0.9); }
+}

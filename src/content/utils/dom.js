@@ -1,54 +1,7 @@
 // DOM操作工具函数模块
 // 负责处理DOM元素查找、创建和操作
 
-// 代码块美化样式
-const CODE_BLOCK_STYLES = `
-.hljs.code__pre {
-  box-sizing: border-box; 
-  border: 1px solid rgba(0, 0, 0, 0.04); 
-  font-family: Menlo, Monaco, "Courier New", monospace; 
-  font-size: 12.6px; 
-  margin: 10px 8px; 
-  color: rgb(201, 209, 217); 
-  background: rgb(13, 17, 23); 
-  text-align: left; 
-  line-height: 1.5; 
-  overflow-x: auto; 
-  border-radius: 8px; 
-  padding: 0px !important;
-}
-
-.mac-sign {
-  box-sizing: border-box; 
-  border-width: 0px; 
-  border-style: solid; 
-  border-color: rgb(229, 229, 229); 
-  display: flex; 
-  padding: 10px 14px 0px;
-}
-
-.hljs.code__pre code {
-  box-sizing: border-box; 
-  border-width: 0px; 
-  border-style: solid; 
-  border-color: rgb(229, 229, 229); 
-  font-family: "Fira Code", Menlo, "Operator Mono", Consolas, Monaco, monospace; 
-  font-size: 11.34px; 
-  display: -webkit-box; 
-  padding: 0.5em 1em 1em; 
-  overflow-x: auto; 
-  text-indent: 0px; 
-  text-align: left; 
-  line-height: 1.75; 
-  margin: 0px; 
-  white-space: pre-wrap; 
-  overflow-wrap: break-word;
-}
-
-.hljs .hljs-keyword {
-  color: rgb(255, 123, 114);
-}
-`;
+import { CONFIG } from '../core/config.js';
 
 /**
  * 查找编辑器元素
@@ -56,7 +9,7 @@ const CODE_BLOCK_STYLES = `
  */
 export function findEditor() {
   // 尝试查找ProseMirror编辑器
-  const proseMirrorEditor = document.querySelector('.ProseMirror[contenteditable="true"]');
+  const proseMirrorEditor = document.querySelector(CONFIG.SELECTORS.EDITOR);
   if (proseMirrorEditor) {
     console.log('找到ProseMirror编辑器');
     return proseMirrorEditor;
@@ -67,7 +20,7 @@ export function findEditor() {
   for (const iframe of iframes) {
     try {
       const iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
-      const iframeEditor = iframeDocument.querySelector('.ProseMirror[contenteditable="true"]') || 
+      const iframeEditor = iframeDocument.querySelector(CONFIG.SELECTORS.EDITOR) || 
                           iframeDocument.querySelector('[contenteditable="true"]');
       if (iframeEditor) {
         console.log('在iframe中找到编辑器');
@@ -82,12 +35,8 @@ export function findEditor() {
   const editorCandidates = document.querySelectorAll('[contenteditable="true"]');
   
   for (const candidate of editorCandidates) {
-    if (candidate.closest('.edui-editor-body') || 
-        candidate.closest('.rich_media_content') || 
-        candidate.closest('.editor') || 
-        candidate.closest('.js_editor_area') || 
-        candidate.closest('.view.rich_media_content') || 
-        candidate.closest('#ueditor_0')) {
+    // 使用配置中的选择器列表
+    if (CONFIG.SELECTORS.EDITOR_CANDIDATES.some(selector => candidate.closest(selector))) {
       console.log('找到微信编辑器元素');
       return candidate;
     }
@@ -110,6 +59,7 @@ export function findEditor() {
  * @param {number} width - 宽度
  * @param {number} height - 高度
  * @returns {SVGElement} 创建的SVG元素
+ * @deprecated 使用 ui/components/Icon.js 中的 createIcon 函数替代
  */
 export function createSvgIcon(pathData, fill = '#4C4D4E', width = 24, height = 24) {
   const svgIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -166,117 +116,91 @@ export function applyCustomCss(cssText, id = 'wx-custom-css') {
 }
 
 /**
- * 初始化代码块美化功能
- * @param {HTMLElement} editor - 编辑器元素
- */
-export function initCodeBlockBeautifier(editor) {
-  if (!editor) return;
-  
-  console.log('初始化代码块美化功能');
-  
-  // 添加代码块样式
-  applyCustomCss(CODE_BLOCK_STYLES, 'wx-code-block-styles');
-  
-  // 监听代码块插入按钮的点击事件
-  const insertCodeButton = document.querySelector('.edui-for-insertcode');
-  if (insertCodeButton) {
-    console.log('找到代码块插入按钮');
-    insertCodeButton.addEventListener('click', () => {
-      console.log('代码块插入按钮被点击');
-      // 使用延时等待代码块插入到DOM
-      setTimeout(beautifyCodeBlocks, 500);
-    });
-  } else {
-    console.log('未找到代码块插入按钮，将使用变异观察器');
-    // 使用MutationObserver监听编辑器内容变化
-    const observer = new MutationObserver((mutations) => {
-      for (const mutation of mutations) {
-        if (mutation.type === 'childList' && mutation.addedNodes.length) {
-          // 检查是否添加了代码块
-          const addedCodeBlocks = Array.from(mutation.addedNodes)
-            .filter(node => node.nodeType === Node.ELEMENT_NODE)
-            .filter(node => node.matches?.('.code-snippet') || node.querySelector?.('.code-snippet'));
-          
-          if (addedCodeBlocks.length) {
-            console.log('检测到新的代码块添加');
-            beautifyCodeBlocks();
-          }
-        }
-      }
-    });
-    
-    // 开始观察编辑器变化
-    observer.observe(editor, { childList: true, subtree: true });
-  }
-  
-  // 初始化时美化现有的代码块
-  beautifyCodeBlocks();
-}
-
-/**
- * 美化所有代码块
- */
-export function beautifyCodeBlocks() {
-  console.log('开始美化代码块');
-  
-  // 查找所有代码块
-  const codeBlocks = document.querySelectorAll('.code-snippet__js, .code-snippet');
-  console.log(`找到 ${codeBlocks.length} 个代码块`);
-  
-  codeBlocks.forEach((codeBlock, index) => {
-    // 如果已经美化过，则跳过
-    if (codeBlock.classList.contains('hljs')) return;
-    
-    console.log(`美化代码块 #${index + 1}`);
-    
-    // 获取原始代码内容
-    const codeElement = codeBlock.querySelector('code');
-    const codeContent = codeElement?.textContent || '';
-    
-    // 创建新的代码块结构
-    const newCodeBlock = document.createElement('pre');
-    newCodeBlock.className = 'hljs code__pre';
-    
-    // 添加Mac窗口按钮
-    const macSign = document.createElement('span');
-    macSign.className = 'mac-sign';
-    macSign.setAttribute('hidden', '');
-    macSign.innerHTML = `<svg viewBox="0 0 450 130" height="13px" width="45px" y="0px" x="0px" version="1.1" xmlns="http://www.w3.org/2000/svg"><ellipse fill="rgb(237,108,96)" stroke-width="2" stroke="rgb(220,60,54)" ry="52" rx="50" cy="65" cx="50"></ellipse><ellipse fill="rgb(247,193,81)" stroke-width="2" stroke="rgb(218,151,33)" ry="52" rx="50" cy="65" cx="225"></ellipse><ellipse fill="rgb(100,200,86)" stroke-width="2" stroke="rgb(27,161,37)" ry="52" rx="50" cy="65" cx="400"></ellipse></svg>`;
-    newCodeBlock.appendChild(macSign);
-    
-    // 创建新的代码元素
-    const newCodeElement = document.createElement('code');
-    newCodeElement.className = 'language-python';
-    
-    // 处理代码内容，添加语法高亮
-    if (codeContent.trim()) {
-      // 简单的语法高亮处理（这里仅作示例，实际可以使用更复杂的高亮逻辑）
-      const highlightedContent = codeContent
-        .replace(/\b(import|from|def|class|if|else|elif|for|while|return|try|except|with|as|in|is|not|and|or)\b/g, '<span class="hljs-keyword">$1</span>');
-      
-      newCodeElement.innerHTML = highlightedContent;
-    } else {
-      newCodeElement.innerHTML = '<span leaf=""></span>';
-    }
-    
-    newCodeBlock.appendChild(newCodeElement);
-    
-    // 替换原始代码块
-    codeBlock.parentNode.replaceChild(newCodeBlock, codeBlock);
-  });
-}
-
-/**
  * 获取元素的绝对位置
  * @param {HTMLElement} element - 目标元素
- * @returns {Object} 包含top和left属性的对象
+ * @returns {Object} 包含top, left, right, bottom, width, height属性的对象
  */
 export function getElementPosition(element) {
   const rect = element.getBoundingClientRect();
   return {
     top: rect.top + window.scrollY,
     left: rect.left + window.scrollX,
+    right: rect.right + window.scrollX,
+    bottom: rect.bottom + window.scrollY,
     width: rect.width,
     height: rect.height
   };
+}
+
+/**
+ * 查找指定选择器的元素，如果不存在则等待创建
+ * @param {string} selector - CSS选择器
+ * @param {number} timeout - 超时时间（毫秒）
+ * @param {number} interval - 检查间隔（毫秒）
+ * @returns {Promise<HTMLElement>} 找到的元素
+ */
+export function waitForElement(selector, timeout = 5000, interval = 100) {
+  return new Promise((resolve, reject) => {
+    // 先尝试直接查找
+    const element = document.querySelector(selector);
+    if (element) {
+      return resolve(element);
+    }
+    
+    // 设置超时
+    const timeoutId = setTimeout(() => {
+      clearInterval(intervalId);
+      reject(new Error(`等待元素 ${selector} 超时`));
+    }, timeout);
+    
+    // 定期检查
+    const intervalId = setInterval(() => {
+      const element = document.querySelector(selector);
+      if (element) {
+        clearTimeout(timeoutId);
+        clearInterval(intervalId);
+        resolve(element);
+      }
+    }, interval);
+  });
+}
+
+/**
+ * 创建并添加元素
+ * @param {string} tag - 标签名
+ * @param {Object} attributes - 属性对象
+ * @param {string} innerHTML - 内部HTML
+ * @param {HTMLElement} parent - 父元素
+ * @returns {HTMLElement} 创建的元素
+ */
+export function createElement(tag, attributes = {}, innerHTML = '', parent = null) {
+  const element = document.createElement(tag);
+  
+  // 设置属性
+  Object.entries(attributes).forEach(([key, value]) => {
+    if (key === 'style' && typeof value === 'object') {
+      // 处理样式对象
+      Object.entries(value).forEach(([prop, val]) => {
+        element.style[prop] = val;
+      });
+    } else if (key === 'classList' && Array.isArray(value)) {
+      // 处理类名数组
+      value.forEach(cls => element.classList.add(cls));
+    } else {
+      // 处理普通属性
+      element.setAttribute(key, value);
+    }
+  });
+  
+  // 设置内部HTML
+  if (innerHTML) {
+    element.innerHTML = innerHTML;
+  }
+  
+  // 添加到父元素
+  if (parent) {
+    parent.appendChild(element);
+  }
+  
+  return element;
 }

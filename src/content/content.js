@@ -1,23 +1,33 @@
 // 微信公众号浮动工具栏插件 - 内容脚本主入口文件
 
-// 导入样式文件
-import './styles/toolbar.css';
-import './styles/settings.css';
-import './styles/draggable.css';
-import './styles/codeblock.css';
+// 导入主样式文件（包含所有样式组件）
+import './styles/main.css';
 
-// 导入组件和工具函数
-import { findEditor, applyCustomCss } from './utils/dom.js';
-import { loadFromStorage, STORAGE_KEYS } from './utils/storage.js';
-import { FloatingToolbar } from './components/FloatingToolbar.js';
-import { SettingsPanel } from './components/SettingsPanel.js';
-import { DraggableButton } from './components/DraggableButton.js';
-import { CodeBlockEnhancer } from './features/CodeBlockEnhancer.js';
-import { CodeBlockSettings } from './components/CodeBlockSettings.js';
+// 导入核心配置
+import { CONFIG } from './core/config.js';
+
+// 导入主插件类
+import { Plugin } from './core/plugin.js';
+
+// 导入工具函数
+import { findEditor } from './utils/dom.js';
+import { loadFromStorage, saveToStorage } from './utils/storage.js';
+import { debounce } from './utils/events.js';
+import { generateUniqueId } from './utils/helpers.js';
+
+// 导入UI组件
+import { FloatingToolbar } from './ui/widgets/FloatingToolbar.js';
+import { DraggableButton } from './ui/widgets/DraggableButton.js';
+import { SwitchButton } from './ui/widgets/SwitchButton.js';
+
+// 导入功能模块
+import { CodeBlockEnhancer } from './features/code/CodeBlockEnhancer.js';
+import { CodeBlockSettings } from './features/code/CodeBlockSettings.js';
 
 /**
  * 插件主类
  * 负责初始化和协调各个组件
+ * @deprecated 请使用 ./core/plugin.js 中的 Plugin 类
  */
 class WxFloatingToolbarPlugin {
   constructor() {
@@ -28,6 +38,7 @@ class WxFloatingToolbarPlugin {
     this.draggableButton = null;
     this.codeBlockEnhancer = null;
     this.codeBlockSettings = null;
+    this.switchButton = null;
     this.findEditorInterval = null;
     
     // 默认样式设置
@@ -44,6 +55,7 @@ class WxFloatingToolbarPlugin {
     this.init = this.init.bind(this);
     this.onSettingsButtonClick = this.onSettingsButtonClick.bind(this);
     this.updateStyleSettings = this.updateStyleSettings.bind(this);
+    this.onSwitchChange = this.onSwitchChange.bind(this);
     
     // 初始化
     this.init();
@@ -80,6 +92,19 @@ class WxFloatingToolbarPlugin {
     this.draggableButton = new DraggableButton(this.onSettingsButtonClick);
     this.draggableButton.create();
     
+    // 创建开关按钮
+    this.switchButton = new SwitchButton(this.onSwitchChange);
+    
+    // 尝试从存储中加载开关状态
+    const savedSwitchState = loadFromStorage(STORAGE_KEYS.FEATURE_ENABLED);
+    if (savedSwitchState !== null) {
+      // 如果找到了存储的状态，将在创建后设置
+      this.switchButtonState = savedSwitchState;
+    } else {
+      // 默认启用
+      this.switchButtonState = true;
+    }
+    
     // 等待编辑器加载
     this.findEditorInterval = setInterval(() => {
       const editor = findEditor();
@@ -98,6 +123,15 @@ class WxFloatingToolbarPlugin {
         
         // 初始化代码块设置面板
         this.codeBlockSettings = new CodeBlockSettings(this.codeBlockEnhancer);
+        
+        // 在编辑器加载完成后创建开关按钮
+        // 使用延时确保目标元素已加载
+        setTimeout(() => {
+          const switchContainer = this.switchButton.create();
+          if (switchContainer && this.switchButtonState !== undefined) {
+            this.switchButton.setState(this.switchButtonState);
+          }
+        }, 500);
         
         console.log('浮动工具栏插件初始化完成');
       }
@@ -174,15 +208,35 @@ class WxFloatingToolbarPlugin {
       this.floatingToolbar.updateSettings(newSettings);
     }
   }
+  
+  /**
+   * 开关状态变化处理
+   * @param {boolean} isOn - 开关状态
+   */
+  onSwitchChange(isOn) {
+    console.log('开关状态变化:', isOn);
+    
+    // 根据开关状态启用或禁用功能
+    if (this.floatingToolbar) {
+      if (isOn) {
+        this.floatingToolbar.enable();
+      } else {
+        this.floatingToolbar.disable();
+      }
+    }
+    
+    // 保存开关状态到存储
+    chrome.storage.local.set({ [STORAGE_KEYS.FEATURE_ENABLED]: isOn });
+  }
 }
 
-// 当DOM加载完成后初始化插件
 // 使用多种事件监听方式确保插件能够被初始化
 function initPlugin() {
   console.log('尝试初始化插件...');
   if (document.body) {
     console.log('DOM已加载，初始化插件');
-    const plugin = new WxFloatingToolbarPlugin();
+    // 使用新的插件类
+    new Plugin();
   }
 }
 
