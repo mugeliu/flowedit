@@ -1,1 +1,0 @@
-!function(){"use strict";chrome.runtime.onInstalled.addListener((function(){console.log("微信公众号浮动工具栏插件已安装")})),chrome.runtime.onMessage.addListener((function(n,e,o){return"log"===n.action&&console.log("内容脚本日志:",n.data),!0}))}();
