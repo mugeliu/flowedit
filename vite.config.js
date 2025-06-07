@@ -54,7 +54,7 @@ const mainConfig = defineConfig({
 const editorjsBundleConfig = defineConfig({
   build: {
     lib: {
-      entry: resolve(__dirname, "editorjs-bundle.js"),
+      entry: resolve(__dirname, "src/editorjs-bundle.js"),
       name: "EditorJSBundle",
       formats: ["iife"],
       fileName: () => "editorjs-bundle.js",
