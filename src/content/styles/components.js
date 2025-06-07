@@ -95,9 +95,8 @@ export const editorStyles = `
   
   /* 智能插入编辑器占位元素样式 */
   .flowedit-editor-holder {
-    position: relative;
-    width: 100%;
-    height: 100%;
+    margin-left: -95px;
+    padding: 0 91px;
   }
   
   /* 智能插入控制栏样式 */
