@@ -44,3 +44,5 @@ temp/
 # 本地配置文件
 .npmrc
 .yarnrc
+
+.DS_Store

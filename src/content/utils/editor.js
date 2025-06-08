@@ -1,55 +1,125 @@
 // 编辑器相关工具函数
 import { selectorConfig } from '../config/index.js';
+import htmlGenerator from './html-generator.js';
+import { safeQuerySelector, createElement } from './dom.js';
 
 /**
- * 获取编辑器初始内容
- * @returns {Object} EditorJS格式的数据
+ * 将EditorJS数据保存到原编辑器
+ * @param {Array} blocks - EditorJS块数据
+ * @param {Object} options - 保存选项
+ * @param {string} options.targetSelector - 目标编辑器选择器
+ * @param {boolean} options.append - 是否追加内容
+ * @param {string} options.insertPosition - 插入位置 ('start', 'end', 'cursor')
+ * @param {Object} options.styleOptions - 样式选项
+ * @param {boolean} options.usePreloadedStyles - 是否使用预加载的样式
+ * @returns {Promise<boolean>} 保存是否成功
  */
-export function getInitialContent() {
-  const target = document.querySelector(selectorConfig.proseMirror);
-  if (!target) return { blocks: [] };
-  const text = target.textContent.trim();
-  return text
-    ? { blocks: [{ type: "paragraph", data: { text } }] }
-    : { blocks: [] };
-}
+export async function saveToOriginalEditor(blocks, options = {}) {
+  try {
+    const {
+      targetSelector = selectorConfig.editor,
+      append = true, // 默认追加而不是替换
+      insertPosition = 'cursor',
+      styleOptions = {}
+    } = options;
 
-/**
- * 保存内容到原编辑器
- * @param {Array} blocks EditorJS块数据
- * @returns {boolean} 是否保存成功
- */
-export function saveToOriginalEditor(blocks) {
-  const target = document.querySelector(selectorConfig.proseMirror);
-  if (!target) {
-    console.error('找不到目标编辑器');
+    // 生成HTML内容（始终包含内联样式）
+    const htmlContent = await htmlGenerator.generateHTML(blocks, {
+      ...styleOptions
+    });
+
+    // 插入到目标编辑器
+    const success = await insertToEditor(htmlContent, {
+      targetSelector,
+      append,
+      insertPosition
+    });
+
+    return success;
+  } catch (error) {
+    console.error('保存到原编辑器失败:', error);
     return false;
   }
+}
+
+
+
+
+
+/**
+ * 插入内容到目标编辑器
+ * @param {string} htmlContent HTML内容
+ * @param {Object} options 插入选项
+ * @param {string} options.targetSelector 目标编辑器选择器
+ * @param {boolean} options.append 是否追加内容
+ * @param {string} options.insertPosition 插入位置
+ * @returns {Promise<boolean>} 插入是否成功
+ */
+export async function insertToEditor(htmlContent, options = {}) {
+  const {
+    targetSelector = 'div[contenteditable="true"].ProseMirror',
+    append = true, // 默认追加而不是替换
+    insertPosition = 'cursor'
+  } = options;
 
   try {
-    target.innerHTML = blocks
-      .map((block) => `<p>${block.data.text.replace(/\n/g, "<br>")}</p>`)
-      .join("");
+    // 使用dom工具安全地查找目标编辑器
+    const target = safeQuerySelector(targetSelector);
+    if (!target) {
+      console.error('找不到目标编辑器:', targetSelector);
+      return false;
+    }
+
+    // 创建临时容器来解析HTML内容
+    const tempContainer = createElement('div', { innerHTML: htmlContent });
+    const sections = tempContainer.querySelectorAll('section');
+
+    // 将每个section作为子元素插入到ProseMirror中
+    sections.forEach(section => {
+      if (append) {
+        target.appendChild(section.cloneNode(true));
+      } else {
+        switch (insertPosition) {
+          case 'start':
+            target.insertBefore(section.cloneNode(true), target.firstChild);
+            break;
+          case 'end':
+            target.appendChild(section.cloneNode(true));
+            break;
+          case 'cursor':
+          default:
+            target.innerHTML = '';
+            target.appendChild(section.cloneNode(true));
+            break;
+        }
+      }
+    });
+
+    console.log('内容插入成功');
     return true;
   } catch (error) {
-    console.error('保存内容失败:', error);
+    console.error('插入内容失败:', error);
     return false;
   }
 }
 
 /**
- * 动态加载脚本
- * @param {string} url 脚本URL
- * @returns {Promise}
+ * 获取初始内容
+ * @returns {Object} EditorJS初始数据
  */
-export function loadScript(url) {
-  return new Promise((resolve, reject) => {
-    const script = document.createElement("script");
-    script.src = url;
-    script.onload = resolve;
-    script.onerror = reject;
-    document.head.appendChild(script);
-  });
+function getInitialContent() {
+  return {
+    time: Date.now(),
+    blocks: [
+      {
+        type: 'paragraph',
+        data: {
+          text: '使用editor.js开始编写您的内容...'
+        }
+      }
+    ],
+    version: '2.28.2'
+  };
 }
 
 /**
@@ -58,4 +128,100 @@ export function loadScript(url) {
  */
 export function isEditorJSLoaded() {
   return !!(window.EditorJS && window.Paragraph && window.Header);
+}
+
+/**
+ * 加载EditorJS Bundle
+ * @returns {Promise} 加载完成的Promise
+ */
+export function loadEditorJSBundle() {
+  return new Promise((resolve, reject) => {
+    chrome.runtime.sendMessage('inject_editorjs_bundle', (response) => {
+      if (response && response.status === 'injected') {
+        setTimeout(() => {
+          if (isEditorJSLoaded()) {
+            resolve();
+          } else {
+            reject(new Error('编辑器脚本加载失败'));
+          }
+        }, 100);
+      } else {
+        reject(new Error('编辑器注入失败'));
+      }
+    });
+  });
+}
+
+/**
+ * 创建EditorJS实例
+ * @param {string} holderId 编辑器容器ID
+ * @param {Object} config 编辑器配置
+ * @returns {Object} EditorJS实例
+ */
+export function createEditorInstance(holderId, config) {
+  // 检查holder元素是否存在
+  const holderElement = document.getElementById(holderId);
+  if (!holderElement) {
+    throw new Error(`${holderId}元素不存在，请检查DOM结构`);
+  }
+  
+  try {
+    const editor = new EditorJS({
+      holder: holderId,
+      tools: {
+        paragraph: {
+          class: Paragraph,
+          inlineToolbar: true,
+        },
+        header: {
+          class: Header,
+          inlineToolbar: true,
+          config: {
+            placeholder: config.tools.header.placeholder,
+            levels: config.tools.header.levels,
+            defaultLevel: config.tools.header.defaultLevel,
+          },
+        },
+      },
+      data: getInitialContent(),
+      placeholder: config.placeholder,
+    });
+    
+    return editor;
+  } catch (error) {
+    console.error('编辑器初始化失败:', error);
+    throw error;
+  }
+}
+
+/**
+ * 加载并初始化编辑器
+ * @param {string} holderId 编辑器容器ID
+ * @param {Object} config 编辑器配置
+ * @returns {Promise<Object>} EditorJS实例
+ */
+export async function loadAndInitializeEditor(holderId, config) {
+  if (!isEditorJSLoaded()) {
+    try {
+      await loadEditorJSBundle();
+    } catch (error) {
+      throw new Error('编辑器加载失败: ' + error.message);
+    }
+  }
+  
+  return createEditorInstance(holderId, config);
+}
+
+/**
+ * 销毁编辑器实例
+ * @param {Object} editor EditorJS实例
+ */
+export function destroyEditor(editor) {
+  if (editor) {
+    try {
+      editor.destroy();
+    } catch (error) {
+      console.warn('编辑器销毁错误:', error);
+    }
+  }
 }

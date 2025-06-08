@@ -6,12 +6,13 @@ import { safeQuerySelector } from '../../utils/dom.js';
 
 /**
  * 初始化工具栏
+ * @returns {boolean} 是否成功初始化工具栏
  */
 export function initializeToolbar() {
   const toolbar = safeQuerySelector(selectorConfig.toolbar);
   if (!toolbar) {
-    console.warn('找不到工具栏区域');
-    return;
+    console.debug('找不到工具栏区域，可能页面未登录');
+    return false;
   }
 
   // 添加侧边栏切换开关到第一个子元素位置
@@ -29,10 +30,11 @@ export function initializeToolbar() {
 
   // 添加智能插入按钮到最后一个子元素位置
   const smartButton = createSmartButton();
-  const editor = safeQuerySelector(selectorConfig.editor);
+  const editor = safeQuerySelector(selectorConfig.sidebar);
   if (smartButton && editor) {
     toolbar.appendChild(smartButton);
   } else {
     console.warn('智能插入按钮初始化失败：缺少必要的DOM元素');
   }
+  return true;
 }

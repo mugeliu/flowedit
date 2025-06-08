@@ -24,6 +24,17 @@ export const buttonStyles = `
     padding: 0 12px;
     font-size: 12px;
     line-height: 22px;
+    transition: all 0.3s ease;
+  }
+  
+  /* 智能插入按钮悬浮效果 */
+  .flowedit-smart-btn:hover {
+    background-color: #07c160;
+    background-image: linear-gradient(to bottom, #07C160 0, #07C160 100%);
+    border-color: #07C160;
+    color: #FFFFFF;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
 `;
 
@@ -53,7 +64,7 @@ export const switchStyles = `
     bottom: 0;
     background-color: #ccc;
     border-radius: 11px;
-    transition: background-color 0.3s ease;
+    transition: all 0.3s ease;
   }
   
   .flowedit-switch-thumb {
@@ -128,6 +139,17 @@ export const editorStyles = `
     border-radius: 4px;
     cursor: pointer;
     font-size: 14px;
+    transition: all 0.3s ease;
+  }
+  
+  /* 智能插入保存按钮悬浮效果 */
+  .flowedit-editor-save-btn:hover {
+    background-color: #07c160;
+    background-image: linear-gradient(to bottom, #07C160 0, #07C160 100%);
+    border-color: #07C160;
+    color: #FFFFFF;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
   
   /* 智能插入取消按钮样式 */
@@ -142,5 +164,18 @@ export const editorStyles = `
     border-radius: 4px;
     cursor: pointer;
     font-size: 14px;
+    transition: all 0.3s ease;
+  }
+  
+  /* 智能插入取消按钮悬浮效果 */
+  .flowedit-editor-cancel-btn:hover {
+    background-color: #e7e7eb;
+    background-image: linear-gradient(to bottom, #E7E7EB 0, #E7E7EB 100%);
+    border-color: #DADBE0;
+    box-shadow: none;
+    -moz-box-shadow: none;
+    -webkit-box-shadow: none;
+    color: #353535;
+    transform: translateY(-1px);
   }
 `;

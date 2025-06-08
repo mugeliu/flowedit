@@ -27,23 +27,15 @@ export const featureConfig = {
   },
 };
 
-/**
- * 样式配置
- */
-export const styleConfig = {
-  // 扩展样式ID
-  styleId: 'flowedit-styles',
-};
+// 样式配置已迁移到 style-config.js 中统一管理
 
 /**
  * DOM选择器配置
  */
 export const selectorConfig = {
-  toolbar: '#js_toolbar_0',
-  editor: '#ueditor_0',
-  proseMirror: '#ueditor_0 .ProseMirror',
-  buttonArea: '#js_button_area',
-  sidebar: '#js_side_article_list',
-  articleList: '#js_side_article_list',
-  articleSetting: '#article_setting_area',
+  toolbar: '#js_toolbar_0',                           // 工具栏容器 - 用于添加自定义按钮和开关
+  editor: 'div[contenteditable="true"].ProseMirror',                  // 主编辑器容器 - 智能插入功能的目标容器
+  proseMirror: '#ueditor_0 .ProseMirror',              // 编辑器内容区域 - 用于获取和保存编辑内容
+  buttonArea: '#js_button_area',                       // 按钮区域 - 用于添加控制栏和管理按钮显示
+  sidebar: '#js_side_article_list',                    // 侧边栏 - 用于侧边栏切换功能
 };
