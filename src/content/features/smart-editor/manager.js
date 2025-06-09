@@ -1,12 +1,12 @@
 // 智能编辑器功能管理器
 import { featureConfig, selectorConfig } from '../../config/index.js';
 import { saveToOriginalEditor, loadAndInitializeEditor, destroyEditor } from '../../utils/editor.js';
-import { hideElements, restoreElements, hideButtonAreaChildren, restoreButtonAreaChildren, createElement, safeQuerySelector } from '../../utils/dom.js';
+import { hideElements, restoreElements, hideContainerChildren, restoreContainerChildren, createElement, safeQuerySelector } from '../../utils/dom.js';
 import { createEditorInterface, removeEditorInterface } from './interface.js';
 import { createEditorControls, removeEditorControls } from './controls.js';
 
 let editor = null;
-let originalDisplayStates = {};
+let originalDisplayStates = [];
 let originalChildrenStates = [];
 let controlBar = null;
 
@@ -20,7 +20,7 @@ export async function activateSmartEditor() {
     return;
   }
 
-  const ueditor = safeQuerySelector(selectorConfig.editor);
+  const ueditor = safeQuerySelector(selectorConfig.editorContent);
   if (!ueditor) {
     alert('找不到编辑器容器');
     return;
@@ -28,13 +28,8 @@ export async function activateSmartEditor() {
 
   try {
     // 隐藏原有区域
-    const elementsToHide = ['ueditor_0', 'article_setting_area'];
-    originalDisplayStates = hideElements(elementsToHide);
+    originalDisplayStates = hideElements(selectorConfig.editorToHide);
     
-    // 隐藏按钮区域的子元素
-    originalChildrenStates = hideButtonAreaChildren();
-
-    // 创建编辑器界面
     createEditorInterface(ueditor);
     
     // 创建控制栏
@@ -63,16 +58,10 @@ export async function activateSmartEditor() {
  * 恢复到原始状态
  */
 export function deactivateSmartEditor() {
-  // 恢复按钮区域子元素
-  if (originalChildrenStates.length > 0) {
-    restoreButtonAreaChildren(originalChildrenStates);
-    originalChildrenStates = [];
-  }
-
   // 恢复隐藏的元素
-  if (Object.keys(originalDisplayStates).length > 0) {
+  if (originalDisplayStates.length > 0) {
     restoreElements(originalDisplayStates);
-    originalDisplayStates = {};
+    originalDisplayStates = [];
   }
 
   // 移除编辑器界面

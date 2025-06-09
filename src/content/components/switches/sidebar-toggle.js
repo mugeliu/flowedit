@@ -2,6 +2,8 @@
 import { selectorConfig } from '../../config/index.js';
 import { createElement } from '../../utils/dom.js';
 
+//todo  实现不完整。
+
 /**
  * 创建侧边栏切换开关
  * @returns {HTMLButtonElement}

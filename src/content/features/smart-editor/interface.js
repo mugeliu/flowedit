@@ -14,12 +14,19 @@ export function createEditorInterface(ueditor) {
   });
   
   // 查找目标容器 edui1_iframeholder
-  const target = safeQuerySelector('#edui1_iframeholder');
+  const target = safeQuerySelector(selectorConfig.editorWrapper);
   if (target) {
     target.appendChild(editorContainer);
   } else {
-    // 如果找不到目标容器，使用原来的插入方式
-    ueditor.parentNode.insertBefore(editorContainer, ueditor.nextSibling);
+    // 如果找不到目标容器，将editorContainer元素插入到id="ueditor_0"的子元素上
+    const ueditorElement = safeQuerySelector(selectorConfig.ueditor);
+    if (ueditorElement) {
+      ueditorElement.appendChild(editorContainer);
+      console.log('找不到目标容器，将editorContainer插入到#ueditor_0的子元素上');
+    } else {
+      console.error('无法找到合适的容器来插入智能编辑器，请检查页面结构');
+      throw new Error('无法找到合适的容器来插入智能编辑器');
+    }
   }
 
   // 创建编辑器占位元素

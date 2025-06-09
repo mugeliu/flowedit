@@ -17,7 +17,7 @@ import { safeQuerySelector, createElement } from './dom.js';
 export async function saveToOriginalEditor(blocks, options = {}) {
   try {
     const {
-      targetSelector = selectorConfig.editor,
+      targetSelector = selectorConfig.editorContent,
       append = true, // 默认追加而不是替换
       insertPosition = 'cursor',
       styleOptions = {}
@@ -53,7 +53,7 @@ export async function saveToOriginalEditor(blocks, options = {}) {
  */
 export async function insertToEditor(htmlContent, options = {}) {
   const {
-    targetSelector = selectorConfig.editor,
+    targetSelector = selectorConfig.editorContent,
     append = true, // 默认追加而不是替换
     insertPosition = 'cursor'
   } = options;

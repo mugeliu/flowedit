@@ -4,7 +4,8 @@
   "description": "FlowEdit：增强微信公众平台编辑器体验",
   "scripts": {
     "build": "vite build",
-    "build:editorjs": "set BUILD_EDITORJS_BUNDLE=1 && vite build"
+    "build:editorjs": "BUILD_EDITORJS_BUNDLE=1 vite build",
+    "build:all": "npm run build && npm run build:editorjs"
   },
   "devDependencies": {
     "fs-extra": "^11.0.0",
@@ -14,6 +15,7 @@
   "dependencies": {
     "@editorjs/editorjs": "^2.30.8",
     "@editorjs/header": "^2.8.8",
+    "@editorjs/image": "^2.10.2",
     "@editorjs/paragraph": "^2.11.7",
     "@editorjs/quote": "^2.7.6"
   }

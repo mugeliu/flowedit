@@ -112,8 +112,12 @@ export const editorStyles = `
   
   /* 智能插入控制栏样式 */
   .flowedit-editor-action-bar {
+    position: relative  
     padding: 20px 20px 15px 20px;
     margin: 0;
+    width: 768px;
+    margin-left: auto;
+    margin-right: auto;
     background-color: #ffffff;
     color: rgb(53, 53, 53);
     font-family: mp-quote, 'PingFang SC', system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'Hiragino Sans GB', 'Microsoft YaHei UI', 'Microsoft YaHei', Arial, sans-serif;
@@ -123,8 +127,7 @@ export const editorStyles = `
     box-sizing: content-box;
     display: flex;
     justify-content: flex-end;
-    gap: 10px;
-    z-index: 1000;
+    gap: 15px;
   }
   
   /* 智能插入保存按钮样式 */
@@ -140,6 +143,7 @@ export const editorStyles = `
     cursor: pointer;
     font-size: 14px;
     transition: all 0.3s ease;
+    position: relative
   }
   
   /* 智能插入保存按钮悬浮效果 */

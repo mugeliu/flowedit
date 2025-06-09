@@ -1,68 +1,117 @@
 // DOM操作工具函数
-import { selectorConfig } from '../config/index.js';
+// 移除对 selectorConfig 的依赖
 
 /**
- * 隐藏指定元素并保存原始状态
- * @param {Array<string>} elementIds 要隐藏的元素ID列表
- * @returns {Object} 原始显示状态
+ * 通用的元素隐藏/显示工具函数
+ * 支持ID选择器、class选择器、属性选择器等所有CSS选择器
+ * @param {string|Array<string>} selectors 选择器或选择器数组
+ * @returns {Array} 元素状态数组，包含元素引用和原始display值
  */
-export function hideElements(elementIds) {
-  const originalStates = {};
+export function hideElements(selectors) {
+  const selectorArray = Array.isArray(selectors) ? selectors : [selectors];
+  const elementStates = [];
   
-  elementIds.forEach((id) => {
-    const el = document.getElementById(id);
-    if (el) {
-      originalStates[id] = el.style.display;
-      el.style.display = "none";
-    }
+  selectorArray.forEach((selector) => {
+    // 支持所有CSS选择器：#id, .class, [attribute], tag等
+    const elements = document.querySelectorAll(selector);
+    elements.forEach((element) => {
+      elementStates.push({
+        element: element,
+        selector: selector,
+        originalDisplay: element.style.display || getComputedStyle(element).display
+      });
+      element.style.display = 'none';
+    });
   });
   
-  return originalStates;
+  return elementStates;
 }
 
 /**
  * 恢复元素的显示状态
- * @param {Object} originalStates 原始显示状态
+ * @param {Array} elementStates 由hideElements返回的元素状态数组
  */
-export function restoreElements(originalStates) {
-  Object.entries(originalStates).forEach(([id, display]) => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.style.display = display;
+export function restoreElements(elementStates) {
+  elementStates.forEach(({ element, originalDisplay }) => {
+    if (element && element.parentNode) {
+      // 如果原始display是'none'，则恢复为默认值
+      element.style.display = originalDisplay === 'none' ? '' : originalDisplay;
     }
   });
 }
 
 /**
- * 隐藏按钮区域的子元素
- * @returns {Array} 原始子元素状态
+ * 隐藏指定容器的子元素
+ * @param {string} containerSelector 容器选择器
+ * @param {string} [childSelector] 可选的子元素选择器，如果不提供则隐藏所有直接子元素
+ * @returns {Array} 子元素状态数组
  */
-export function hideButtonAreaChildren() {
-  const buttonArea = document.getElementById(selectorConfig.buttonArea.replace('#', ''));
-  if (!buttonArea) return [];
+export function hideContainerChildren(containerSelector, childSelector = null) {
+  const container = document.querySelector(containerSelector);
+  if (!container) return [];
   
-  const originalChildren = Array.from(buttonArea.children);
-  const childrenStates = originalChildren.map((child) => ({
+  let children;
+  if (childSelector) {
+    // 如果提供了子元素选择器，则查找匹配的子元素
+    children = container.querySelectorAll(childSelector);
+  } else {
+    // 否则获取所有直接子元素
+    children = container.children;
+  }
+  
+  const childrenStates = Array.from(children).map((child) => ({
     element: child,
-    display: child.style.display,
+    originalDisplay: child.style.display || getComputedStyle(child).display
   }));
   
-  originalChildren.forEach((child) => {
-    child.style.display = "none";
+  childrenStates.forEach(({ element }) => {
+    element.style.display = 'none';
   });
   
   return childrenStates;
 }
 
 /**
- * 恢复按钮区域子元素的显示状态
- * @param {Array} childrenStates 子元素状态
+ * 恢复容器子元素的显示状态
+ * @param {Array} childrenStates 子元素状态数组
  */
-export function restoreButtonAreaChildren(childrenStates) {
-  childrenStates.forEach(({ element, display }) => {
-    element.style.display = display;
+export function restoreContainerChildren(childrenStates) {
+  childrenStates.forEach(({ element, originalDisplay }) => {
+    if (element && element.parentNode) {
+      element.style.display = originalDisplay === 'none' ? '' : originalDisplay;
+    }
   });
 }
+
+/**
+ * 切换元素的显示/隐藏状态
+ * @param {string|Array<string>} selectors 选择器或选择器数组
+ * @returns {Array} 元素状态数组
+ */
+export function toggleElements(selectors) {
+  const selectorArray = Array.isArray(selectors) ? selectors : [selectors];
+  const elementStates = [];
+  
+  selectorArray.forEach((selector) => {
+    const elements = document.querySelectorAll(selector);
+    elements.forEach((element) => {
+      const currentDisplay = element.style.display || getComputedStyle(element).display;
+      const isHidden = currentDisplay === 'none';
+      
+      elementStates.push({
+        element: element,
+        selector: selector,
+        previousDisplay: currentDisplay,
+        newDisplay: isHidden ? '' : 'none'
+      });
+      
+      element.style.display = isHidden ? '' : 'none';
+    });
+  });
+  
+  return elementStates;
+}
+
 
 /**
  * 创建带样式的DOM元素

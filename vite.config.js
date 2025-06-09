@@ -10,7 +10,9 @@ async function copyManifestAndAssets() {
   await fs.copy("background.js", "dist/background.js");
   // 复制 assets 目录
   if (await fs.pathExists("assets")) {
-    await fs.copy("assets", "dist/assets");
+    await fs.copy("assets", "dist/assets", {
+      filter: (src) => !src.includes('editorjs')
+    });
   }
 }
 
