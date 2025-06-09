@@ -47,7 +47,7 @@ export async function activateSmartEditor() {
     await new Promise(resolve => setTimeout(resolve, 50));
     
     // 加载并初始化编辑器
-    editor = await loadAndInitializeEditor('editor-holder', featureConfig.smartInsert.editor);
+    editor = await loadAndInitializeEditor('editor-holder');
     
     console.log('智能编辑器激活成功');
     

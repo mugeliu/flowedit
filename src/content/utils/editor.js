@@ -1,5 +1,5 @@
 // 编辑器相关工具函数
-import { selectorConfig } from '../config/index.js';
+import { featureConfig, selectorConfig, editorConfig } from '../config/index.js';
 import htmlGenerator from './html-generator.js';
 import { safeQuerySelector, createElement } from './dom.js';
 
@@ -42,10 +42,6 @@ export async function saveToOriginalEditor(blocks, options = {}) {
   }
 }
 
-
-
-
-
 /**
  * 插入内容到目标编辑器
  * @param {string} htmlContent HTML内容
@@ -57,7 +53,7 @@ export async function saveToOriginalEditor(blocks, options = {}) {
  */
 export async function insertToEditor(htmlContent, options = {}) {
   const {
-    targetSelector = 'div[contenteditable="true"].ProseMirror',
+    targetSelector = selectorConfig.editor,
     append = true, // 默认追加而不是替换
     insertPosition = 'cursor'
   } = options;
@@ -110,15 +106,8 @@ export async function insertToEditor(htmlContent, options = {}) {
 function getInitialContent() {
   return {
     time: Date.now(),
-    blocks: [
-      {
-        type: 'paragraph',
-        data: {
-          text: '使用editor.js开始编写您的内容...'
-        }
-      }
-    ],
-    version: '2.28.2'
+    blocks: editorConfig.initialContent.blocks,
+    version: editorConfig.initialContent.version
   };
 }
 
@@ -127,7 +116,7 @@ function getInitialContent() {
  * @returns {boolean}
  */
 export function isEditorJSLoaded() {
-  return !!(window.EditorJS && window.Paragraph && window.Header);
+  return !!(window.EditorJSBundle && window.EditorJSBundle.EditorJS);
 }
 
 /**
@@ -153,12 +142,44 @@ export function loadEditorJSBundle() {
 }
 
 /**
+ * 解析工具配置，将字符串类名转换为实际类引用
+ * 直接从window.EditorJSBundle对象中获取EditorJS工具类（由editorjs-bundle.js注入）
+ * @param {Object} toolsConfig 工具配置对象
+ * @returns {Object} 解析后的工具配置
+ */
+function parseToolsConfig(toolsConfig) {
+  const parsedTools = {};
+  
+  for (const [toolName, toolConfig] of Object.entries(toolsConfig)) {
+    const { class: className, ...restConfig } = toolConfig;
+    
+    // 直接从window.EditorJSBundle获取工具类
+    if (!window.EditorJSBundle || !window.EditorJSBundle[className]) {
+      console.warn(`工具类 ${className} 未找到或未加载，跳过工具 ${toolName}`);
+      continue;
+    }
+    
+    const ToolClass = window.EditorJSBundle[className];
+    if (!ToolClass) {
+      console.warn(`工具类 ${className} 未加载，跳过工具 ${toolName}`);
+      continue;
+    }
+    
+    parsedTools[toolName] = {
+      class: ToolClass,
+      ...restConfig
+    };
+  }
+  
+  return parsedTools;
+}
+
+/**
  * 创建EditorJS实例
  * @param {string} holderId 编辑器容器ID
- * @param {Object} config 编辑器配置
  * @returns {Object} EditorJS实例
  */
-export function createEditorInstance(holderId, config) {
+export function createEditorInstance(holderId) {
   // 检查holder元素是否存在
   const holderElement = document.getElementById(holderId);
   if (!holderElement) {
@@ -166,26 +187,22 @@ export function createEditorInstance(holderId, config) {
   }
   
   try {
-    const editor = new EditorJS({
+    // 解析工具配置
+    const tools = parseToolsConfig(editorConfig.tools);
+    
+    // 构建完整的Editor.js配置
+    const config = {
       holder: holderId,
-      tools: {
-        paragraph: {
-          class: Paragraph,
-          inlineToolbar: true,
-        },
-        header: {
-          class: Header,
-          inlineToolbar: true,
-          config: {
-            placeholder: config.tools.header.placeholder,
-            levels: config.tools.header.levels,
-            defaultLevel: config.tools.header.defaultLevel,
-          },
-        },
-      },
+      tools,
       data: getInitialContent(),
-      placeholder: config.placeholder,
-    });
+      placeholder: editorConfig.placeholder,
+      autofocus: editorConfig.autofocus,
+      hideToolbar: editorConfig.hideToolbar,
+      minHeight: editorConfig.minHeight,
+      logLevel: editorConfig.logLevel,
+    };
+    
+    const editor = new window.EditorJSBundle.EditorJS(config);
     
     return editor;
   } catch (error) {
@@ -197,10 +214,9 @@ export function createEditorInstance(holderId, config) {
 /**
  * 加载并初始化编辑器
  * @param {string} holderId 编辑器容器ID
- * @param {Object} config 编辑器配置
  * @returns {Promise<Object>} EditorJS实例
  */
-export async function loadAndInitializeEditor(holderId, config) {
+export async function loadAndInitializeEditor(holderId) {
   if (!isEditorJSLoaded()) {
     try {
       await loadEditorJSBundle();
@@ -209,7 +225,7 @@ export async function loadAndInitializeEditor(holderId, config) {
     }
   }
   
-  return createEditorInstance(holderId, config);
+  return createEditorInstance(holderId);
 }
 
 /**

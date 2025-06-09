@@ -1,8 +1,29 @@
 // 工具栏管理器
 import { createSmartButton } from '../../components/buttons/smart-insert.js';
 import { createSidebarToggle } from '../../components/switches/sidebar-toggle.js';
-import { selectorConfig } from '../../config/index.js';
+import { featureConfig, selectorConfig } from '../../config/index.js';
 import { safeQuerySelector } from '../../utils/dom.js';
+
+/**
+ * 根据配置添加组件到工具栏
+ * @param {HTMLElement} toolbar 工具栏元素
+ * @param {HTMLElement} component 要添加的组件
+ * @param {Object} config 组件配置
+ */
+function addComponentToToolbar(toolbar, component, config) {
+  const { insertMethod, targetElement } = config;
+  
+  if (insertMethod === 'insertBefore' && targetElement) {
+    const target = toolbar[targetElement];
+    if (target) {
+      toolbar.insertBefore(component, target);
+    } else {
+      toolbar.appendChild(component);
+    }
+  } else {
+    toolbar.appendChild(component);
+  }
+}
 
 /**
  * 初始化工具栏
@@ -15,26 +36,27 @@ export function initializeToolbar() {
     return false;
   }
 
-  // 添加侧边栏切换开关到第一个子元素位置
-  const sidebarToggle = createSidebarToggle();
-  const sidebar = safeQuerySelector(selectorConfig.sidebar);
-  if (sidebarToggle && sidebar) {
-    if (toolbar.firstElementChild) {
-      toolbar.insertBefore(sidebarToggle, toolbar.firstElementChild);
+  // 初始化侧边栏切换功能
+  if (featureConfig.sidebarToggle.enabled) {
+    const sidebarToggle = createSidebarToggle();
+    if (sidebarToggle) {
+      addComponentToToolbar(toolbar, sidebarToggle, featureConfig.sidebarToggle);
+      console.log('侧边栏切换按钮初始化成功');
     } else {
-      toolbar.appendChild(sidebarToggle);
+      console.warn('侧边栏切换按钮创建失败');
     }
-  } else {
-    console.warn('侧边栏切换按钮初始化失败：缺少必要的DOM元素');
   }
 
-  // 添加智能插入按钮到最后一个子元素位置
-  const smartButton = createSmartButton();
-  const editor = safeQuerySelector(selectorConfig.sidebar);
-  if (smartButton && editor) {
-    toolbar.appendChild(smartButton);
-  } else {
-    console.warn('智能插入按钮初始化失败：缺少必要的DOM元素');
+  // 初始化智能插入功能
+  if (featureConfig.smartInsert.enabled) {
+    const smartButton = createSmartButton();
+    if (smartButton) {
+      addComponentToToolbar(toolbar, smartButton, featureConfig.smartInsert);
+      console.log('智能插入按钮初始化成功');
+    } else {
+      console.warn('智能插入按钮创建失败');
+    }
   }
+  
   return true;
 }

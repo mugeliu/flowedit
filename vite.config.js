@@ -59,7 +59,7 @@ const editorjsBundleConfig = defineConfig({
       formats: ["iife"],
       fileName: () => "editorjs-bundle.js",
     },
-    outDir: "assets/editorjs",
+    outDir: "dist/assets/editorjs",
     emptyOutDir: false, // 不要清空 assets/editorjs 目录
     rollupOptions: {
       output: {
