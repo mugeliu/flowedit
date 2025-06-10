@@ -112,10 +112,14 @@
         </div>
         
         <div class="output-section">
-            <h2>原始数据输出</h2>
+            <h2>数据输出</h2>
             <div class="controls">
                 <button onclick="refreshOutput()">刷新输出</button>
                 <button onclick="copyOutput()">复制数据</button>
+                <button onclick="toggleOutputMode()">切换模式</button>
+            </div>
+            <div style="margin-bottom: 10px;">
+                <span id="outputModeLabel">当前模式: JSON</span>
             </div>
             <div id="output">等待编辑器初始化...</div>
         </div>
@@ -123,10 +127,20 @@
 
     <!-- 加载 EditorJS Bundle -->
     <script src="../assets/editorjs/editorjs-bundle.js"></script>
+    <!-- 加载 EditorJS HTML 解析器 -->
+    <script src="https://cdn.jsdelivr.net/npm/editorjs-html@4.0.0/.build/edjsHTML.js"></script>
     
     <script>
+        const Icon = txt => `
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20">
+                <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle"
+                    font-family="monospace" font-size="12">${txt}</text>
+            </svg>`;   // 你可以换成自己的 SVG/图片
+
         let editor = null;
         let isEditorReady = false;
+        let outputMode = 'json'; // 'json' 或 'html'
+        let edjsParser = null;
 
         // 检查 EditorJS 是否加载完成
         function checkEditorJSLoaded() {
@@ -145,12 +159,25 @@
             }, 3000);
         }
 
+        // 初始化 HTML 解析器
+        function initHTMLParser() {
+            if (window.edjsHTML) {
+                edjsParser = window.edjsHTML();
+                console.log('EditorJS HTML 解析器初始化成功');
+            } else {
+                console.warn('EditorJS HTML 解析器未加载');
+            }
+        }
+
         // 初始化编辑器
         async function initEditor() {
             if (!checkEditorJSLoaded()) {
                 showStatus('EditorJS 未加载，请检查 editorjs-bundle.js 文件', 'error');
                 return;
             }
+
+            // 初始化 HTML 解析器
+            initHTMLParser();
 
             try {
                 editor = new window.EditorJSBundle.EditorJS({
@@ -164,12 +191,17 @@
                         },
                         header: {
                             class: window.EditorJSBundle.Header,
-                            inlineToolbar: true,
                             config: {
                                 levels: [1, 2, 3, 4, 5, 6],
                                 defaultLevel: 2,
                                 placeholder: '请输入标题'
-                            }
+                            },
+                            inlineToolbar: true,
+                            toolbox: [
+                            { title: 'Heading 1', icon: Icon('H1'), data: { level: 1 } },
+                            { title: 'Heading 2', icon: Icon('H2'), data: { level: 2 } },
+                            { title: 'Heading 3', icon: Icon('H3'), data: { level: 3 } },
+                                ],    
                         },
                         quote: {
                             class: window.EditorJSBundle.Quote,
@@ -177,6 +209,14 @@
                             config: {
                                 quotePlaceholder: '输入引用内容',
                                 captionPlaceholder: '引用来源',
+                            }
+                        },
+                        image: {
+                            class: window.EditorJSBundle.ImageTool,
+                            inlineToolbar: true,
+                            config: {
+                                endpoints: {
+                                }
                             }
                         }
                     },
@@ -216,6 +256,14 @@
             }
         }
 
+        // 切换输出模式
+        function toggleOutputMode() {
+            outputMode = outputMode === 'json' ? 'html' : 'json';
+            document.getElementById('outputModeLabel').textContent = 
+                `当前模式: ${outputMode === 'json' ? 'JSON' : 'HTML'}`;
+            refreshOutput();
+        }
+
         // 刷新输出
         async function refreshOutput() {
             if (!editor || !isEditorReady) {
@@ -225,7 +273,22 @@
 
             try {
                 const outputData = await editor.save();
-                document.getElementById('output').textContent = JSON.stringify(outputData, null, 2);
+                const outputEl = document.getElementById('output');
+                
+                if (outputMode === 'json') {
+                    outputEl.innerHTML = '';
+                    outputEl.textContent = JSON.stringify(outputData, null, 2);
+                } else if (outputMode === 'html' && edjsParser) {
+                    try {
+                        const htmlContent = edjsParser.parse(outputData);
+                        outputEl.innerHTML = `<div style="border: 1px solid #ddd; padding: 10px; background: white; border-radius: 4px;">${htmlContent}</div>`;
+                    } catch (htmlError) {
+                        console.error('HTML 解析失败:', htmlError);
+                        outputEl.textContent = 'HTML 解析失败: ' + htmlError.message;
+                    }
+                } else {
+                    outputEl.textContent = 'HTML 解析器未加载';
+                }
             } catch (error) {
                 console.error('获取数据失败:', error);
                 document.getElementById('output').textContent = '获取数据失败: ' + error.message;
@@ -316,13 +379,29 @@
         }
 
         // 复制输出数据
-        function copyOutput() {
+        async function copyOutput() {
             const outputEl = document.getElementById('output');
-            const text = outputEl.textContent;
+            let text;
+            
+            if (outputMode === 'json') {
+                text = outputEl.textContent;
+            } else if (outputMode === 'html') {
+                // 对于 HTML 模式，复制原始 HTML 代码
+                try {
+                    const outputData = await editor.save();
+                    if (edjsParser) {
+                        text = edjsParser.parse(outputData);
+                    } else {
+                        text = '无法获取 HTML 内容';
+                    }
+                } catch (error) {
+                    text = '获取 HTML 内容失败: ' + error.message;
+                }
+            }
             
             if (navigator.clipboard) {
                 navigator.clipboard.writeText(text).then(() => {
-                    showStatus('数据已复制到剪贴板', 'success');
+                    showStatus(`${outputMode.toUpperCase()} 数据已复制到剪贴板`, 'success');
                 }).catch(err => {
                     console.error('复制失败:', err);
                     showStatus('复制失败', 'error');
@@ -335,7 +414,7 @@
                 textArea.select();
                 try {
                     document.execCommand('copy');
-                    showStatus('数据已复制到剪贴板', 'success');
+                    showStatus(`${outputMode.toUpperCase()} 数据已复制到剪贴板`, 'success');
                 } catch (err) {
                     console.error('复制失败:', err);
                     showStatus('复制失败', 'error');
@@ -355,7 +434,8 @@
             loaded: checkEditorJSLoaded(),
             EditorJS: window.EditorJSBundle?.EditorJS,
             Paragraph: window.EditorJSBundle?.Paragraph,
-            Header: window.EditorJSBundle?.Header
+            Header: window.EditorJSBundle?.Header,
+            edjsHTML: window.edjsHTML
         });
     </script>
 </body>

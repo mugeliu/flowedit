@@ -4,15 +4,15 @@ import fs from "fs-extra";
 
 async function copyManifestAndAssets() {
   await fs.ensureDir("dist");
+  
   // 复制 manifest.json
   await fs.copy("manifest.json", "dist/manifest.json");
   // 复制 background.js
   await fs.copy("background.js", "dist/background.js");
-  // 复制 assets 目录
+  
+  // 复制整个 assets 目录（包含 editorjs）
   if (await fs.pathExists("assets")) {
-    await fs.copy("assets", "dist/assets", {
-      filter: (src) => !src.includes('editorjs')
-    });
+    await fs.copy("assets", "dist/assets");
   }
 }
 
@@ -61,7 +61,7 @@ const editorjsBundleConfig = defineConfig({
       formats: ["iife"],
       fileName: () => "editorjs-bundle.js",
     },
-    outDir: "dist/assets/editorjs",
+    outDir: "assets/editorjs",
     emptyOutDir: false, // 不要清空 assets/editorjs 目录
     rollupOptions: {
       output: {
@@ -73,9 +73,8 @@ const editorjsBundleConfig = defineConfig({
   },
 });
 
-// 根据命令行参数导出不同配置
-if (process.env.BUILD_EDITORJS_BUNDLE) {
-  module.exports = editorjsBundleConfig;
-} else {
-  module.exports = mainConfig;
-}
+
+
+export default defineConfig(({ mode }) => {
+  return mode === 'editorjs' ? editorjsBundleConfig : mainConfig;
+});

@@ -105,9 +105,7 @@ export async function insertToEditor(htmlContent, options = {}) {
  */
 function getInitialContent() {
   return {
-    time: Date.now(),
-    blocks: editorConfig.initialContent.blocks,
-    version: editorConfig.initialContent.version
+    blocks: []
   };
 }
 
@@ -200,6 +198,10 @@ export function createEditorInstance(holderId) {
       hideToolbar: editorConfig.hideToolbar,
       minHeight: editorConfig.minHeight,
       logLevel: editorConfig.logLevel,
+
+      onReady: () => {
+        new window.EditorJSBundle.DragDrop(editor);
+      },
     };
     
     const editor = new window.EditorJSBundle.EditorJS(config);

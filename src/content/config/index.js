@@ -1,11 +1,16 @@
 // 配置管理
 
+const Icon = txt => `
+<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20">
+    <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle"
+        font-family="monospace" font-size="12">${txt}</text>
+</svg>`;   // 你可以换成自己的 SVG/图片
 /**
  * Editor.js 编辑器配置
  */
 export const editorConfig = {
   // Editor.js 基础配置
-  placeholder: '在此输入内容...',
+  placeholder: '开始输入内容...',
   autofocus: true,
   hideToolbar: false,
   
@@ -19,10 +24,27 @@ export const editorConfig = {
       class: 'Header', // 将在editor.js中解析为实际的类引用
       inlineToolbar: true,
       config: {
-        levels: [2, 3, 4],
-        defaultLevel: 2,
+        levels: [1, 2, 3],
+        defaultLevel: 1,
         placeholder: '请输入标题',
       },
+      toolbox: [
+        {
+          title: "Heading 1",
+          icon: Icon("H1"),
+          data: { level: 1 }
+        },
+        {
+          title: "Heading 2",
+          icon: Icon("H2"),
+          data: { level: 2 }
+        },
+        {
+          title: "Heading 3",
+          icon: Icon("H3"),
+          data: { level: 3 }
+        }
+      ]
     },
     quote: {
       class: 'Quote', // 将在editor.js中解析为实际的类引用
@@ -39,41 +61,17 @@ export const editorConfig = {
         endpoints: {
         }
       }
-    }
-    // 未来可以轻松添加更多工具
-    // list: {
-    //   class: 'List',
-    //   inlineToolbar: true,
-    //   config: {
-    //     defaultStyle: 'unordered'
-    //   }
-    // },
-    // quote: {
-    //   class: 'Quote',
-    //   inlineToolbar: true,
-    //   config: {
-    //     quotePlaceholder: '输入引用内容',
-    //     captionPlaceholder: '引用来源'
-    //   }
-    // }
+    },
+    raw: {
+      class: 'RawTool', // 将在editor.js中解析为实际的类引用
+    },
   },
-  
+
   // 其他 Editor.js 配置选项
   minHeight: 300,
   logLevel: 'WARN', // 'VERBOSE', 'INFO', 'WARN', 'ERROR'
   
   // 初始内容配置
-  initialContent: {
-    version: '2.28.2',
-    blocks: [
-      {
-        type: 'paragraph',
-        data: {
-          text: '在此输入内容...'
-        }
-      }
-    ]
-  }
 };
 
 /**
