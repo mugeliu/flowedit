@@ -2,6 +2,7 @@
   "name": "flowedit",
   "version": "1.0.0",
   "description": "FlowEdit：增强微信公众平台编辑器体验",
+  "type": "module",
   "scripts": {
     "build": "vite build",
     "build:editor": "vite build --mode editorjs",

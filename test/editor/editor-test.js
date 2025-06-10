@@ -10,7 +10,7 @@ let outputMode = 'json'; // 'json' 或 'html'
 
 // 检查 EditorJS 是否加载完成
 function checkEditorJSLoaded() {
-    return !!(window.EditorJSBundle && window.EditorJSBundle.EditorJS);
+    return !!(window.EditorJS);
 }
 
 // 显示状态信息
@@ -30,51 +30,146 @@ function showStatus(message, type = 'success') {
 // 初始化编辑器
 async function initEditor() {
     if (!checkEditorJSLoaded()) {
-        showStatus('EditorJS 未加载，请检查 editorjs-bundle.js 文件', 'error');
+        showStatus('EditorJS 未加载，请检查 CDN 连接', 'error');
         return;
     }
 
 
 
     try {
-        editor = new window.EditorJSBundle.EditorJS({
+        editor = new window.EditorJS({
             holder: 'editorjs',
             placeholder: '开始输入内容...',
             autofocus: true,
             tools: {
-                paragraph: {
-                    class: window.EditorJSBundle.Paragraph,
-                    inlineToolbar: true,
-                },
+                // 标题工具
                 header: {
-                    class: window.EditorJSBundle.Header,
+                    class: window.Header,
                     config: {
                         levels: [1, 2, 3, 4, 5, 6],
                         defaultLevel: 2,
                         placeholder: '请输入标题'
                     },
-                    inlineToolbar: true,
+                    inlineToolbar: ['marker', 'link'],
                     toolbox: [
-                    { title: 'Heading 1', icon: Icon('H1'), data: { level: 1 } },
-                    { title: 'Heading 2', icon: Icon('H2'), data: { level: 2 } },
-                    { title: 'Heading 3', icon: Icon('H3'), data: { level: 3 } },
-                        ],    
+                        { title: 'Heading 1', icon: Icon('H1'), data: { level: 1 } },
+                        { title: 'Heading 2', icon: Icon('H2'), data: { level: 2 } },
+                        { title: 'Heading 3', icon: Icon('H3'), data: { level: 3 } },
+                    ],    
                 },
+                // 引用工具
                 quote: {
-                    class: window.EditorJSBundle.Quote,
-                    inlineToolbar: true,
+                    class: window.Quote,
+                    inlineToolbar: ['marker', 'link'],
                     config: {
                         quotePlaceholder: '输入引用内容',
                         captionPlaceholder: '引用来源',
                     }
                 },
+                // 图片工具
                 image: {
-                    class: window.EditorJSBundle.ImageTool,
-                    inlineToolbar: true,
+                    class: window.ImageTool,
+                    inlineToolbar: ['marker', 'link'],
                     config: {
                         endpoints: {
+                            byFile: 'http://localhost:8008/uploadFile',
+                            byUrl: 'http://localhost:8008/fetchUrl',
                         }
                     }
+                },
+                // 简单图片工具（无需后端）
+                simpleImage: {
+                    class: window.SimpleImage,
+                    inlineToolbar: ['marker', 'link'],
+                },
+                // 嵌套列表
+                list: {
+                    class: window.NestedList,
+                    inlineToolbar: ['marker', 'link'],
+                    config: {
+                        defaultStyle: 'unordered'
+                    },
+                },
+                // 检查列表
+                checklist: {
+                    class: window.Checklist,
+                    inlineToolbar: ['marker', 'link'],
+                },
+                // 链接嵌入
+                linkTool: {
+                    class: window.LinkTool,
+                    config: {
+                        endpoint: 'http://localhost:8008/fetchUrl',
+                    }
+                },
+                // 嵌入工具（YouTube, Twitch, Vimeo等）
+                embed: {
+                    class: window.Embed,
+                    inlineToolbar: false,
+                    config: {
+                        services: {
+                            youtube: true,
+                            coub: true,
+                            codepen: {
+                                regex: /https?:\/\/codepen.io\/([^\/?]*)\/pen\/([^\/?]*)/,
+                                embedUrl: 'https://codepen.io/<%= remote_id %>?height=300&theme-id=0&default-tab=css,result&embed-version=2',
+                                html: "<iframe height='300' scrolling='no' frameborder='no' allowtransparency='true' allowfullscreen='true' style='width: 100%;'></iframe>",
+                                height: 300,
+                                width: 600,
+                                id: (groups) => groups.join('/embed/')
+                            }
+                        }
+                    }
+                },
+                // 表格
+                table: {
+                    class: window.Table,
+                    inlineToolbar: true,
+                    config: {
+                        rows: 2,
+                        cols: 3,
+                    },
+                },
+                // 分隔符
+                delimiter: {
+                    class: window.Delimiter,
+                },
+                // 警告
+                warning: {
+                    class: window.Warning,
+                    inlineToolbar: ['marker', 'link'],
+                    config: {
+                        titlePlaceholder: '标题',
+                        messagePlaceholder: '消息',
+                    },
+                },
+                // 代码块
+                code: {
+                    class: window.CodeTool,
+                    config: {
+                        placeholder: '输入代码...'
+                    }
+                },
+                // 原始HTML
+                raw: {
+                    class: window.RawTool,
+                    config: {
+                        placeholder: '输入HTML代码...'
+                    }
+                },
+                // 附件
+                attaches: {
+                    class: window.AttachesTool,
+                    config: {
+                        endpoint: 'http://localhost:8008/uploadFile'
+                    }
+                },
+                // 内联工具
+                marker: {
+                    class: window.Marker,
+                },
+                inlineCode: {
+                    class: window.InlineCode,
                 }
             },
             data: {
@@ -178,27 +273,90 @@ async function loadSampleData() {
             {
                 type: 'header',
                 data: {
-                    text: '示例标题',
-                    level: 2
+                    text: 'EditorJS 完整功能演示',
+                    level: 1
                 }
             },
             {
                 type: 'paragraph',
                 data: {
-                    text: '这是一个示例段落，包含一些<b>粗体</b>和<i>斜体</i>文本。'
+                    text: '这是一个包含<mark class="cdx-marker">高亮文本</mark>和<code class="inline-code">内联代码</code>的段落。'
                 }
             },
             {
-                type: 'header',
+                type: 'quote',
                 data: {
-                    text: '另一个标题',
-                    level: 3
+                    text: '这是一个引用块的示例',
+                    caption: '引用来源',
+                    alignment: 'left'
                 }
             },
             {
-                type: 'paragraph',
+                type: 'warning',
                 data: {
-                    text: '这是另一个段落，用于测试多个块的数据结构。'
+                    title: '注意',
+                    message: '这是一个警告消息的示例'
+                }
+            },
+            {
+                type: 'list',
+                data: {
+                    style: 'unordered',
+                    items: [
+                        {
+                            content: '无序列表项目 1',
+                            items: [
+                                {
+                                    content: '嵌套项目 1.1',
+                                    items: []
+                                },
+                                {
+                                    content: '嵌套项目 1.2',
+                                    items: []
+                                }
+                            ]
+                        },
+                        {
+                            content: '无序列表项目 2',
+                            items: []
+                        }
+                    ]
+                }
+            },
+            {
+                type: 'checklist',
+                data: {
+                    items: [
+                        {
+                            text: '已完成的任务',
+                            checked: true
+                        },
+                        {
+                            text: '待完成的任务',
+                            checked: false
+                        }
+                    ]
+                }
+            },
+            {
+                type: 'code',
+                data: {
+                    code: 'function hello() {\n    console.log("Hello, World!");\n}'
+                }
+            },
+            {
+                type: 'delimiter',
+                data: {}
+            },
+            {
+                type: 'table',
+                data: {
+                    withHeadings: true,
+                    content: [
+                        ['标题1', '标题2', '标题3'],
+                        ['行1列1', '行1列2', '行1列3'],
+                        ['行2列1', '行2列2', '行2列3']
+                    ]
                 }
             }
         ]
@@ -284,10 +442,24 @@ window.addEventListener('load', function() {
 });
 
 // 调试信息
-console.log('EditorJS Bundle 状态:', {
+console.log('EditorJS CDN 插件状态:', {
     loaded: checkEditorJSLoaded(),
-    EditorJS: window.EditorJSBundle?.EditorJS,
-    Paragraph: window.EditorJSBundle?.Paragraph,
-    Header: window.EditorJSBundle?.Header,
+    EditorJS: window.EditorJS,
+    Header: window.Header,
+    Quote: window.Quote,
+    ImageTool: window.ImageTool,
+    SimpleImage: window.SimpleImage,
+    NestedList: window.NestedList,
+    Checklist: window.Checklist,
+    LinkTool: window.LinkTool,
+    Embed: window.Embed,
+    Table: window.Table,
+    Delimiter: window.Delimiter,
+    Warning: window.Warning,
+    CodeTool: window.CodeTool,
+    RawTool: window.RawTool,
+    AttachesTool: window.AttachesTool,
+    Marker: window.Marker,
+    InlineCode: window.InlineCode,
     edjsHTML: window.edjsHTML
 });
