@@ -6,25 +6,30 @@
 import { generateStyledHtml, processInlineStyles } from './utils.js';
 
 /**
- * 段落解析器 - 生成section标签
+ * 段落解析器 - 生成section包裹的段落HTML结构
  * @param {Object} block - EditorJS段落块数据
  * @param {Function} styleProvider - 样式提供函数
  * @returns {string} HTML字符串
  */
-export function paragraph(block, styleProvider) {
+function paragraph(block, options = {}) {
   if (!block || !block.data || !block.data.text) {
     return '';
   }
   
+  const { styleProvider } = options;
   const text = processInlineStyles(block.data.text, styleProvider);
-  const styles = styleProvider('paragraph');
+  const paragraphStyles = styleProvider ? styleProvider('paragraph') : {};
   
-  // 添加leaf=""属性和textIndent样式
+  // 创建段落HTML结构
+  const paragraphHtml = generateStyledHtml('p', text, paragraphStyles);
+  
+  // section的基础样式
   const sectionStyles = {
-    ...styles,
     textIndent: '0px',
     marginBottom: '8px'
   };
   
-  return generateStyledHtml('section', `<span leaf="">${text}</span>`, sectionStyles);
+  return generateStyledHtml('section', paragraphHtml, sectionStyles);
 }
+
+export default paragraph;

@@ -6,16 +6,17 @@
 import { generateStyledHtml, processInlineStyles } from './utils.js';
 
 /**
- * 标题解析器 - 生成section标签
+ * 标题解析器 - 生成section包裹的标题HTML结构
  * @param {Object} block - EditorJS标题块数据
  * @param {Function} styleProvider - 样式提供函数
  * @returns {string} HTML字符串
  */
-export function header(block, styleProvider) {
+function header(block, options = {}) {
   if (!block || !block.data || !block.data.text) {
     return '';
   }
   
+  const { styleProvider } = options;
   const { data } = block;
   const level = data.level || 1;
   const tag = `h${level}`;
@@ -26,9 +27,11 @@ export function header(block, styleProvider) {
   // 处理文本中的内联样式
   const processedText = processInlineStyles(data.text, styleProvider);
   
-  // 添加section样式，包含textIndent和marginBottom
+  // 创建标题HTML结构
+  const headerHtml = generateStyledHtml(tag, processedText, headerStyles);
+  
+  // section的基础样式
   const sectionStyles = {
-    ...headerStyles,
     textIndent: '0px',
     marginBottom: '8px'
   };
@@ -39,5 +42,7 @@ export function header(block, styleProvider) {
     'data-heading': 'true'
   };
   
-  return generateStyledHtml('section', `<span leaf="">${processedText}</span>`, sectionStyles, attributes);
+  return generateStyledHtml('section', headerHtml, sectionStyles, attributes);
 }
+
+export default header;

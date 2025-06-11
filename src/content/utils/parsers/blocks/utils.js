@@ -82,7 +82,7 @@ export function processInlineStyles(text, styleProvider) {
   });
   
   // 处理 <code> 标签 - EditorJS代码格式，转换为span标签
-  processedText = processedText.replace(/<code>(.*?)<\/code>/g, (match, content) => {
+  processedText = processedText.replace(/<code(?:\s+class="[^"]*")?>(.*?)<\/code>/g, (match, content) => {
     const codeStyles = styleProvider('emphasis', 'code');
     return generateStyledHtml('span', content, codeStyles, 'textstyle');
   });

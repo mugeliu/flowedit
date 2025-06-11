@@ -36,9 +36,8 @@ const parse = (
 ) => {
   return blocks.reduce((accumulator, block) => {
     if (block.type in parsers) {
-      // 获取样式
-      const styles = options.styleProvider ? options.styleProvider(block.type, block.data) : {};
-      const parserOptions = { styles };
+      // 传递styleProvider给解析器
+      const parserOptions = { styleProvider: options.styleProvider };
       
       accumulator += parsers[block.type](block, parserOptions);
       return accumulator;
@@ -68,9 +67,8 @@ const parseBlock = (
   options
 ) => {
   if (block.type in parsers) {
-    // 获取样式
-    const styles = options.styleProvider ? options.styleProvider(block.type, block.data) : {};
-    const parserOptions = { styles };
+    // 传递styleProvider给解析器
+    const parserOptions = { styleProvider: options.styleProvider };
     
     return parsers[block.type](block, parserOptions);
   }
