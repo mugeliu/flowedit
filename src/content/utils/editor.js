@@ -1,6 +1,6 @@
 // 编辑器相关工具函数
 import { featureConfig, selectorConfig, editorConfig } from '../config/index.js';
-import htmlGenerator from './html-generator.js';
+import { createStyledParser } from './parsers/index.js';
 import { safeQuerySelector, createElement } from './dom.js';
 
 /**
@@ -23,10 +23,9 @@ export async function saveToOriginalEditor(blocks, options = {}) {
       styleOptions = {}
     } = options;
 
-    // 生成HTML内容（始终包含内联样式）
-    const htmlContent = await htmlGenerator.generateHTML(blocks, {
-      ...styleOptions
-    });
+    // 使用解析器生成HTML内容
+    const parser = createStyledParser();
+    const htmlContent = parser.parse({ blocks });
 
     // 插入到目标编辑器
     const success = await insertToEditor(htmlContent, {

@@ -1,13 +1,12 @@
 // 智能编辑器功能管理器
-import { featureConfig, selectorConfig } from '../../config/index.js';
+import { selectorConfig } from '../../config/index.js';
 import { saveToOriginalEditor, loadAndInitializeEditor, destroyEditor } from '../../utils/editor.js';
-import { hideElements, restoreElements, hideContainerChildren, restoreContainerChildren, createElement, safeQuerySelector } from '../../utils/dom.js';
+import { hideElements, restoreElements, safeQuerySelector } from '../../utils/dom.js';
 import { createEditorInterface, removeEditorInterface } from './interface.js';
 import { createEditorControls, removeEditorControls } from './controls.js';
 
 let editor = null;
 let originalDisplayStates = [];
-let originalChildrenStates = [];
 let controlBar = null;
 
 /**
@@ -96,9 +95,8 @@ async function saveContent(options = {}) {
     const outputData = await editor.save();
     console.log('保存的数据:', outputData);
     
-    // 直接保存内容，样式已在系统初始化时加载
+    // 直接保存内容，使用解析器生成HTML
     const success = await saveToOriginalEditor(outputData.blocks, {
-      usePreloadedStyles: true, // 使用预加载的样式
       ...options
     });
     

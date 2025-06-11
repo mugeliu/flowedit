@@ -6,11 +6,15 @@
 
 import paragraph from './paragraph.js';
 import header from './header.js';
+import quote from './quote.js';
+import delimiter from './delimiter.js';
 
 // 默认解析器映射
 const defaultParsers = {
   paragraph,
-  header
+  header,
+  quote,
+  delimiter
 };
 
 export default defaultParsers;
@@ -18,5 +22,7 @@ export default defaultParsers;
 // 也可以单独导出
 export {
   paragraph,
-  header
+  header,
+  quote,
+  delimiter
 };

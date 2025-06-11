@@ -4,10 +4,7 @@
  */
 
 import parser, { 
-  createStyledParser, 
-  createDefaultStyledParser,
-  defaultStyleConfig,
-  createStyleProvider
+  createStyledParser,
 } from '../src/content/utils/parsers/index.js';
 
 // 测试数据
@@ -149,7 +146,7 @@ const testBlocks = {
 function testDefaultStyledParser() {
   console.log('=== 测试默认样式解析器 ===');
   
-  const styledParser = createDefaultStyledParser();
+  const styledParser = createStyledParser();
   const result = styledParser.parse(testBlocks);
   
   console.log('默认样式解析结果:');
@@ -215,7 +212,7 @@ function testCustomStyledParser() {
     }
   };
   
-  const customParser = createStyledParser(customStyleConfig);
+  const customParser = parser({ styleConfig: customStyleConfig });
   const result = customParser.parse(testBlocks);
   
   console.log('自定义样式解析结果:');
@@ -247,7 +244,7 @@ function testPlainParser() {
 function testSingleBlockParsing() {
   console.log('=== 测试单个块解析 ===');
   
-  const styledParser = createDefaultStyledParser();
+  const styledParser = createStyledParser();
   
   // 找到第一个标题块
   const headerBlock = testBlocks.blocks.find(block => block.type === 'header');
@@ -291,50 +288,52 @@ export function runAllTests() {
  */
 export function generatePreviewHTML() {
   // 创建解析器实例
-  const defaultParser = createDefaultStyledParser();
-  const customParser = createStyledParser({
-    base: {
-      textAlign: 'left',
-      lineHeight: 1.6,
-      fontFamily: 'Georgia, serif',
-      fontSize: '16px',
-      color: '#2c3e50'
-    },
-    header: {
-      h1: {
-        fontSize: '28px',
-        color: '#e74c3c',
-        textAlign: 'center',
-        marginBottom: '20px'
+  const defaultParser = createStyledParser();
+  const customParser = parser({ 
+    styleConfig: {
+      base: {
+        textAlign: 'left',
+        lineHeight: 1.6,
+        fontFamily: 'Georgia, serif',
+        fontSize: '16px',
+        color: '#2c3e50'
       },
-      h2: {
-        fontSize: '24px',
-        color: '#3498db',
-        borderBottom: '2px solid #3498db'
-      }
-    },
-    paragraph: {
-      margin: '16px 0',
-      textIndent: '2em'
-    },
-    emphasis: {
-      strong: {
-        color: '#e74c3c',
-        fontWeight: 'bold'
-      },
-      em: {
-        color: '#9b59b6',
-        fontStyle: 'italic'
-      },
-      code: {
-        backgroundColor: '#ecf0f1',
-        color: '#2c3e50',
-        padding: '2px 6px',
-        borderRadius: '3px',
-        fontSize: '90%'
-      }
-    }
-  });
+      header: {
+        h1: {
+          fontSize: '28px',
+          color: '#e74c3c',
+          textAlign: 'center',
+          marginBottom: '20px'
+        },
+        h2: {
+           fontSize: '24px',
+           color: '#3498db',
+           borderBottom: '2px solid #3498db'
+         }
+       },
+       paragraph: {
+         margin: '16px 0',
+         textIndent: '2em'
+       },
+       emphasis: {
+         strong: {
+           color: '#e74c3c',
+           fontWeight: 'bold'
+         },
+         em: {
+           color: '#9b59b6',
+           fontStyle: 'italic'
+         },
+         code: {
+           backgroundColor: '#ecf0f1',
+           color: '#2c3e50',
+           padding: '2px 6px',
+           borderRadius: '3px',
+           fontSize: '90%'
+         }
+       }
+     }
+   });
   
   const defaultResult = defaultParser.parse(testBlocks);
   const customResult = customParser.parse(testBlocks);

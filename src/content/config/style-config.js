@@ -6,6 +6,187 @@
 /**
  * 默认块样式配置
  */
+export const defaultStyleConfig = {
+  // 基础样式 - 所有元素的默认样式
+  base: {
+    textAlign: 'left',
+    lineHeight: 1.75,
+    fontFamily: "Menlo, Monaco, 'Courier New', monospace",
+    fontSize: '14px',
+    color: '#3f3f3f'
+  },
+  
+  // 标题样式配置
+  header: {
+    h1: {
+      textAlign: 'center',
+      fontSize: '19.6px',
+      display: 'table',
+      padding: '0.5em 1em',
+      borderBottom: '2px solid rgba(26, 104, 64, 1)',
+      margin: '2em auto 1em',
+      marginTop: '0',
+      color: 'rgba(26, 104, 64, 1)',
+      fontWeight: 'bold',
+      textShadow: '1px 1px 3px rgba(0,0,0,0.05)'
+    },
+    h2: {
+      fontSize: '17px',
+      color: 'rgba(26, 104, 64, 1)',
+      fontWeight: 'bold',
+      margin: '1.5em 8px 1em',
+      borderBottom: '1px solid rgba(26, 104, 64, 0.3)',
+      paddingBottom: '0.3em'
+    },
+    h3: {
+      fontSize: '15.5px',
+      color: 'rgba(26, 104, 64, 1)',
+      fontWeight: 'bold',
+      margin: '1.2em 8px 0.8em'
+    },
+    h4: {
+      fontSize: '14.5px',
+      color: 'rgba(26, 104, 64, 1)',
+      fontWeight: 'bold',
+      margin: '1em 8px 0.6em'
+    },
+    h5: {
+      fontSize: '14px',
+      color: 'rgba(26, 104, 64, 1)',
+      fontWeight: 'bold',
+      margin: '0.8em 8px 0.5em'
+    },
+    h6: {
+      fontSize: '13px',
+      color: 'rgba(26, 104, 64, 1)',
+      fontWeight: 'bold',
+      margin: '0.6em 8px 0.4em'
+    }
+  },
+  
+  // 段落样式配置
+  paragraph: {
+    margin: '1.5em 8px',
+    letterSpacing: '0.1em'
+  },
+  
+  // Section容器样式配置 - 所有块级元素的外层容器
+  section: {
+    textIndent: '0px',
+    marginBottom: '8px'
+  },
+  
+  // 内联样式配置 - 用于转换为span标签的样式
+  emphasis: {
+    strong: {
+      fontWeight: 'bold'
+    },
+    em: {
+      fontStyle: 'italic'
+    },
+    code: {
+      fontSize: '90%',
+      fontFamily: 'monospace',
+      backgroundColor: '#f6f8fa',
+      padding: '2px 4px',
+      borderRadius: '3px',
+      border: '1px solid #e1e4e8'
+    },
+    mark: {
+      backgroundColor: '#ff6827',
+      color: '#ffffff',
+      padding: '1px 2px',
+      borderRadius: '2px'
+    },
+    u: {
+      textDecoration: 'underline'
+    },
+    s: {
+      textDecoration: 'line-through'
+    },
+    link: {
+      color: 'rgba(26, 104, 64, 1)',
+      textDecoration: 'none',
+      borderBottom: '1px solid rgba(26, 104, 64, 0.3)',
+      cursor: 'pointer'
+    }
+  },
+  
+  // 引用样式配置
+  blockquote: {
+    fontStyle: 'italic',
+    padding: '1em 1em 1em 2em',
+    borderLeft: '4px solid rgba(26, 104, 64, 1)',
+    borderRadius: '6px',
+    color: 'rgba(0,0,0,0.6)',
+    background: '#f7f7f7',
+    marginBottom: '1em',
+    borderBottom: '0.2px solid rgba(0, 0, 0, 0.04)',
+    borderTop: '0.2px solid rgba(0, 0, 0, 0.04)',
+    borderRight: '0.2px solid rgba(0, 0, 0, 0.04)'
+  },
+  
+  // 列表样式配置
+  list: {
+    ul: {
+      listStyle: 'none',
+      paddingLeft: '1.5em',
+      marginLeft: '0'
+    },
+    ol: {
+      paddingLeft: '1.5em',
+      marginLeft: '0'
+    },
+    li: {
+      textIndent: '-1em',
+      display: 'block',
+      margin: '0.5em 8px'
+    }
+  },
+  
+  // 图片样式配置
+  image: {
+    figure: {
+      margin: '1.5em 8px'
+    },
+    img: {
+      display: 'block',
+      maxWidth: '100%',
+      margin: '0.1em auto 0.5em',
+      borderRadius: '8px',
+      border: '1px solid rgba(0, 0, 0, 0.04)'
+    },
+    figcaption: {
+      textAlign: 'center',
+      fontSize: '0.8em',
+      color: '#888'
+    }
+  },
+  
+  // 代码块样式配置
+  codeBlock: {
+    background: '#f6f8fa',
+    border: '1px solid #e1e4e8',
+    borderRadius: '6px',
+    padding: '16px',
+    margin: '1em 8px',
+    overflow: 'auto',
+    fontSize: '85%',
+    lineHeight: 1.45
+  },
+  
+  // 分隔符样式配置
+  delimiter: {
+    textAlign: 'center',
+    margin: '2em 0',
+    fontSize: '1.2em',
+    color: '#999',
+    letterSpacing: '0.5em'
+  }
+};
+
+
+
 export const DEFAULT_BLOCK_STYLE_CONFIG = {
   // 是否启用远程样式
   enableRemoteStyles: false,
