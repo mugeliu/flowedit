@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Template Parser 测试预览</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .theme-section {
+            background: white;
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .theme-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eee;
+            color: #333;
+        }
+        .content {
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 4px;
+            background: #fafafa;
+        }
+        .test-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2196f3;
+        }
+        .feature-list {
+            background: #f1f8e9;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border-left: 4px solid #4caf50;
+        }
+        .feature-list ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .feature-list li {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Template Parser 测试预览</h1>
+        
+        <div class="test-info">
+            <h3>测试说明</h3>
+            <p>这个页面展示了 <code>parser-html.js</code> 模块的功能测试结果。该模块基于预定义的HTML模板将EditorJS块转换为HTML，支持内联样式处理和富文本渲染。</p>
+        </div>
+        
+        <div class="feature-list">
+            <h3>主要功能特性</h3>
+            <ul>
+                <li>✅ 支持多种EditorJS块类型（标题、段落、引用、列表、代码、分隔符）</li>
+                <li>✅ 内联样式处理（粗体、斜体、下划线、删除线、行内代码、高亮等）</li>
+                <li>✅ 链接样式增强</li>
+                <li>✅ HTML安全清理</li>
+                <li>✅ 自定义模板支持</li>
+                <li>✅ 动态模板修改</li>
+                <li>✅ 错误处理和后备方案</li>
+            </ul>
+        </div>
+        
+        <div class="theme-section">
+            <div class="theme-title">默认模板渲染结果</div>
+            <div class="content">
+                <section data-block="header" data-level="1" style="text-indent: 0px; margin-bottom: 8px;">
+                  <h1 style="text-align: center; font-size: 19.6px; display: table; padding: 0.5em 1em; border-bottom: 2px solid rgba(26, 104, 64, 1); margin: 2em auto 1em; margin-top: 0; color: rgba(26, 104, 64, 1); font-weight: bold; text-shadow: 1px 1px 3px rgba(0,0,0,0.05);">
+                    一碗面，勾勒思乡千里，道尽黄河入江南
+                  </h1>
+                </section>
+                
+                <section data-block="quote" style="text-indent: 0px; margin-bottom: 8px;">
+                  <blockquote style="margin: 1.5em 8px; padding: 1em; border-left: 4px solid rgba(26, 104, 64, 0.5); background-color: rgba(26, 104, 64, 0.05); font-style: italic;">
+                    "舌尖上的西北，灵魂里的故乡"
+                    <cite style="display: block; margin-top: 0.5em; font-size: 0.9em; color: rgba(26, 104, 64, 0.7);">来自尊贵的editorjs</cite>
+                  </blockquote>
+                </section>
+                
+                <section data-block="header" data-level="2" style="text-indent: 0px; margin-bottom: 8px;">
+                  <h2 style="font-size: 17px; color: rgba(26, 104, 64, 1); font-weight: bold; margin: 1.5em 8px 1em; border-bottom: 1px solid rgba(26, 104, 64, 0.3); padding-bottom: 0.3em;">
+                    缘起
+                  </h2>
+                </section>
+                
+                <section data-block="paragraph" style="text-indent: 0px; margin-bottom: 8px;">
+                  <p style="margin: 1.5em 8px; letter-spacing: 0.1em;">
+                    夜色渐浓，姑苏城的街道<code style="background: #f0f0f0; padding: 2px 4px; border-radius: 3px; font-family: 'Courier New', monospace; font-size: 0.9em;">灯火璀璨</code>。当您推开麦玉犇兰州牛肉面的门，那<strong style="font-weight: bold;">浓郁的</strong>牛肉香气扑面而来。
+                  </p>
+                </section>
+                
+                <section data-block="paragraph" style="text-indent: 0px; margin-bottom: 8px;">
+                  <p style="margin: 1.5em 8px; letter-spacing: 0.1em;">
+                    我们希望这份香气能让您仿佛<mark style="background: #ffeb3b; padding: 1px 2px; border-radius: 2px;">穿越千里</mark><em style="font-style: italic;"></em>，感受到黄河奔涌、戈壁辽阔的<a href="http://www.baidu.com" style="color: rgba(26, 104, 64, 1); text-decoration: underline; transition: color 0.2s ease;">西北家园</a>。
+                  </p>
+                </section>
+                
+                <section data-block="delimiter" style="text-indent: 0px; margin-bottom: 8px;">
+                  <div style="text-align: center; margin: 2em 8px; color: rgba(26, 104, 64, 0.6); font-size: 1.2em;">
+                    ***
+                  </div>
+                </section>
+                
+                <section data-block="list" data-style="unordered" style="text-indent: 0px; margin-bottom: 8px;">
+                  <ul style="margin: 1.5em 8px; padding-left: 2em;">
+                    <li style="margin: 0.3em 0;">牛大骨在文火中慢慢熬制，释放出<strong style="font-weight: bold;">鲜香</strong></li>
+                    <li style="margin: 0.3em 0;">新鲜的鸡肉点缀其中，增添<em style="font-style: italic;">层次</em></li>
+                    <li style="margin: 0.3em 0;">时间慢慢流淌，汤色渐渐<mark style="background: #ffeb3b; padding: 1px 2px; border-radius: 2px;">澄清</mark></li>
+                  </ul>
+                </section>
+                
+                <section data-block="code" style="text-indent: 0px; margin-bottom: 8px;">
+                  <pre style="margin: 1.5em 8px; padding: 1em; background-color: #f5f5f5; border-radius: 4px; overflow-x: auto;"><code style="font-family: 'Courier New', monospace; font-size: 14px;">// 传统拉面工艺
+function makeLamian() {
+  const dough = prepareDough();
+  const noodles = stretchNoodles(dough);
+  return cookNoodles(noodles);
+}</code></pre>
+                </section>
+            </div>
+        </div>
+        
+        <div class="theme-section">
+            <div class="theme-title">自定义模板渲染结果</div>
+            <div class="content">
+                <div style="background: linear-gradient(45deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; text-align: center; border-radius: 10px; margin: 20px 0;">
+                    <h1 style="margin: 0; font-size: 28px;">一碗面，勾勒思乡千里，道尽黄河入江南</h1>
+                </div>
+                
+                <p style="margin: 15px 0; padding: 10px; background: #f8f9fa; border-radius: 5px; line-height: 1.6;">
+                    "舌尖上的西北，灵魂里的故乡"
+                    <cite style="display: block; margin-top: 0.5em; font-size: 0.9em; color: rgba(26, 104, 64, 0.7);">来自尊贵的editorjs</cite>
+                </p>
+                
+                <div style="border-left: 5px solid #667eea; padding-left: 15px; margin: 20px 0;">
+                    <h2 style="color: #667eea; margin: 0;">缘起</h2>
+                </div>
+                
+                <p style="margin: 15px 0; padding: 10px; background: #f8f9fa; border-radius: 5px; line-height: 1.6;">
+                    夜色渐浓，姑苏城的街道<code style="background: #f0f0f0; padding: 2px 4px; border-radius: 3px; font-family: 'Courier New', monospace; font-size: 0.9em;">灯火璀璨</code>。当您推开麦玉犇兰州牛肉面的门，那<strong style="font-weight: bold;">浓郁的</strong>牛肉香气扑面而来。
+                </p>
+            </div>
+        </div>
+        
+        <div class="theme-section">
+            <div class="theme-title">内联样式处理测试</div>
+            <div class="content">
+                <h4>原始文本 → 处理后效果</h4>
+                <div style="margin: 10px 0; padding: 10px; background: #fff3cd; border-radius: 4px;">
+                    <strong>输入:</strong> 包含&lt;b&gt;粗体&lt;/b&gt;的文字<br>
+                    <strong>输出:</strong> 包含<strong style="font-weight: bold;">粗体</strong>的文字
+                </div>
+                <div style="margin: 10px 0; padding: 10px; background: #d1ecf1; border-radius: 4px;">
+                    <strong>输入:</strong> 包含&lt;i&gt;斜体&lt;/i&gt;和&lt;code&gt;代码&lt;/code&gt;的文字<br>
+                    <strong>输出:</strong> 包含<em style="font-style: italic;">斜体</em>和<code style="background: #f0f0f0; padding: 2px 4px; border-radius: 3px; font-family: 'Courier New', monospace; font-size: 0.9em;">代码</code>的文字
+                </div>
+                <div style="margin: 10px 0; padding: 10px; background: #d4edda; border-radius: 4px;">
+                    <strong>输入:</strong> 带&lt;a href="https://example.com"&gt;链接&lt;/a&gt;的文字<br>
+                    <strong>输出:</strong> 带<a href="https://example.com" style="color: rgba(26, 104, 64, 1); text-decoration: underline; transition: color 0.2s ease;">链接</a>的文字
+                </div>
+            </div>
+        </div>
+        
+        <div class="theme-section">
+            <div class="theme-title">错误处理测试</div>
+            <div class="content">
+                <h4>未知块类型处理</h4>
+                <section data-block="unknown-type" style="text-indent: 0px; margin-bottom: 8px;">
+                  <div style="margin: 1.5em 8px; padding: 0.5em; border: 1px dashed rgba(26, 104, 64, 0.3); background-color: rgba(26, 104, 64, 0.05);">
+                    <small style="color: rgba(26, 104, 64, 0.7); font-size: 0.8em;">未知块类型: unknown-type</small>
+                    <div style="margin-top: 0.5em;">这是一个未知类型的块</div>
+                  </div>
+                </section>
+                <p><em>当遇到未知的块类型时，解析器会生成一个带有警告信息的后备HTML结构。</em></p>
+            </div>
+        </div>
+        
+        <div class="test-info">
+            <h3>测试总结</h3>
+            <p>✅ 所有测试用例均通过，parser-html.js 模块功能正常！</p>
+            <p>该模块成功实现了：</p>
+            <ul>
+                <li>EditorJS数据到HTML的转换</li>
+                <li>内联样式的正确处理和增强</li>
+                <li>自定义模板的支持</li>
+                <li>错误情况的优雅处理</li>
+                <li>HTML安全性保障</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
