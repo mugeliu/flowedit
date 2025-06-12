@@ -5,7 +5,7 @@
 
 import parser, { 
   createStyledParser,
-} from '../src/content/utils/parsers/index.js';
+} from '../../src/content/utils/parsers/index.js';
 
 // 测试数据
 const testBlocks = {

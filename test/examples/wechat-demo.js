@@ -1,4 +1,3 @@
-
 // 旧编辑标签中加载完整的editorjs
 
 (async function () {

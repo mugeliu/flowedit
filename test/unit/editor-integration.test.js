@@ -1,8 +1,17 @@
-const Icon = txt => `
-    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20">
+/**
+ * 编辑器集成测试文件
+ * 测试EditorJS与FlowEdit的完整集成功能，包括数据转换、预览等
+ */
+
+/**
+ * 生成SVG图标
+ * @param {string} txt - 图标文本
+ * @returns {string} SVG字符串
+ */
+const Icon = txt => `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20">
         <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle"
             font-family="monospace" font-size="12">${txt}</text>
-    </svg>`;
+    </svg>`
 
 let editor = null;
 let isEditorReady = false;

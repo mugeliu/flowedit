@@ -3,7 +3,7 @@
  * 测试基于模板的HTML解析器模块
  */
 
-import { HtmlParser, HTML_TEMPLATES } from '../src/content/utils/parser-html.js';
+import { HtmlParser, HTML_TEMPLATES } from '../../src/content/utils/parser-html.js';
 
 // 测试数据 - 来自 parsers-test-styled-parser.js
 const testBlocks = {

@@ -3,7 +3,7 @@
  * 测试saveToOriginalEditor函数是否能正确使用新的HtmlParser
  */
 
-import { saveToOriginalEditor } from '../src/content/utils/editor.js';
+import { saveToOriginalEditor } from '../../src/content/utils/editor.js';
 
 // 模拟DOM环境
 global.document = {

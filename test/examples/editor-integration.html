@@ -1,0 +1,590 @@
+<!--
+/**
+ * EditorJS 集成测试页面
+ * 用于测试 EditorJS 编辑器的完整功能，包括各种插件和数据输出
+ * 这是一个独立的HTML页面，可以直接在浏览器中打开进行手动测试
+ */
+-->
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EditorJS 集成测试页面</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f5f5f5;
+      }
+      .container {
+        display: flex;
+        gap: 20px;
+        min-height: 80vh;
+      }
+      .editor-section {
+        flex: 1;
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      .output-section {
+        flex: 1;
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      #editorjs {
+        min-height: 400px;
+        border: 1px solid #e0e0e0;
+        border-radius: 4px;
+        padding: 10px;
+      }
+      #output {
+        background: #f8f9fa;
+        border: 1px solid #e0e0e0;
+        border-radius: 4px;
+        padding: 15px;
+        font-family: "Courier New", monospace;
+        font-size: 12px;
+        white-space: pre-wrap;
+        overflow-y: auto;
+        max-height: 400px;
+      }
+      .controls {
+        margin: 15px 0;
+        display: flex;
+        gap: 10px;
+      }
+      button {
+        padding: 8px 16px;
+        background: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+      }
+      button:hover {
+        background: #0056b3;
+      }
+      button:disabled {
+        background: #6c757d;
+        cursor: not-allowed;
+      }
+      .status {
+        margin: 10px 0;
+        padding: 10px;
+        border-radius: 4px;
+        font-size: 14px;
+      }
+      .status.success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+      }
+      .status.error {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+      }
+      h1 {
+        text-align: center;
+        color: #333;
+        margin-bottom: 30px;
+      }
+      h2 {
+        color: #555;
+        margin-bottom: 15px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>EditorJS 测试页面</h1>
+
+    <div class="container">
+      <div class="editor-section">
+        <h2>编辑器</h2>
+        <div id="status" class="status" style="display: none"></div>
+        <div id="editorjs"></div>
+        <div class="controls">
+          <button id="saveBtn" onclick="saveData()">保存数据</button>
+          <button id="loadBtn" onclick="loadSampleData()">加载示例数据</button>
+          <button id="clearBtn" onclick="clearEditor()">清空编辑器</button>
+        </div>
+      </div>
+
+      <div class="output-section">
+        <h2>数据输出</h2>
+        <div class="controls">
+          <button onclick="refreshOutput()">刷新输出</button>
+          <button onclick="copyOutput()">复制数据</button>
+          <button onclick="toggleOutputMode()">切换模式</button>
+        </div>
+        <div style="margin-bottom: 10px">
+          <span id="outputModeLabel">当前模式: JSON</span>
+        </div>
+        <div id="output">等待编辑器初始化...</div>
+      </div>
+    </div>
+
+    <!-- 加载 EditorJS 核心 -->
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
+
+    <!-- 加载 EditorJS 插件 -->
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/quote@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/image@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/simple-image@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/nested-list@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/checklist@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/link@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/embed@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/table@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/delimiter@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/warning@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/code@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/raw@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/attaches@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/marker@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/inline-code@latest"></script>
+
+    <!-- 加载 EditorJS HTML 解析器 -->
+    <script src="https://cdn.jsdelivr.net/npm/editorjs-html@4.0.0/.build/edjsHTML.js"></script>
+    <!-- 加载 HTML 解析器模块 -->
+    <script>
+      class HTMLParser {
+        constructor() {
+          this.parser = null;
+          this.isInitialized = false;
+        }
+
+        /**
+         * 初始化 HTML 解析器
+         * @returns {boolean} 初始化是否成功
+         */
+        init() {
+          if (window.edjsHTML) {
+            this.parser = window.edjsHTML();
+            this.isInitialized = true;
+            console.log("EditorJS HTML 解析器初始化成功");
+            return true;
+          } else {
+            console.warn("EditorJS HTML 解析器未加载");
+            this.isInitialized = false;
+            return false;
+          }
+        }
+
+        /**
+         * 检查解析器是否已初始化
+         * @returns {boolean}
+         */
+        isReady() {
+          return this.isInitialized && this.parser !== null;
+        }
+
+        /**
+         * 将 EditorJS 数据解析为 HTML
+         * @param {Object} editorData - EditorJS 保存的数据
+         * @returns {string} 解析后的 HTML 字符串
+         * @throws {Error} 当解析器未初始化或解析失败时抛出错误
+         */
+        parse(editorData) {
+          if (!this.isReady()) {
+            throw new Error("HTML 解析器未初始化");
+          }
+
+          try {
+            return this.parser.parse(editorData);
+          } catch (error) {
+            console.error("HTML 解析失败:", error);
+            throw new Error("HTML 解析失败: " + error.message);
+          }
+        }
+
+        /**
+         * 安全解析 EditorJS 数据为 HTML
+         * @param {Object} editorData - EditorJS 保存的数据
+         * @returns {Object} 包含成功状态和结果的对象
+         */
+        safeParse(editorData) {
+          try {
+            const html = this.parse(editorData);
+            console.log("HTML 解析成功", html);
+            return {
+              success: true,
+              html: html,
+              error: null,
+            };
+          } catch (error) {
+            return {
+              success: false,
+              html: null,
+              error: error.message,
+            };
+          }
+        }
+
+        /**
+         * 获取格式化的 HTML 内容（带样式容器）
+         * @param {Object} editorData - EditorJS 保存的数据
+         * @returns {string} 带样式容器的 HTML 字符串
+         */
+        getFormattedHTML(editorData) {
+          const result = this.safeParse(editorData);
+
+          if (result.success) {
+            return `<div style="border: 1px solid #ddd; padding: 10px; background: white; border-radius: 4px;">${result.html}</div>`;
+          } else {
+            return `<div style="color: red; padding: 10px;">HTML 解析失败: ${result.error}</div>`;
+          }
+        }
+      }
+
+      // 创建全局实例
+      const htmlParser = new HTMLParser();
+
+      // 导出模块（支持多种模块系统）
+      if (typeof module !== "undefined" && module.exports) {
+        // CommonJS
+        module.exports = { HTMLParser, htmlParser };
+      } else if (typeof window !== "undefined") {
+        // 浏览器环境
+        window.HTMLParser = HTMLParser;
+        window.htmlParser = htmlParser;
+      }
+
+      // 自动初始化（如果在浏览器环境中）
+      if (typeof window !== "undefined") {
+        // 等待 DOM 加载完成后尝试初始化
+        if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", () => {
+            setTimeout(() => htmlParser.init(), 100);
+          });
+        } else {
+          // DOM 已加载，延迟初始化以确保 edjsHTML 已加载
+          setTimeout(() => htmlParser.init(), 100);
+        }
+      }
+    </script>
+
+    <script>
+      // 全局变量
+      let editor;
+      let outputMode = "json"; // 'json' 或 'html'
+
+      /**
+       * 初始化 EditorJS 编辑器
+       */
+      function initEditor() {
+        try {
+          editor = new EditorJS({
+            holder: "editorjs",
+            placeholder: "开始编写内容...",
+            tools: {
+              header: {
+                class: Header,
+                config: {
+                  placeholder: "输入标题...",
+                  levels: [1, 2, 3, 4, 5, 6],
+                  defaultLevel: 2,
+                },
+              },
+              quote: {
+                class: Quote,
+                inlineToolbar: true,
+                config: {
+                  quotePlaceholder: "输入引用内容...",
+                  captionPlaceholder: "引用来源...",
+                },
+              },
+              image: {
+                class: ImageTool,
+                config: {
+                  endpoints: {
+                    byFile: "http://localhost:8008/uploadFile",
+                    byUrl: "http://localhost:8008/fetchUrl",
+                  },
+                },
+              },
+              simpleImage: SimpleImage,
+              list: {
+                class: NestedList,
+                inlineToolbar: true,
+                config: {
+                  defaultStyle: "unordered",
+                },
+              },
+              checklist: {
+                class: Checklist,
+                inlineToolbar: true,
+              },
+              linkTool: {
+                class: LinkTool,
+                config: {
+                  endpoint: "http://localhost:8008/fetchUrl",
+                },
+              },
+              embed: {
+                class: Embed,
+                config: {
+                  services: {
+                    youtube: true,
+                    coub: true,
+                  },
+                },
+              },
+              table: {
+                class: Table,
+                inlineToolbar: true,
+                config: {
+                  rows: 2,
+                  cols: 3,
+                },
+              },
+              delimiter: Delimiter,
+              warning: {
+                class: Warning,
+                inlineToolbar: true,
+                config: {
+                  titlePlaceholder: "警告标题...",
+                  messagePlaceholder: "警告内容...",
+                },
+              },
+              code: {
+                class: CodeTool,
+                config: {
+                  placeholder: "输入代码...",
+                },
+              },
+              raw: {
+                class: RawTool,
+                config: {
+                  placeholder: "输入原始HTML...",
+                },
+              },
+              attaches: {
+                class: AttachesTool,
+                config: {
+                  endpoint: "http://localhost:8008/uploadFile",
+                },
+              },
+              Marker: {
+                class: Marker,
+                shortcut: "CMD+SHIFT+M",
+              },
+              inlineCode: {
+                class: InlineCode,
+                shortcut: "CMD+SHIFT+M",
+              },
+            },
+            onChange: function () {
+              refreshOutput();
+            },
+            onReady: function () {
+              showStatus("编辑器初始化成功！", "success");
+              refreshOutput();
+            },
+          });
+        } catch (error) {
+          console.error("编辑器初始化失败:", error);
+          showStatus("编辑器初始化失败: " + error.message, "error");
+        }
+      }
+
+      /**
+       * 显示状态信息
+       * @param {string} message - 状态消息
+       * @param {string} type - 状态类型 ('success' 或 'error')
+       */
+      function showStatus(message, type) {
+        const statusEl = document.getElementById("status");
+        statusEl.textContent = message;
+        statusEl.className = `status ${type}`;
+        statusEl.style.display = "block";
+
+        // 3秒后自动隐藏
+        setTimeout(() => {
+          statusEl.style.display = "none";
+        }, 3000);
+      }
+
+      /**
+       * 保存编辑器数据
+       */
+      async function saveData() {
+        if (!editor) {
+          showStatus("编辑器未初始化", "error");
+          return;
+        }
+
+        try {
+          const outputData = await editor.save();
+          console.log("保存的数据:", outputData);
+          showStatus("数据保存成功！", "success");
+          refreshOutput();
+        } catch (error) {
+          console.error("保存失败:", error);
+          showStatus("保存失败: " + error.message, "error");
+        }
+      }
+
+      /**
+       * 加载示例数据
+       */
+      async function loadSampleData() {
+        if (!editor) {
+          showStatus("编辑器未初始化", "error");
+          return;
+        }
+
+        const sampleData = {
+          time: Date.now(),
+          blocks: [
+            {
+              type: "header",
+              data: {
+                text: "EditorJS 示例内容",
+                level: 1,
+              },
+            },
+            {
+              type: "paragraph",
+              data: {
+                text: "这是一个 EditorJS 编辑器的示例内容。你可以在这里编辑文本，添加各种块类型。",
+              },
+            },
+            {
+              type: "header",
+              data: {
+                text: "功能特性",
+                level: 2,
+              },
+            },
+            {
+              type: "list",
+              data: {
+                style: "unordered",
+                items: ["支持多种块类型", "实时预览", "数据导出", "HTML 转换"],
+              },
+            },
+            {
+              type: "quote",
+              data: {
+                text: "EditorJS 是一个现代化的块级编辑器，具有干净的 JSON 输出。",
+                caption: "EditorJS 官方介绍",
+              },
+            },
+            {
+              type: "code",
+              data: {
+                code: 'console.log("Hello, EditorJS!");',
+              },
+            },
+          ],
+          version: "2.28.2",
+        };
+
+        try {
+          await editor.render(sampleData);
+          showStatus("示例数据加载成功！", "success");
+          refreshOutput();
+        } catch (error) {
+          console.error("加载示例数据失败:", error);
+          showStatus("加载示例数据失败: " + error.message, "error");
+        }
+      }
+
+      /**
+       * 清空编辑器
+       */
+      async function clearEditor() {
+        if (!editor) {
+          showStatus("编辑器未初始化", "error");
+          return;
+        }
+
+        try {
+          await editor.clear();
+          showStatus("编辑器已清空", "success");
+          refreshOutput();
+        } catch (error) {
+          console.error("清空编辑器失败:", error);
+          showStatus("清空编辑器失败: " + error.message, "error");
+        }
+      }
+
+      /**
+       * 刷新输出显示
+       */
+      async function refreshOutput() {
+        if (!editor) {
+          document.getElementById("output").textContent = "编辑器未初始化";
+          return;
+        }
+
+        try {
+          const outputData = await editor.save();
+          const outputEl = document.getElementById("output");
+
+          if (outputMode === "json") {
+            outputEl.textContent = JSON.stringify(outputData, null, 2);
+          } else if (outputMode === "html") {
+            if (window.htmlParser && window.htmlParser.isReady()) {
+              const result = window.htmlParser.safeParse(outputData);
+              if (result.success) {
+                outputEl.innerHTML = `<div style="background: white; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">${result.html}</div>`;
+              } else {
+                outputEl.textContent = "HTML 解析失败: " + result.error;
+              }
+            } else {
+              outputEl.textContent = "HTML 解析器未就绪";
+            }
+          }
+        } catch (error) {
+          console.error("刷新输出失败:", error);
+          document.getElementById("output").textContent =
+            "获取数据失败: " + error.message;
+        }
+      }
+
+      /**
+       * 复制输出内容
+       */
+      async function copyOutput() {
+        const outputEl = document.getElementById("output");
+        const text = outputEl.textContent || outputEl.innerText;
+
+        try {
+          await navigator.clipboard.writeText(text);
+          showStatus("内容已复制到剪贴板", "success");
+        } catch (error) {
+          console.error("复制失败:", error);
+          showStatus("复制失败: " + error.message, "error");
+        }
+      }
+
+      /**
+       * 切换输出模式
+       */
+      function toggleOutputMode() {
+        outputMode = outputMode === "json" ? "html" : "json";
+        document.getElementById(
+          "outputModeLabel"
+        ).textContent = `当前模式: ${outputMode.toUpperCase()}`;
+        refreshOutput();
+      }
+
+      // 页面加载完成后初始化编辑器
+      document.addEventListener("DOMContentLoaded", function () {
+        // 等待所有脚本加载完成
+        setTimeout(initEditor, 500);
+      });
+    </script>
+  </body>
+</html>
