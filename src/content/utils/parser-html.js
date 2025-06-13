@@ -342,7 +342,14 @@ class HtmlParser {
       .map(block => this.parseBlock(block))
       .filter(html => skipEmpty ? html.trim() : true);
 
-    return htmlBlocks.join('\n');
+    const content = htmlBlocks.join('\n');
+    
+    // 添加头部和尾部模板
+    const head = this.templates.head || '';
+    const ending = this.templates.ending || '';
+    const endinsert = `<section><span leaf=""><br class="ProseMirror-trailingBreak"></span></section>`
+    
+    return [head, content, ending, endinsert].filter(part => part.trim()).join('\n');
   }
 
   /**

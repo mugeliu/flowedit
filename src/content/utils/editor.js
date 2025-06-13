@@ -69,28 +69,33 @@ export async function insertToEditor(htmlContent, options = {}) {
 
     // 创建临时容器来解析HTML内容
     const tempContainer = createElement('div', { innerHTML: htmlContent });
-    const sections = tempContainer.querySelectorAll('section');
-
-    // 将每个section作为子元素插入到ProseMirror中
-    sections.forEach(section => {
-      if (append) {
-        target.appendChild(section.cloneNode(true));
-      } else {
-        switch (insertPosition) {
-          case 'start':
-            target.insertBefore(section.cloneNode(true), target.firstChild);
-            break;
-          case 'end':
-            target.appendChild(section.cloneNode(true));
-            break;
-          case 'cursor':
-          default:
-            target.innerHTML = '';
-            target.appendChild(section.cloneNode(true));
-            break;
-        }
+    
+    // 将htmlContent作为子元素插入到target中
+    if (append) {
+      // 将临时容器中的所有子节点追加到target的末尾
+      while (tempContainer.firstChild) {
+        target.appendChild(tempContainer.firstChild);
       }
-    });
+    } else {
+      switch (insertPosition) {
+        case 'start':
+          // 插入到开头
+          while (tempContainer.lastChild) {
+            target.insertBefore(tempContainer.lastChild, target.firstChild);
+          }
+          break;
+        case 'end':
+          // 插入到末尾
+          while (tempContainer.firstChild) {
+            target.appendChild(tempContainer.firstChild);
+          }
+          break;
+        case 'cursor':
+        default:
+          target.innerHTML = htmlContent;
+          break;
+      }
+    }
 
     console.log('内容插入成功');
     return true;
