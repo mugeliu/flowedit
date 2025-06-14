@@ -1,13 +1,36 @@
 // 智能编辑器功能管理器
-import { selectorConfig } from '../../config/index.js';
-import { saveToOriginalEditor, loadAndInitializeEditor, destroyEditor } from '../../utils/editor.js';
-import { hideElements, restoreElements, safeQuerySelector } from '../../utils/dom.js';
-import { createEditorInterface, removeEditorInterface } from './interface.js';
-import { createEditorControls, removeEditorControls } from './controls.js';
+import { selectorConfig } from "../../config/index.js";
+import {
+  saveToOriginalEditor,
+  loadAndInitializeEditor,
+  destroyEditor,
+} from "../../utils/editor.js";
+import { safeQuerySelector } from "../../utils/dom.js";
+import { createEditorInterface, removeEditorInterface } from "./interface.js";
+import { createEditorControls, removeEditorControls } from "./controls.js";
+import { createSmartButton } from "./smart-button.js";
 
 let editor = null;
-let originalDisplayStates = [];
 let controlBar = null;
+let smartButton = null;
+
+/**
+ * 初始化智能编辑器功能（包括智能按钮）
+ * @param {HTMLElement} referenceElement - 参考定位元素
+ */
+export function initializeSmartEditor(referenceElement) {
+  if (smartButton) {
+    console.warn("智能编辑器功能已经初始化");
+    return;
+  }
+
+  try {
+    smartButton = createSmartButton(referenceElement);
+    console.log("智能编辑器功能初始化成功");
+  } catch (error) {
+    console.error("智能编辑器功能初始化失败:", error);
+  }
+}
 
 /**
  * 激活智能编辑器功能
@@ -15,39 +38,35 @@ let controlBar = null;
  */
 export async function activateSmartEditor() {
   if (editor) {
-    console.warn('智能编辑器已经激活');
+    console.debug("智能编辑器已经激活");
     return;
   }
 
   const ueditor = safeQuerySelector(selectorConfig.editorContent);
   if (!ueditor) {
-    alert('找不到编辑器容器');
+    alert("找不到编辑器容器");
     return;
   }
 
   try {
-    // 隐藏原有区域
-    originalDisplayStates = hideElements(selectorConfig.editorToHide);
-    
-    createEditorInterface(ueditor);
-    
+    createEditorInterface();
+
     // 创建控制栏
     controlBar = createEditorControls({
       onSave: saveContent,
-      onCancel: deactivateSmartEditor
+      onCancel: deactivateSmartEditor,
     });
-    
+
     // 等待DOM元素渲染完成
-    await new Promise(resolve => setTimeout(resolve, 50));
-    
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
     // 加载并初始化编辑器
-    editor = await loadAndInitializeEditor('editor-holder');
-    
-    console.log('智能编辑器激活成功');
-    
+    editor = await loadAndInitializeEditor("editor-holder");
+
+    console.log("智能编辑器激活成功");
   } catch (error) {
-    console.error('智能插入功能启动失败:', error);
-    alert('智能插入功能启动失败');
+    console.error("智能插入功能启动失败:", error);
+    alert("智能插入功能启动失败");
     deactivateSmartEditor();
   }
 }
@@ -57,12 +76,6 @@ export async function activateSmartEditor() {
  * 恢复到原始状态
  */
 export function deactivateSmartEditor() {
-  // 恢复隐藏的元素
-  if (originalDisplayStates.length > 0) {
-    restoreElements(originalDisplayStates);
-    originalDisplayStates = [];
-  }
-
   // 移除编辑器界面
   removeEditorInterface();
 
@@ -77,8 +90,23 @@ export function deactivateSmartEditor() {
     destroyEditor(editor);
     editor = null;
   }
-  
-  console.log('智能编辑器已停用');
+
+  console.log("智能编辑器已停用");
+}
+
+/**
+ * 清理智能编辑器功能（包括智能按钮）
+ */
+export function cleanupSmartEditor() {
+  // 先停用编辑器
+  deactivateSmartEditor();
+
+  // 清理智能按钮
+  if (smartButton && smartButton.cleanup) {
+    smartButton.cleanup();
+    smartButton = null;
+    console.log("智能编辑器功能已清理");
+  }
 }
 
 /**
@@ -87,26 +115,26 @@ export function deactivateSmartEditor() {
  */
 async function saveContent(options = {}) {
   if (!editor) {
-    console.error('编辑器未初始化');
+    console.error("编辑器未初始化");
     return;
   }
 
   try {
     const outputData = await editor.save();
-    console.log('保存的数据:', outputData);
-    
+    console.log("保存的数据:", outputData);
+
     // 直接保存内容，使用解析器生成HTML
     const success = await saveToOriginalEditor(outputData.blocks, {
-      ...options
+      ...options,
     });
-    
+
     if (success) {
-      console.log('内容已成功保存到原编辑器');
+      console.log("内容已成功保存到原编辑器");
     } else {
-      console.error('保存到原编辑器失败');
+      console.error("保存到原编辑器失败");
     }
   } catch (error) {
-    console.error('保存失败:', error);
+    console.error("保存失败:", error);
   } finally {
     deactivateSmartEditor();
   }
@@ -126,4 +154,12 @@ export function getCurrentEditor() {
  */
 export function isSmartEditorActive() {
   return editor !== null;
+}
+
+/**
+ * 获取智能按钮实例
+ * @returns {Object|null} 智能按钮实例
+ */
+export function getSmartButton() {
+  return smartButton;
 }

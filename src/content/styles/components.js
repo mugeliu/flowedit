@@ -8,8 +8,6 @@ export const buttonStyles = `
   .flowedit-btn {
     display: inline-block;
     height: 22px;
-    margin: 1px 4px;
-    vertical-align: middle;
     cursor: pointer;
     border: none;
     outline: none;
@@ -46,8 +44,6 @@ export const switchStyles = `
   .flowedit-switch {
     display: inline-block;
     height: 22px;
-    margin: 1px 4px;
-    vertical-align: middle;
     cursor: pointer;
     position: relative;
     width: 40px;
@@ -94,37 +90,20 @@ export const editorStyles = `
   /* 智能插入编辑器容器样式 */
   .flowedit-editor-container {
     position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 1;
-    width: calc(100% + 8px);
-    box-sizing: content-box;
-    margin-left: -95px;
-    padding: 0 91px;
     background: #fff;
+    box-sizing: border-box;
+    z-index: 100; 
   }
   
   /* 智能插入编辑器占位元素样式 */
   .flowedit-editor-holder {
-    margin-left: -95px;
-    padding: 0 91px;
+    padding: 0 40px 20px;
   }
   
   /* 智能插入控制栏样式 */
   .flowedit-editor-action-bar {
-    position: relative  
-    padding: 20px 20px 15px 20px;
-    margin: 0;
-    width: 768px;
-    margin-left: auto;
-    margin-right: auto;
+    padding: 10px 15px;
     background-color: #ffffff;
-    color: rgb(53, 53, 53);
-    font-family: mp-quote, 'PingFang SC', system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'Hiragino Sans GB', 'Microsoft YaHei UI', 'Microsoft YaHei', Arial, sans-serif;
-    font-size: 14px;
-    line-height: 22.4px;
-    word-break: break-all;
-    box-sizing: content-box;
     display: flex;
     justify-content: flex-end;
     gap: 15px;
@@ -143,7 +122,6 @@ export const editorStyles = `
     cursor: pointer;
     font-size: 14px;
     transition: all 0.3s ease;
-    position: relative
   }
   
   /* 智能插入保存按钮悬浮效果 */
