@@ -1,13 +1,7 @@
 // 智能编辑器控制栏管理
 import { createElement, safeQuerySelector } from "../../utils/dom.js";
 import { selectorConfig } from "../../config/index.js";
-import {
-  computePosition,
-  offset,
-  flip,
-  shift,
-  autoUpdate,
-} from "@floating-ui/dom";
+import { computePosition, autoUpdate } from "@floating-ui/dom";
 
 // 存储控制栏的清理函数
 let controlBarCleanupAutoUpdate = null;
@@ -24,10 +18,6 @@ export function createEditorControls(callbacks = {}) {
 
   const controlBar = createElement("div", {
     className: "flowedit-editor-action-bar",
-    style: {
-      position: "absolute",
-      zIndex: "10000",
-    },
   });
 
   // 创建保存按钮
@@ -42,27 +32,47 @@ export function createEditorControls(callbacks = {}) {
     className: "flowedit-editor-cancel-btn",
   });
 
+  // 创建透明占位元素用于布局
+  const spacerEl = createElement("div", {
+    className: "spacer",
+  });
+
   controlBar.appendChild(saveBtn);
   controlBar.appendChild(cancelBtn);
+  controlBar.appendChild(spacerEl);
 
-  // 查找参考元素（优先使用底部工具栏）
-  const referenceElement =
-    safeQuerySelector(selectorConfig.botBar) ||
-    safeQuerySelector(selectorConfig.buttonArea) ||
-    document.getElementById("smart-editor-container");
+  // 查找参考元素（只使用底部工具栏）
+  const referenceElement = safeQuerySelector(selectorConfig.botBar);
 
   if (!referenceElement) {
-    console.warn("找不到参考元素，将控制栏添加到body并使用默认定位");
+    console.warn("找不到botBar元素，将控制栏添加到body并使用默认定位");
     document.body.appendChild(controlBar);
   } else {
     // 将控制栏添加到 body
     document.body.appendChild(controlBar);
 
-    // 使用 Floating UI 定位
+    // 使用 Floating UI 定位实现完全覆盖效果
     const updatePosition = () => {
       computePosition(referenceElement, controlBar, {
-        placement: "top-start",
-        middleware: [offset(0), flip(), shift({ padding: 10 })],
+        strategy: "fixed",
+        middleware: [
+          {
+            name: "cover",
+            fn: ({ rects }) => ({
+              x: rects.reference.x,
+              y: rects.reference.y,
+            }),
+          },
+          {
+            name: "size",
+            fn: ({ rects }) => ({
+              data: {
+                width: rects.reference.width,
+                height: rects.reference.height,
+              },
+            }),
+          },
+        ],
       }).then(({ x, y }) => {
         // 获取参考元素的尺寸
         const referenceRect = referenceElement.getBoundingClientRect();

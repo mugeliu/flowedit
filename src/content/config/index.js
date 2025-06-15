@@ -125,5 +125,5 @@ export const selectorConfig = {
   sidebar: "#js_side_article_list", // 侧边栏 - 用于侧边栏切换功能
   authorArea: "#js_author_area", // 作者区域 - 智能编辑器定位参考元素
   ueditor: "#ueditor_0", // UEditor 容器
-  botBar: ".js_bot_bar.tool_area", // 底部工具栏 - 控制栏定位参考元素
+  botBar: ".js_bot_bar", // 底部工具栏 - 控制栏定位参考元素
 };

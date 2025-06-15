@@ -93,9 +93,9 @@ export const editorStyles = `
     background: #fff;
     border-radius: 4px;
     box-sizing: border-box;
-    z-index: 100;
     overflow: hidden;
     padding: 0 0 0 40px;
+    z-index: 10;
   }
   
   /* 智能插入编辑器占位元素样式 */
@@ -105,11 +105,20 @@ export const editorStyles = `
   
   /* 智能插入控制栏样式 */
   .flowedit-editor-action-bar {
-    padding: 10px 15px;
+    position: fixed; /* 统一使用 fixed */
     background-color: #ffffff;
     display: flex;
     justify-content: flex-end;
+    align-items: center; /* 上下居中对齐 */
     gap: 15px;
+    z-index: 120; /* 统一层级值 */
+    bottom: 0; /* 固定在底部 */
+  }
+
+  /* 透明占位元素样式 */
+  .spacer {
+    width: 20px; /* 控制右边距 */
+    height: 1px; /* 无实际高度，仅占位 */
   }
   
   /* 智能插入保存按钮样式 */
@@ -127,15 +136,7 @@ export const editorStyles = `
     transition: all 0.3s ease;
   }
   
-  /* 智能插入保存按钮悬浮效果 */
-  .flowedit-editor-save-btn:hover {
-    background-color: #07c160;
-    background-image: linear-gradient(to bottom, #07C160 0, #07C160 100%);
-    border-color: #07C160;
-    color: #FFFFFF;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
+
   
   /* 智能插入取消按钮样式 */
   .flowedit-editor-cancel-btn {
@@ -150,17 +151,5 @@ export const editorStyles = `
     cursor: pointer;
     font-size: 14px;
     transition: all 0.3s ease;
-  }
-  
-  /* 智能插入取消按钮悬浮效果 */
-  .flowedit-editor-cancel-btn:hover {
-    background-color: #e7e7eb;
-    background-image: linear-gradient(to bottom, #E7E7EB 0, #E7E7EB 100%);
-    border-color: #DADBE0;
-    box-shadow: none;
-    -moz-box-shadow: none;
-    -webkit-box-shadow: none;
-    color: #353535;
-    transform: translateY(-1px);
   }
 `;
