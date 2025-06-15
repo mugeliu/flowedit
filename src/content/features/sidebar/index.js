@@ -14,11 +14,10 @@ export default {
 
   /**
    * 初始化侧边栏功能
-   * @param {HTMLElement} referenceElement - 参考定位元素
    * @returns {Promise<void>}
    */
-  initialize: async (referenceElement) => {
-    initializeSidebar(referenceElement);
+  initialize: async () => {
+    initializeSidebar();
   },
 
   /**

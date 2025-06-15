@@ -16,17 +16,16 @@ let smartButton = null;
 
 /**
  * 初始化智能编辑器功能（包括智能按钮）
- * @param {HTMLElement} referenceElement - 参考定位元素
  */
-export function initializeSmartEditor(referenceElement) {
+export function initializeSmartEditor() {
   if (smartButton) {
-    console.warn("智能编辑器功能已经初始化");
+    console.warn("智能插入按钮功能已经初始化");
     return;
   }
 
   try {
-    smartButton = createSmartButton(referenceElement);
-    console.log("智能编辑器功能初始化成功");
+    smartButton = createSmartButton();
+    console.log("智能插入按钮成功");
   } catch (error) {
     console.error("智能编辑器功能初始化失败:", error);
   }

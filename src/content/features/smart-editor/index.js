@@ -14,11 +14,10 @@ export default {
 
   /**
    * 初始化智能编辑器功能
-   * @param {HTMLElement} referenceElement - 参考定位元素
    * @returns {Promise<void>}
    */
-  initialize: async (referenceElement) => {
-    initializeSmartEditor(referenceElement);
+  initialize: async () => {
+    initializeSmartEditor();
   },
 
   /**

@@ -19,14 +19,14 @@ class PluginRegistry {
    * @param {Function} [plugin.isEnabled] - 是否启用检查函数
    */
   register(name, plugin) {
-    if (!plugin.initialize || typeof plugin.initialize !== 'function') {
+    if (!plugin.initialize || typeof plugin.initialize !== "function") {
       throw new Error(`插件 ${name} 必须提供 initialize 方法`);
     }
-    
-    if (!plugin.cleanup || typeof plugin.cleanup !== 'function') {
+
+    if (!plugin.cleanup || typeof plugin.cleanup !== "function") {
       throw new Error(`插件 ${name} 必须提供 cleanup 方法`);
     }
-    
+
     this.plugins.set(name, plugin);
     console.log(`插件 ${name} 已注册`);
   }
@@ -34,10 +34,9 @@ class PluginRegistry {
   /**
    * 初始化指定插件
    * @param {string} name - 插件名称
-   * @param {HTMLElement} referenceElement - 参考元素
    * @returns {Promise<boolean>} 是否初始化成功
    */
-  async initializePlugin(name, referenceElement) {
+  async initializePlugin(name) {
     const plugin = this.plugins.get(name);
     if (!plugin) {
       console.warn(`插件 ${name} 未注册`);
@@ -56,7 +55,7 @@ class PluginRegistry {
         return false;
       }
 
-      await plugin.initialize(referenceElement);
+      await plugin.initialize();
       this.initialized.add(name);
       console.log(`插件 ${name} 初始化成功`);
       return true;
@@ -68,18 +67,17 @@ class PluginRegistry {
 
   /**
    * 初始化所有已注册的插件
-   * @param {HTMLElement} referenceElement - 参考元素
    * @returns {Promise<Object>} 初始化结果统计
    */
-  async initializeAll(referenceElement) {
+  async initializeAll() {
     const results = {
       success: [],
       failed: [],
-      skipped: []
+      skipped: [],
     };
 
     for (const [name] of this.plugins) {
-      const success = await this.initializePlugin(name, referenceElement);
+      const success = await this.initializePlugin(name);
       if (success) {
         results.success.push(name);
       } else {
@@ -87,7 +85,7 @@ class PluginRegistry {
       }
     }
 
-    console.log('插件初始化完成:', results);
+    console.log("插件初始化完成:", results);
     return results;
   }
 
@@ -126,7 +124,7 @@ class PluginRegistry {
   cleanupAll() {
     const results = {
       success: [],
-      failed: []
+      failed: [],
     };
 
     for (const name of this.initialized) {
@@ -138,7 +136,7 @@ class PluginRegistry {
       }
     }
 
-    console.log('插件清理完成:', results);
+    console.log("插件清理完成:", results);
     return results;
   }
 

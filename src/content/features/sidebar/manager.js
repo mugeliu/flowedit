@@ -5,16 +5,15 @@ let sidebarToggle = null;
 
 /**
  * 初始化侧边栏功能
- * @param {HTMLElement} referenceElement - 参考定位元素
  */
-export function initializeSidebar(referenceElement) {
+export function initializeSidebar() {
   if (sidebarToggle) {
     console.warn("侧边栏功能已经初始化");
     return;
   }
 
   try {
-    sidebarToggle = createSidebarToggle(referenceElement);
+    sidebarToggle = createSidebarToggle();
     console.log("侧边栏功能初始化成功");
   } catch (error) {
     console.error("侧边栏功能初始化失败:", error);

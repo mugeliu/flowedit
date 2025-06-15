@@ -39,8 +39,7 @@ function injectPluginUIStyles() {
  */
 async function initializePluginFeatures() {
   // 1. 检查工具栏是否存在（用于判断页面是否已登录）
-  const toolbar = document.querySelector("#js_toolbar_0");
-  if (!toolbar) {
+  if (!document.querySelector("#js_toolbar_0")) {
     console.log("FlowEdit 插件功能模块初始化失败：页面可能未登录");
     return;
   }
@@ -49,7 +48,7 @@ async function initializePluginFeatures() {
   injectPluginUIStyles();
 
   // 3. 初始化所有功能模块
-  const initResults = await pluginRegistry.initializeAll(toolbar);
+  const initResults = await pluginRegistry.initializeAll();
 
   if (initResults.success.length > 0) {
     console.log(`成功初始化功能模块: ${initResults.success.join(", ")}`);

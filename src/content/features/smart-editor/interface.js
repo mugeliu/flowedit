@@ -62,9 +62,9 @@ export function createEditorInterface() {
 
     Object.assign(editorContainer.style, {
       position: "fixed",
-      left: `${x - 50}px`,
+      left: `${x - 70}px`,
       top: `${y}px`,
-      width: `${referenceElement.offsetWidth + 140}px`,
+      width: `${referenceElement.offsetWidth + 160}px`,
       height: `${referenceElement.offsetHeight}px`,
     });
 

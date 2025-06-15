@@ -5,17 +5,16 @@
  */
 export const buttonStyles = `
   /* 扩展按钮基础样式 */
-  .flowedit-btn {
+    .flowedit-smart-btn {
+    /* 基础样式 */
     display: inline-block;
     height: 22px;
     cursor: pointer;
     border: none;
     outline: none;
     box-sizing: border-box;
-  }
-  
-  /* 智能插入按钮样式 */
-  .flowedit-smart-btn {
+    
+    /* 特定样式 */
     background-color: #07c160;
     color: white;
     border-radius: 4px;
@@ -23,6 +22,12 @@ export const buttonStyles = `
     font-size: 12px;
     line-height: 22px;
     transition: all 0.3s ease;
+  }
+
+    /* 固定定位按钮样式 */
+  .flowedit-btn-fixed {
+    position: fixed;
+    z-index: 100;
   }
   
   /* 智能插入按钮悬浮效果 */
@@ -50,6 +55,12 @@ export const switchStyles = `
     border: none;
     outline: none;
     box-sizing: border-box;
+  }
+
+    /* 固定定位的开关样式 */
+  .flowedit-switch-fixed {
+    position: fixed;
+    z-index: 100;
   }
   
   .flowedit-switch-track {
@@ -94,7 +105,7 @@ export const editorStyles = `
     border-radius: 4px;
     box-sizing: border-box;
     overflow: hidden;
-    padding: 0 0 0 40px;
+    padding: 0 30px 0 55px;
     z-index: 10;
   }
   
