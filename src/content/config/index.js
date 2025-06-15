@@ -1,10 +1,6 @@
 // 配置管理
 
-const Icon = (txt) => `
-<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20">
-    <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle"
-        font-family="monospace" font-size="12">${txt}</text>
-</svg>`; // 你可以换成自己的 SVG/图片
+import { IconH1, IconH2, IconH3 } from "@codexteam/icons";
 /**
  * Editor.js 编辑器配置
  */
@@ -31,17 +27,17 @@ export const editorConfig = {
       toolbox: [
         {
           title: "Heading 1",
-          icon: Icon("H1"),
+          icon: IconH1,
           data: { level: 1 },
         },
         {
           title: "Heading 2",
-          icon: Icon("H2"),
+          icon: IconH2,
           data: { level: 2 },
         },
         {
           title: "Heading 3",
-          icon: Icon("H3"),
+          icon: IconH3,
           data: { level: 3 },
         },
       ],

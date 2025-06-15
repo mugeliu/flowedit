@@ -89,15 +89,18 @@ export const switchStyles = `
 export const editorStyles = `
   /* 智能插入编辑器容器样式 */
   .flowedit-editor-container {
-    position: absolute;
+    position: fixed; /* 统一使用 fixed */
     background: #fff;
+    border-radius: 4px;
     box-sizing: border-box;
-    z-index: 100; 
+    z-index: 100;
+    overflow: hidden;
+    padding: 0 0 0 40px;
   }
   
   /* 智能插入编辑器占位元素样式 */
   .flowedit-editor-holder {
-    padding: 0 40px 20px;
+    padding: 0;
   }
   
   /* 智能插入控制栏样式 */

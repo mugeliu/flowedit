@@ -1,13 +1,7 @@
 // 智能编辑器界面管理
 import { createElement, safeQuerySelector } from "../../utils/dom.js";
 import { selectorConfig } from "../../config/index.js";
-import {
-  computePosition,
-  offset,
-  flip,
-  shift,
-  autoUpdate,
-} from "@floating-ui/dom";
+import { computePosition, autoUpdate } from "@floating-ui/dom";
 
 // 存储清理函数
 let cleanupAutoUpdate = null;
@@ -24,35 +18,57 @@ export function createEditorInterface() {
   });
 
   // 查找参考元素 - 优先使用作者区域
-  const referenceElement =
-    safeQuerySelector(selectorConfig.authorArea) ||
-    safeQuerySelector(selectorConfig.editorWrapper) ||
-    safeQuerySelector(selectorConfig.ueditor);
-
+  const referenceElement = safeQuerySelector(selectorConfig.editorContent);
   if (!referenceElement) {
     console.error("无法找到合适的参考元素来定位智能编辑器，请检查页面结构");
     throw new Error("无法找到合适的参考元素来定位智能编辑器");
   }
 
-  // 将容器添加到 body
-  document.body.appendChild(editorContainer);
+  // 将容器添加到 id="edui1_iframeholder" 的 div 元素中
+  const targetElement = safeQuerySelector(selectorConfig.editorWrapper);
+  if (targetElement) {
+    targetElement.appendChild(editorContainer);
+  } else {
+    // 如果找不到目标元素，回退到 body
+    document.body.appendChild(editorContainer);
+  }
 
-  // 使用 Floating UI 定位
-  const updatePosition = () => {
-    computePosition(referenceElement, editorContainer, {
-      placement: "bottom-start",
-      middleware: [offset(10), flip(), shift({ padding: 10 })],
-    }).then(({ x, y }) => {
-      // 获取参考元素的宽度
-      const referenceWidth = referenceElement.offsetWidth;
-
-      Object.assign(editorContainer.style, {
-        left: `${x}px`,
-        top: `${y}px`,
-        width: `${referenceWidth}px`,
-        maxWidth: `${referenceWidth}px`,
-      });
+  /**
+   * 使用 Floating UI 实现完全覆盖目标元素的定位
+   */
+  const updatePosition = async () => {
+    // 计算位置完全覆盖目标元素
+    const { x, y } = await computePosition(referenceElement, editorContainer, {
+      strategy: "fixed",
+      middleware: [
+        {
+          name: "cover",
+          fn: ({ rects }) => ({
+            x: rects.reference.x,
+            y: rects.reference.y,
+          }),
+        },
+        {
+          name: "size",
+          fn: ({ rects }) => ({
+            data: {
+              width: rects.reference.width,
+              height: rects.reference.height,
+            },
+          }),
+        },
+      ],
     });
+
+    Object.assign(editorContainer.style, {
+      position: "fixed",
+      left: `${x - 50}px`,
+      top: `${y}px`,
+      width: `${referenceElement.offsetWidth + 140}px`,
+      height: `${referenceElement.offsetHeight}px`,
+    });
+
+    console.log("智能编辑器定位模式: 完全覆盖 (Floating UI)");
   };
 
   // 初始定位
