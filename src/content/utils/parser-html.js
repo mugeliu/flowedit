@@ -8,188 +8,52 @@
 import { HTML_TEMPLATES } from "../config/style-template.js";
 
 /**
- * HTML解析器类
+ * 块处理器基类
+ * 定义了块处理的标准流程和可重写的钩子方法
  */
-class HtmlParser {
-  constructor(customTemplates = {}) {
-    // 如果传入自定义模板则使用自定义模板，否则使用默认模板
-    this.templates = Object.keys(customTemplates).length > 0 ? customTemplates : HTML_TEMPLATES;
-  }
-
-  /**
-   * 设置模板配置
-   * @param {Object} templates 模板配置
-   */
-  setTemplates(templates) {
+class BaseBlockProcessor {
+  constructor(templates) {
     this.templates = templates;
   }
 
   /**
-   * 获取当前模板配置
-   * @returns {Object} 当前模板配置
-   */
-  getTemplates() {
-    return this.templates;
-  }
-
-  /**
-   * 块处理器映射
-   * 每个块类型可以有自己的处理函数
-   */
-  blockProcessors = {
-    raw: this.processRawBlock.bind(this),
-    header: this.processHeaderBlock.bind(this),
-    paragraph: this.processParagraphBlock.bind(this),
-    quote: this.processQuoteBlock.bind(this),
-    list: this.processListBlock.bind(this),
-    code: this.processCodeBlock.bind(this),
-    delimiter: this.processDelimiterBlock.bind(this)
-  };
-
-  /**
-   * 解析单个块
-   * @param {Object} block EditorJS块数据
-   * @returns {string} HTML字符串
-   */
-  parseBlock(block) {
-    if (!block || !block.type) {
-      console.warn("无效的块数据:", block);
-      return "";
-    }
-
-    const blockType = block.type;
-    const blockData = block.data || {};
-
-    // 检查是否有专门的处理器
-    const processor = this.blockProcessors[blockType];
-    if (processor) {
-      return processor(blockData, block);
-    }
-
-    // 使用默认处理逻辑
-    return this.processDefaultBlock(blockType, blockData, block);
-  }
-
-  /**
-   * 默认块处理逻辑
-   * @param {string} blockType 块类型
+   * 模板方法，定义处理流程
    * @param {Object} blockData 块数据
    * @param {Object} block 完整块对象
-   * @returns {string} HTML字符串
+   * @returns {string} 处理后的HTML
    */
-  processDefaultBlock(blockType, blockData, block) {
-    // 获取对应的模板
-    const template = this.getTemplate(blockType, blockData);
-    if (!template) {
-      console.warn(`未找到块类型 ${blockType} 的模板`);
-      return this.createFallbackHtml(block);
-    }
-
-    // 渲染模板
-    return this.renderTemplate(template, blockData, blockType);
+  process(blockData, block) {
+    // 1. 预处理数据
+    const processedData = this.preprocessData(blockData, block);
+    
+    // 2. 获取模板
+    const template = this.getTemplate(processedData, block);
+    
+    // 3. 渲染内容
+    const content = this.renderContent(processedData, block);
+    
+    // 4. 后处理
+    return this.postprocess(template, content, processedData, block);
   }
 
   /**
-   * 处理 raw 块
+   * 预处理数据（子类可重写）
    * @param {Object} blockData 块数据
    * @param {Object} block 完整块对象
-   * @returns {string} HTML字符串
+   * @returns {Object} 处理后的数据
    */
-  processRawBlock(blockData, block) {
-    // raw 类型直接返回 HTML 内容，不需要模板处理
-    return blockData.html || '';
+  preprocessData(blockData, block) {
+    return blockData;
   }
 
   /**
-   * 处理 header 块
+   * 获取模板（子类可重写）
    * @param {Object} blockData 块数据
    * @param {Object} block 完整块对象
-   * @returns {string} HTML字符串
-   */
-  processHeaderBlock(blockData, block) {
-    // 使用默认处理逻辑
-    return this.processDefaultBlock('header', blockData, block);
-  }
-
-  /**
-   * 处理 paragraph 块
-   * @param {Object} blockData 块数据
-   * @param {Object} block 完整块对象
-   * @returns {string} HTML字符串
-   */
-  processParagraphBlock(blockData, block) {
-    // 使用默认处理逻辑
-    return this.processDefaultBlock('paragraph', blockData, block);
-  }
-
-  /**
-   * 处理 quote 块
-   * @param {Object} blockData 块数据
-   * @param {Object} block 完整块对象
-   * @returns {string} HTML字符串
-   */
-  processQuoteBlock(blockData, block) {
-    // 使用默认处理逻辑
-    return this.processDefaultBlock('quote', blockData, block);
-  }
-
-  /**
-   * 处理 list 块
-   * @param {Object} blockData 块数据
-   * @param {Object} block 完整块对象
-   * @returns {string} HTML字符串
-   */
-  processListBlock(blockData, block) {
-    // 使用默认处理逻辑
-    return this.processDefaultBlock('list', blockData, block);
-  }
-
-  /**
-   * 处理 code 块
-   * @param {Object} blockData 块数据
-   * @param {Object} block 完整块对象
-   * @returns {string} HTML字符串
-   */
-  processCodeBlock(blockData, block) {
-    // 使用默认处理逻辑
-    return this.processDefaultBlock('code', blockData, block);
-  }
-
-  /**
-   * 处理 delimiter 块
-   * @param {Object} blockData 块数据
-   * @param {Object} block 完整块对象
-   * @returns {string} HTML字符串
-   */
-  processDelimiterBlock(blockData, block) {
-    // 使用默认处理逻辑
-    return this.processDefaultBlock('delimiter', blockData, block);
-  }
-
-  /**
-   * 注册自定义块处理器
-   * @param {string} blockType 块类型
-   * @param {Function} processor 处理函数
-   */
-  registerBlockProcessor(blockType, processor) {
-    this.blockProcessors[blockType] = processor.bind(this);
-  }
-
-  /**
-   * 移除块处理器
-   * @param {string} blockType 块类型
-   */
-  removeBlockProcessor(blockType) {
-    delete this.blockProcessors[blockType];
-  }
-
-  /**
-   * 获取指定块类型的模板
-   * @param {string} blockType 块类型
-   * @param {Object} blockData 块数据
    * @returns {string|null} 模板字符串
    */
-  getTemplate(blockType, blockData) {
+  getTemplate(blockData, block) {
+    const blockType = block.type;
     const blockTemplates = this.templates[blockType];
     if (!blockTemplates) {
       return null;
@@ -211,174 +75,67 @@ class HtmlParser {
   }
 
   /**
-   * 渲染模板
-   * @param {string} template 模板字符串
-   * @param {Object} data 数据对象
-   * @param {string} blockType 块类型
-   * @returns {string} 渲染后的HTML
+   * 渲染内容（子类可重写）
+   * @param {Object} blockData 块数据
+   * @param {Object} block 完整块对象
+   * @returns {string} 渲染后的内容
    */
-  renderTemplate(template, data, blockType) {
-    let rendered = template;
+  renderContent(blockData, block) {
+    // 默认处理：处理内联样式
+    return this.sanitizeHtml(this.processInlineStyles(blockData.text || blockData.content || ""));
+  }
 
-    // 处理不同类型的内容替换
-    switch (blockType) {
-      case "header":
-      case "paragraph":
-        // 对于标题和段落，处理内联样式而不是转义
-        const processedContent = this.sanitizeHtml(
-          this.processInlineStyles(data.text || "")
-        );
-        rendered = rendered.replace(/{{content}}/g, processedContent);
-        break;
-
-      case "quote":
-        // 引用块也需要处理内联样式
-        const processedQuoteContent = this.sanitizeHtml(
-          this.processInlineStyles(data.text || "")
-        );
-        rendered = rendered.replace(/{{content}}/g, processedQuoteContent);
-        const caption = data.caption
-          ? `<cite style="${
-              this.templates.inlineStyles.cite
-            }">${this.sanitizeHtml(
-              this.processInlineStyles(data.caption)
-            )}</cite>`
-          : "";
-        rendered = rendered.replace(/{{caption}}/g, caption);
-        break;
-
-      case "list":
-        // 列表项也需要处理内联样式
-        const items = (data.items || [])
-          .map((item) => {
-            const processedItem = this.sanitizeHtml(
-              this.processInlineStyles(item)
-            );
-            return this.renderListItem(processedItem);
-          })
-          .join("");
-        rendered = rendered.replace(/{{items}}/g, items);
-        break;
-
-      case "code":
-        // 代码块不处理内联样式，但需要HTML转义
-        rendered = rendered.replace(
-          /{{content}}/g,
-          this.escapeHtml(data.code || "")
-        );
-        break;
-
-      case "delimiter":
-        // 分隔符不需要内容替换
-        break;
-
-      case "raw":
-        // 原始HTML，不处理内容
-        break;
-
-      default:
-        // 通用内容替换，处理内联样式
-        const defaultContent = this.sanitizeHtml(
-          this.processInlineStyles(data.text || data.content || "")
-        );
-        rendered = rendered.replace(/{{content}}/g, defaultContent);
-        break;
+  /**
+   * 后处理（子类可重写）
+   * @param {string} template 模板字符串
+   * @param {string} content 渲染后的内容
+   * @param {Object} blockData 块数据
+   * @param {Object} block 完整块对象
+   * @returns {string} 最终HTML
+   */
+  postprocess(template, content, blockData, block) {
+    if (!template) {
+      console.warn(`未找到块类型 ${block.type} 的模板`);
+      return this.createFallbackHtml(block);
     }
 
-    return rendered;
-  }
-
-  /**
-   * 渲染列表项
-   * @param {string} content 列表项内容
-   * @returns {string} 渲染后的列表项HTML
-   */
-  renderListItem(content) {
-    const listItemTemplate = this.templates.listItem;
-    return listItemTemplate.replace(/{{content}}/g, content);
-  }
-
-  /**
-   * 创建后备HTML（当找不到模板时）
-   * @param {Object} block 块数据
-   * @returns {string} 后备HTML
-   */
-  createFallbackHtml(block) {
-    // 对于未知块类型，也尝试处理内联样式
-    const rawContent =
-      block.data?.text || block.data?.content || block.data?.code || "";
-    const content =
-      block.type === "code"
-        ? this.escapeHtml(rawContent)
-        : this.sanitizeHtml(this.processInlineStyles(rawContent));
-
-    // 从TEMPLATES中获取后备样式
-    const fallbackStyles = this.templates.fallback;
-
-    return `<section data-block="${block.type}" style="text-indent: 0px; margin-bottom: 8px;">
-      <div style="${fallbackStyles.container}">
-        <small style="${fallbackStyles.warning}">未知块类型: ${block.type}</small>
-        <div style="${fallbackStyles.content}">${content}</div>
-      </div>
-    </section>`;
+    return template.replace(/{{content}}/g, content);
   }
 
   /**
    * 处理EditorJS的内联样式
-   * EditorJS的内联样式是以HTML标签形式存储的，需要进行样式增强
    * @param {string} text 包含HTML标签的文本
    * @returns {string} 处理后的HTML文本
    */
   processInlineStyles(text) {
     if (!text) return "";
 
-    // EditorJS的text直接包含HTML标签，如: "这是<b>粗体</b>和<i>斜体</i>文字"
     let processedText = String(text);
-
-    // 从TEMPLATES中获取内联样式配置
     const styles = this.templates.inlineStyles;
 
     // 增强现有的HTML标签，添加内联样式
     const styleEnhancements = {
-      // 粗体标签
       "<b>": `<strong style="${styles.bold}">`,
       "</b>": "</strong>",
       "<strong>": `<strong style="${styles.bold}">`,
-
-      // 斜体标签
       "<i>": `<em style="${styles.italic}">`,
       "</i>": "</em>",
       "<em>": `<em style="${styles.italic}">`,
-
-      // 下划线
       "<u>": `<u style="${styles.underline}">`,
-
-      // 删除线
       "<s>": `<s style="${styles.strikethrough}">`,
       "<del>": `<del style="${styles.strikethrough}">`,
-
-      // 行内代码
       "<code>": `<code style="${styles.code}">`,
-
-      // 标记/高亮
       "<mark>": `<mark style="${styles.mark}">`,
-
-      // 小字体
       "<small>": `<small style="${styles.small}">`,
-
-      // 上标
       "<sup>": `<sup style="${styles.sup}">`,
-
-      // 下标
-      "<sub>": `<sub style="${styles.sub}">`,
+      "<sub>": `<sub style="${styles.sub}">`
     };
 
-    // 处理链接标签，保留href属性并添加样式
+    // 处理链接标签
     processedText = this.processLinkTags(processedText);
 
     // 应用样式增强
     Object.entries(styleEnhancements).forEach(([tag, replacement]) => {
-      // 使用全局替换，但要小心不要替换已经处理过的标签
       if (!replacement.includes("style=") || !processedText.includes(tag)) {
         processedText = processedText.replace(
           new RegExp(tag.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g"),
@@ -396,33 +153,25 @@ class HtmlParser {
    * @returns {string} 处理后的文本
    */
   processLinkTags(text) {
-    // 从TEMPLATES中获取链接样式
     const linkStyle = this.templates.inlineStyles.link;
 
-    // 匹配 <a href="..."> 标签并添加样式
     return text.replace(
       /<a\s+href=["']([^"']+)["']([^>]*)>/g,
       (match, href, otherAttrs) => {
-        // 检查是否已经有style属性
         if (otherAttrs.includes("style=")) {
-          return match; // 已经有样式，不重复添加
+          return match;
         }
 
-        // 检查链接域名是否为微信公众号
         try {
           const url = new URL(href);
           const hostname = url.hostname;
 
-          // 如果是微信公众号链接，保留原样并添加样式
           if (hostname === "mp.weixin.qq.com") {
             return `<a href="${href}" style="${linkStyle}"${otherAttrs}>`;
           } else {
-            // 非微信公众号链接的特殊处理（预留）
-            // TODO: 在这里添加对其他域名链接的特殊处理逻辑
             return this.handleNonWeixinLink(href, otherAttrs, linkStyle);
           }
         } catch (error) {
-          // URL解析失败，按普通链接处理
           return `<a href="${href}" style="${linkStyle}"${otherAttrs}>`;
         }
       }
@@ -437,10 +186,6 @@ class HtmlParser {
    * @returns {string} 处理后的链接HTML
    */
   handleNonWeixinLink(href, otherAttrs, linkStyle) {
-    // 预留：非微信公众号链接的特殊处理逻辑
-    // 目前暂时按普通链接处理，后续可以在这里添加具体的处理逻辑
-    // 例如：添加特殊标记、修改样式、添加警告等
-
     return `<a href="${href}" style="${linkStyle}"${otherAttrs}>`;
   }
 
@@ -450,7 +195,6 @@ class HtmlParser {
    * @returns {string} 清理后的HTML
    */
   sanitizeHtml(html) {
-    // 简单的HTML清理，移除危险标签
     const dangerousTags = ["script", "iframe", "object", "embed", "form"];
     let cleanHtml = html;
 
@@ -463,7 +207,7 @@ class HtmlParser {
   }
 
   /**
-   * HTML转义（用于代码块等需要转义的内容）
+   * HTML转义
    * @param {string} text 需要转义的文本
    * @returns {string} 转义后的文本
    */
@@ -476,6 +220,271 @@ class HtmlParser {
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#39;");
   }
+
+  /**
+   * 创建后备HTML
+   * @param {Object} block 块数据
+   * @returns {string} 后备HTML
+   */
+  createFallbackHtml(block) {
+    const rawContent = block.data?.text || block.data?.content || block.data?.code || "";
+    const content = block.type === "code" 
+      ? this.escapeHtml(rawContent)
+      : this.sanitizeHtml(this.processInlineStyles(rawContent));
+
+    const fallbackStyles = this.templates.fallback;
+
+    return `<section data-block="${block.type}" style="text-indent: 0px; margin-bottom: 8px;">
+      <div style="${fallbackStyles.container}">
+        <small style="${fallbackStyles.warning}">未知块类型: ${block.type}</small>
+        <div style="${fallbackStyles.content}">${content}</div>
+      </div>
+    </section>`;
+  }
+}
+
+/**
+ * Header 块处理器 - 不处理内联样式
+ */
+class HeaderBlockProcessor extends BaseBlockProcessor {
+  renderContent(blockData, block) {
+    // Header 不需要处理内联样式，直接返回转义后的文本
+    return this.escapeHtml(blockData.text || '');
+  }
+}
+
+/**
+ * Code 块处理器 - 代码高亮和验证
+ */
+class CodeBlockProcessor extends BaseBlockProcessor {
+  renderContent(blockData, block) {
+    const code = blockData.code || '';
+    
+    // 代码块不处理内联样式，但需要HTML转义
+    return this.escapeHtml(code);
+  }
+
+  /**
+   * 验证代码语法（预留扩展点）
+   * @param {string} code 代码内容
+   * @param {string} language 编程语言
+   */
+  validateCodeSyntax(code, language) {
+    // 预留：实现代码语法验证逻辑
+    // 例如：检查括号匹配、基本语法错误等
+  }
+}
+
+/**
+ * Raw 块处理器 - HTML 验证
+ */
+class RawBlockProcessor extends BaseBlockProcessor {
+  process(blockData, block) {
+    // raw 类型直接返回 HTML 内容，不需要模板处理
+    const html = blockData.html || '';
+    
+    // 验证 HTML 是否合理
+    if (!this.isValidHtml(html)) {
+      console.warn('Invalid HTML detected in raw block');
+    }
+    
+    return this.sanitizeHtml(html);
+  }
+
+  /**
+   * 验证HTML是否合理
+   * @param {string} html HTML内容
+   * @returns {boolean} 是否有效
+   */
+  isValidHtml(html) {
+    try {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, 'text/html');
+      return !doc.querySelector('parsererror');
+    } catch (e) {
+      return false;
+    }
+  }
+}
+
+/**
+ * Quote 块处理器 - 可选的 caption 处理
+ */
+class QuoteBlockProcessor extends BaseBlockProcessor {
+  constructor(templates, options = {}) {
+    super(templates);
+    this.processCaptions = options.processCaptions !== false; // 默认处理
+  }
+
+  postprocess(template, content, blockData, block) {
+    if (!template) {
+      console.warn(`未找到块类型 ${block.type} 的模板`);
+      return this.createFallbackHtml(block);
+    }
+
+    let rendered = template.replace(/{{content}}/g, content);
+    
+    // 处理 caption
+    if (this.processCaptions && blockData.caption) {
+      const caption = `<cite style="${this.templates.inlineStyles.cite}">${this.sanitizeHtml(this.processInlineStyles(blockData.caption))}</cite>`;
+      rendered = rendered.replace(/{{caption}}/g, caption);
+    } else {
+      rendered = rendered.replace(/{{caption}}/g, "");
+    }
+    
+    return rendered;
+  }
+}
+
+/**
+ * List 块处理器 - 列表项处理
+ */
+class ListBlockProcessor extends BaseBlockProcessor {
+  postprocess(template, content, blockData, block) {
+    if (!template) {
+      console.warn(`未找到块类型 ${block.type} 的模板`);
+      return this.createFallbackHtml(block);
+    }
+
+    // 处理列表项
+    const items = (blockData.items || [])
+      .map((item) => {
+        const processedItem = this.sanitizeHtml(this.processInlineStyles(item));
+        return this.renderListItem(processedItem);
+      })
+      .join("");
+    
+    return template.replace(/{{items}}/g, items);
+  }
+
+  /**
+   * 渲染列表项
+   * @param {string} content 列表项内容
+   * @returns {string} 渲染后的列表项HTML
+   */
+  renderListItem(content) {
+    const listItemTemplate = this.templates.listItem;
+    return listItemTemplate.replace(/{{content}}/g, content);
+  }
+}
+
+/**
+ * Delimiter 块处理器 - 不处理 block.data
+ */
+class DelimiterBlockProcessor extends BaseBlockProcessor {
+  preprocessData(blockData, block) {
+    // Delimiter 不需要处理 block.data
+    return {};
+  }
+
+  renderContent(blockData, block) {
+    // 直接返回空内容，模板本身就是分隔符
+    return '';
+  }
+}
+
+/**
+ * 块处理器工厂类
+ */
+class BlockProcessorFactory {
+  constructor(templates) {
+    this.templates = templates;
+    this.processors = new Map();
+    this.initializeDefaultProcessors();
+  }
+
+  /**
+   * 初始化默认处理器
+   */
+  initializeDefaultProcessors() {
+    this.registerProcessor('header', new HeaderBlockProcessor(this.templates));
+    this.registerProcessor('code', new CodeBlockProcessor(this.templates));
+    this.registerProcessor('raw', new RawBlockProcessor(this.templates));
+    this.registerProcessor('quote', new QuoteBlockProcessor(this.templates));
+    this.registerProcessor('list', new ListBlockProcessor(this.templates));
+    this.registerProcessor('delimiter', new DelimiterBlockProcessor(this.templates));
+    this.registerProcessor('paragraph', new BaseBlockProcessor(this.templates));
+  }
+
+  /**
+   * 注册处理器
+   * @param {string} type 块类型
+   * @param {BaseBlockProcessor} processor 处理器实例
+   */
+  registerProcessor(type, processor) {
+    this.processors.set(type, processor);
+  }
+
+  /**
+   * 获取处理器
+   * @param {string} type 块类型
+   * @returns {BaseBlockProcessor} 处理器实例
+   */
+  getProcessor(type) {
+    return this.processors.get(type) || this.getDefaultProcessor();
+  }
+
+  /**
+   * 获取默认处理器
+   * @returns {BaseBlockProcessor} 默认处理器
+   */
+  getDefaultProcessor() {
+    return new BaseBlockProcessor(this.templates);
+  }
+}
+
+/**
+ * HTML解析器类
+ */
+class HtmlParser {
+  constructor(customTemplates = {}) {
+    // 如果传入自定义模板则使用自定义模板，否则使用默认模板
+    this.templates = Object.keys(customTemplates).length > 0 ? customTemplates : HTML_TEMPLATES;
+    this.processorFactory = new BlockProcessorFactory(this.templates);
+  }
+
+  /**
+   * 设置模板配置
+   * @param {Object} templates 模板配置
+   */
+  setTemplates(templates) {
+    this.templates = templates;
+    this.processorFactory = new BlockProcessorFactory(this.templates);
+  }
+
+  /**
+   * 获取当前模板配置
+   * @returns {Object} 当前模板配置
+   */
+  getTemplates() {
+    return this.templates;
+  }
+
+  /**
+   * 注册自定义处理器
+   * @param {string} type 块类型
+   * @param {BaseBlockProcessor} processor 处理器实例
+   */
+  registerCustomProcessor(type, processor) {
+    this.processorFactory.registerProcessor(type, processor);
+  }
+
+  /**
+   * 解析单个块
+   * @param {Object} block EditorJS块数据
+   * @returns {string} HTML字符串
+   */
+  parseBlock(block) {
+    if (!block || !block.type) {
+      console.warn("无效的块数据:", block);
+      return "";
+    }
+
+    const processor = this.processorFactory.getProcessor(block.type);
+    return processor.process(block.data || {}, block);
+  }
+
+
 
   /**
    * 解析EditorJS数据
