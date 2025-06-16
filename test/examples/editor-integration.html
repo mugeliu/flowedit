@@ -138,7 +138,6 @@
     <!-- 加载 EditorJS 插件 -->
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/quote@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/image@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/simple-image@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/nested-list@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/checklist@latest"></script>
@@ -287,33 +286,24 @@
           editor = new EditorJS({
             holder: "editorjs",
             placeholder: "开始编写内容...",
+            hideToolbar: false,
             tools: {
               header: {
                 class: Header,
                 config: {
                   placeholder: "输入标题...",
-                  levels: [1, 2, 3, 4, 5, 6],
+                  levels: [1, 2, 3],
                   defaultLevel: 2,
                 },
               },
               quote: {
                 class: Quote,
-                inlineToolbar: true,
                 config: {
                   quotePlaceholder: "输入引用内容...",
                   captionPlaceholder: "引用来源...",
                 },
               },
-              image: {
-                class: ImageTool,
-                config: {
-                  endpoints: {
-                    byFile: "http://localhost:8008/uploadFile",
-                    byUrl: "http://localhost:8008/fetchUrl",
-                  },
-                },
-              },
-              simpleImage: SimpleImage,
+              image: SimpleImage,
               list: {
                 class: NestedList,
                 inlineToolbar: true,

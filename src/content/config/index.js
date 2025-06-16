@@ -18,7 +18,6 @@ export const editorConfig = {
     },
     header: {
       class: "Header", // 将在editor.js中解析为实际的类引用
-      inlineToolbar: true,
       config: {
         levels: [1, 2, 3],
         defaultLevel: 1,

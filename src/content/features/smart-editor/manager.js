@@ -62,6 +62,20 @@ export async function activateSmartEditor() {
     // 加载并初始化编辑器
     editor = await loadAndInitializeEditor("editor-holder");
 
+    // 滚动到编辑器容器位置
+    const editorContainer = safeQuerySelector("#header");
+    if (editorContainer) {
+      // 等待编辑器完全渲染
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      
+      editorContainer.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+        inline: 'nearest'
+      });
+      console.log('已滚动到智能编辑器位置');
+    }
+
     console.log("智能编辑器激活成功");
   } catch (error) {
     console.error("智能插入功能启动失败:", error);
