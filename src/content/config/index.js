@@ -56,8 +56,26 @@ export const editorConfig = {
         endpoints: {},
       },
     },
+    delimiter: {
+      class: "Delimiter", // 将在editor.js中解析为实际的类引用
+    },
     raw: {
       class: "RawTool", // 将在editor.js中解析为实际的类引用
+    },
+    list: {
+      class: "List", // 将在editor.js中解析为实际的类引用
+    },
+    code: {
+      class: "Code", // 将在editor.js中解析为实际的类引用
+    },
+    marker: {
+      class: "Marker", // 将在editor.js中解析为实际的类引用
+    },
+    inlineCode: {
+      class: "InlineCode", // 将在editor.js中解析为实际的类引用
+    },
+    underline: {
+      class: "Underline", // 将在editor.js中解析为实际的类引用
     },
   },
 
