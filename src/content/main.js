@@ -40,9 +40,18 @@ function injectPluginUIStyles() {
 async function initializePluginFeatures() {
   // 1. 检查工具栏是否存在（用于判断页面是否已登录）
   if (!document.querySelector("#js_toolbar_0")) {
-    console.log("FlowEdit 插件功能模块初始化失败：页面可能未登录");
+    console.log("[FlowEdit] 未找到js_toolbar_0工具栏页面可能未登录");
     return;
   }
+
+  await new Promise(resolve => {
+    requestAnimationFrame(() => {          // 第一帧
+      requestAnimationFrame(() => {        // 第二帧
+        console.log('[FlowEdit] 工具栏已渲染稳定');
+        resolve();                        // 完成等待
+      });
+    });
+  });
 
   // 2. 注入插件UI样式（与内容样式完全分离）
   injectPluginUIStyles();
@@ -65,8 +74,6 @@ async function initializePluginFeatures() {
  * 主入口函数 - 专注于插件启动和初始化
  */
 async function main() {
-  console.log("FlowEdit 内容脚本启动");
-
   // 等待DOM加载完成
   if (document.readyState === "loading") {
     await new Promise((resolve) => {
@@ -77,9 +84,9 @@ async function main() {
   // 初始化应用服务（用户配置、远程样式系统等 - 预留后期实现）
   try {
     await initializeAppServices();
-    console.log("FlowEdit 应用服务初始化成功");
+    console.log("[FlowEdit]  initializeAppServices初始化成功");
   } catch (error) {
-    console.error("FlowEdit 应用服务初始化失败:", error);
+    console.error("[FlowEdit] initializeAppServices初始化失败:", error);
     // 继续执行，使用默认配置
   }
 
