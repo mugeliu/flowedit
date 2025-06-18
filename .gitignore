@@ -46,3 +46,9 @@ temp/
 .yarnrc
 
 .DS_Store
+
+# build文件
+.dist
+.assets/editorjs
+
+

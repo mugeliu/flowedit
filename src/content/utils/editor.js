@@ -208,6 +208,8 @@ export function createEditorInstance(holderId) {
       onReady: () => {
         new window.EditorJSBundle.DragDrop(editor);
       },
+      
+      // 移除onChange回调，让EditorJS使用原生自动高度
     };
     
     const editor = new window.EditorJSBundle.EditorJS(config);

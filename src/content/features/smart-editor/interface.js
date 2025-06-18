@@ -65,7 +65,7 @@ export function createEditorInterface() {
       left: `${x - 70}px`,
       top: `${y}px`,
       width: `${referenceElement.offsetWidth + 160}px`,
-      height: `${referenceElement.offsetHeight}px`,
+      height: "auto", // 完全依赖EditorJS原生自动高度
     });
 
     console.log("智能编辑器定位模式: 完全覆盖 (Floating UI)");

@@ -1,5 +1,4 @@
 // 侧边栏切换开关组件
-import { computePosition, offset, flip, shift } from "@floating-ui/dom";
 import { selectorConfig } from "../../config/index.js";
 import { createElement, safeQuerySelector } from "../../utils/dom.js";
 
@@ -8,8 +7,8 @@ import { createElement, safeQuerySelector } from "../../utils/dom.js";
  * @returns {Object} 包含开关元素和清理函数
  */
 export function createSidebarToggle() {
-  const switchContainer = createElement("button", {
-    className: "flowedit-switch flowedit-switch-fixed",
+  const switchContainer = createElement("div", {
+    className: "flowedit-switch",
     innerHTML: `
       <div class="flowedit-switch-track"></div>
       <div class="flowedit-switch-thumb"></div>
@@ -18,34 +17,16 @@ export function createSidebarToggle() {
 
   switchContainer.addEventListener("click", handleSidebarToggle);
 
-  // 插入到 body
-  document.body.appendChild(switchContainer);
-
-  // 查找工具栏容器和第一个子元素作为定位参考
+  // 查找工具栏容器作为插入目标
   const toolbarContainer = safeQuerySelector(selectorConfig.toolbar);
   if (!toolbarContainer) {
     throw new Error(`工具栏容器未找到: ${selectorConfig.toolbar}`);
   }
 
-  const referenceElement =
-    toolbarContainer.firstElementChild || toolbarContainer;
+  // 直接插入到工具栏容器的开头
+  toolbarContainer.insertBefore(switchContainer, toolbarContainer.firstChild);
 
-  // 使用 Floating UI 定位到参考元素的视觉位置
-  computePosition(referenceElement, switchContainer, {
-    placement: "left-start",
-    middleware: [
-      offset(-referenceElement.offsetWidth), // 负偏移使其显示在参考元素的左侧
-      flip(),
-      shift({ padding: 8 }),
-    ],
-  }).then(({ x, y }) => {
-    Object.assign(switchContainer.style, {
-      left: `${x}px`,
-      top: `${y}px`,
-    });
-  });
-
-  // 返回简单的清理函数
+  // 返回清理函数
   const cleanup = () => {
     if (switchContainer.parentNode) {
       switchContainer.parentNode.removeChild(switchContainer);

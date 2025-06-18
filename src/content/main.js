@@ -8,6 +8,7 @@ import { pluginRegistry } from "./services/plugin-registry.js";
 import smartEditorPlugin from "./features/smart-editor/index.js";
 import sidebarPlugin from "./features/sidebar/index.js";
 import { initializeAppServices } from "./services/system-initializer.js";
+import { initializeDOMWatcher, cleanupDOMWatcher } from "./services/dom-watcher.js";
 
 // 注册功能模块插件
 pluginRegistry.register("smart-editor", smartEditorPlugin);
@@ -44,15 +45,6 @@ async function initializePluginFeatures() {
     return;
   }
 
-  await new Promise(resolve => {
-    requestAnimationFrame(() => {          // 第一帧
-      requestAnimationFrame(() => {        // 第二帧
-        console.log('[FlowEdit] 工具栏已渲染稳定');
-        resolve();                        // 完成等待
-      });
-    });
-  });
-
   // 2. 注入插件UI样式（与内容样式完全分离）
   injectPluginUIStyles();
 
@@ -68,6 +60,10 @@ async function initializePluginFeatures() {
   }
 
   console.log("FlowEdit 插件功能模块初始化完成");
+
+  // 4. 启动DOM监听服务（监听插件组件是否被页面更新移除）
+  initializeDOMWatcher();
+  console.log("DOM监听服务已启动");
 }
 
 /**
@@ -93,6 +89,12 @@ async function main() {
   // 初始化插件功能模块
   await initializePluginFeatures();
 }
+
+// 页面卸载时清理资源
+window.addEventListener('beforeunload', () => {
+  cleanupDOMWatcher();
+  console.log("FlowEdit 资源清理完成");
+});
 
 // 启动应用
 main().catch((error) => {

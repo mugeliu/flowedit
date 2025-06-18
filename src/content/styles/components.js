@@ -47,20 +47,15 @@ export const buttonStyles = `
 export const switchStyles = `
   /* Switch开关样式 */
   .flowedit-switch {
-    display: inline-block;
-    height: 22px;
-    cursor: pointer;
-    position: relative;
+    position: absolute;
+    top: 25%;      /* 必须指定位置 */
+    left: 5%;
     width: 40px;
+    height: 20px;
+    cursor: pointer;
     border: none;
     outline: none;
     box-sizing: border-box;
-  }
-
-    /* 固定定位的开关样式 */
-  .flowedit-switch-fixed {
-    position: fixed;
-    z-index: 100;
   }
   
   .flowedit-switch-track {
@@ -104,9 +99,9 @@ export const editorStyles = `
     background: #fff;
     border-radius: 4px;
     box-sizing: border-box;
-    overflow: hidden;
-    padding: 0 30px 0 55px;
-    z-index: 10;
+    overflow: visible; /* 允许内容溢出以支持自动高度 */
+    padding: 20px;
+    z-index: 10000;
   }
   
   /* 智能插入编辑器占位元素样式 */

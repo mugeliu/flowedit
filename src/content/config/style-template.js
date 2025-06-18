@@ -31,11 +31,50 @@ export const HTML_TEMPLATES = {
     cite: "display:block;margin-top:0.5em;font-size:0.9em;color:rgba(26,104,64,0.7);",
   },
   header: {
-    h1: `<section style="text-align: center;"><section style="width:100%;padding:0px 12px;" data-mid=""><section style="width:100%;display:flex;align-items:center;justify-content:space-between;" data-mid=""><section style="display:flex;align-items:center;width:100%;height:5px;" data-mid=""><section style="flex-shrink:0;width:6px;height:6px;background:#1a6840;border-radius:50%;" data-mid=""><span leaf=""><br class="ProseMirror-trailingBreak"></span></section><section style="width:100%;border-top:1px solid #1a6840;height:1px;" data-mid=""><span leaf=""><br class="ProseMirror-trailingBreak"></span></section></section><section style="flex-shrink:0;min-width:79px;text-align:center;background:#1a6840;padding:5px 15px 4px 15px;" data-mid=""><p style="color:#ffffff;font-size:16px;line-height:17px;word-break:break-word;" data-mid=""><span leaf="">{{content}}</span><mpchecktext></mpchecktext></p></section><section style="display:flex;align-items:center;width:100%;" data-mid=""><section style="width:100%;border-top:1px solid #1a6840;height:1px;" data-mid=""><span leaf=""><br class="ProseMirror-trailingBreak"></span></section><section style="flex-shrink:0;width:6px;height:6px;background:#1a6840;border-radius:50%;" data-mid=""><span leaf=""><br class="ProseMirror-trailingBreak"></span></section></section></section></section></section>`,
+    h1: `<section style="width: 100%; display: flex; justify-content: center; align-items: center; padding: 20px 14px 0;">
+  <section style="display: flex; flex-direction: column; align-items: center; justify-content: flex-start;">
+    
+    <section style="display: flex; align-items: flex-start; justify-content: center;">
+      
+      <!-- 左侧编号模块 -->
+      <section style="transform: skew(30deg); display: flex; align-items: flex-start; justify-content: center;">
+        <section style="background: #004af6; text-align: center; padding: 0 8px; height: 28px;">
+          <p style="transform: skew(-30deg); font-weight: bold; font-size: 18px; color: #004af6; line-height: 28px; text-align: center; -webkit-background-clip: text; background-image: linear-gradient(163deg, #ffffff 0%, #a5c0ff 100%); word-break: break-all; -webkit-text-fill-color: transparent;">
+            <span>01</span>
+          </p>
+        </section>
+        <section style="width: 1px; height: 42px; align-self: flex-start; background: linear-gradient(134deg, #0047d0, rgba(0, 71, 208, 0)); z-index: 2; margin-left: -1px;"></section>
+      </section>
 
-    h2: `<section data-block="header" data-level="2" style="text-indent:0px;margin-bottom:8px;"><h2 style="font-size:17px;color:rgba(26,104,64,1);font-weight:bold;margin:1.5em 8px 1em;border-bottom:1px solid rgba(26,104,64,0.3);padding-bottom:0.3em;">{{content}}</h2></section>`,
+      <!-- 右侧标题模块 -->
+      <section style="display: flex; align-items: flex-start; justify-content: center; transform: skew(30deg);">
+        <section style="width: 1px; height: 42px; margin-top: -25px; margin-right: -1px; align-self: flex-start; background: linear-gradient(134deg, #ffffff, #d0e1ff); z-index: 2;"></section>
+        <section style="background: #e0ebff; text-align: center; height: 28px; padding: 0 18px;">
+          <p style="transform: skew(-30deg); font-weight: bold; font-size: 17px; color: #06378e; line-height: 28px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100vw;">
+            <span>{{content}}</span>
+          </p>
+        </section>
+      </section>
 
-    h3: `<section data-block="header" data-level="3" style="text-indent:0px;margin-bottom:8px;"><h3 style="font-size:15px;color:rgba(26,104,64,1);font-weight:bold;margin:1.2em 8px 0.8em;">{{content}}</h3></section>`,
+    </section>
+
+  </section>
+</section>
+`,
+
+    h2: `<section style="display:flex;align-items:center;padding:16px 14px 0;">
+  <div style="width:4px;height:24px;background:#004af6;margin-right:8px;border-radius:2px;"></div>
+  <p style="margin:0;font-size:16px;font-weight:600;color:#004af6;">
+  {{content}}
+  </p>
+</section>`,
+
+    h3: `<section style="display:flex;align-items:center;padding:8px 18px;">
+  <div style="width:6px;height:6px;background:#004af6;border-radius:50%;margin-right:8px;"></div>
+  <p style="margin:0;font-size:15px;font-weight:500;color:#2c4d9c;">
+  {{content}}
+  </p>
+</section>`,
   },
 
   paragraph: {
