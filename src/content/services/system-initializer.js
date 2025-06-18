@@ -16,10 +16,8 @@ class UserConfigManager {
    */
   async initialize() {
     try {
-      console.log('初始化用户配置管理器...');
       // TODO: 后续实现从本地存储或远程加载用户配置
       this.initialized = true;
-      console.log('用户配置管理器初始化完成');
     } catch (error) {
       console.error('用户配置管理器初始化失败:', error);
       throw error;
@@ -59,7 +57,6 @@ class UserConfigManager {
       }
 
       // TODO: 后续实现配置持久化
-      console.log('用户配置已更新:', key);
       return true;
     } catch (error) {
       console.error('设置用户配置失败:', error);
@@ -85,10 +82,8 @@ class RemoteStyleSyncService {
    */
   async initialize() {
     try {
-      console.log('初始化远程样式同步服务...');
       // TODO: 后续实现远程样式服务连接
       this.initialized = true;
-      console.log('远程样式同步服务初始化完成');
     } catch (error) {
       console.error('远程样式同步服务初始化失败:', error);
       throw error;
@@ -106,9 +101,7 @@ class RemoteStyleSyncService {
         return false;
       }
 
-      console.log('开始手动同步远程样式...');
       // TODO: 后续实现具体的样式同步逻辑
-      console.log('远程样式同步完成');
       return true;
     } catch (error) {
       console.error('远程样式同步失败:', error);
@@ -128,8 +121,6 @@ class RemoteStyleSyncService {
     this.syncInterval = setInterval(async () => {
       await this.manualSync();
     }, interval);
-
-    console.log(`远程样式自动同步已启动，间隔: ${interval}ms`);
   }
 
   /**
@@ -139,7 +130,6 @@ class RemoteStyleSyncService {
     if (this.syncInterval) {
       clearInterval(this.syncInterval);
       this.syncInterval = null;
-      console.log('远程样式自动同步已停止');
     }
   }
 }
@@ -156,15 +146,12 @@ const remoteStyleSyncService = new RemoteStyleSyncService();
  */
 export async function initializeAppServices(config = {}) {
   try {
-    console.log('开始初始化FlowEdit应用服务...');
-    
     // 1. 初始化用户配置管理器
     await userConfigManager.initialize();
     
     // 2. 初始化远程样式同步服务
     await initializeRemoteStyleSystem(config);
     
-    console.log('FlowEdit应用服务初始化完成');
     return true;
   } catch (error) {
     console.error('FlowEdit应用服务初始化失败:', error);
@@ -192,8 +179,6 @@ async function initializeRemoteStyleSystem(config = {}) {
     if (config.initialSync !== false) {
       await remoteStyleSyncService.manualSync();
     }
-    
-    console.log('远程样式系统初始化完成');
   } catch (error) {
     console.error('远程样式系统初始化失败:', error);
     // 不抛出错误，使用默认样式

@@ -30,7 +30,6 @@ class StyleSyncService {
       // 检查用户登录状态（预留）
       const isLoggedIn = await this.checkUserAuth();
       if (!isLoggedIn) {
-        console.log('用户未登录，使用默认样式');
         this.isInitialized = true;
         return true;
       }
@@ -43,13 +42,10 @@ class StyleSyncService {
       
       // 如果需要更新样式
       if (!cachedVersion || cachedVersion !== remoteVersion) {
-        console.log('检测到样式更新，开始同步...');
         const syncSuccess = await this.syncStyles();
         if (syncSuccess) {
           await this.setCachedStyleVersion(remoteVersion);
         }
-      } else {
-        console.log('样式已是最新版本');
       }
 
       // 启动定时同步
@@ -107,7 +103,6 @@ class StyleSyncService {
       // const stylesData = await response.json();
       // await this.cacheStyles(stylesData);
       
-      console.log('样式同步完成（模拟）');
       return true;
     } catch (error) {
       console.error('样式同步失败:', error);

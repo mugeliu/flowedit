@@ -19,7 +19,6 @@ class DOMWatcher {
    */
   startWatching() {
     if (this.isWatching) {
-      console.warn("[DOMWatcher] 已在监听中");
       return;
     }
 
@@ -30,8 +29,8 @@ class DOMWatcher {
 
     // 使用事件委托监听整个文档的点击事件
     document.addEventListener('click', this.clickHandler, true);
+    
     this.isWatching = true;
-    console.log("[DOMWatcher] 开始监听提交按钮点击事件");
   }
 
   /**
@@ -49,7 +48,6 @@ class DOMWatcher {
     }
     
     this.isWatching = false;
-    console.log("[DOMWatcher] 停止监听点击事件");
   }
 
   /**
@@ -57,10 +55,10 @@ class DOMWatcher {
    * @param {Event} event - 点击事件
    */
   handleSubmitClick(event) {
-    // 检查点击的元素是否是提交按钮
     const target = event.target;
-    if (target && target.id === 'js_submit') {
-      console.log("[DOMWatcher] 检测到提交按钮点击");
+    
+    // 检查点击的元素是否是提交按钮
+    if (this.isSubmitButton(target)) {
       
       // 使用防抖，避免频繁重新初始化
       if (this.reinitTimeout) {
@@ -69,29 +67,65 @@ class DOMWatcher {
       
       this.reinitTimeout = setTimeout(() => {
         this.reinitializePlugins();
-      }, 500); // 500ms延迟
+      }, 800); // 800ms延迟，给页面更新足够时间
     }
   }
+
+  /**
+   * 判断元素是否为提交按钮
+   * @param {Element} element - 要检查的元素
+   * @returns {boolean} 是否为提交按钮
+   */
+  isSubmitButton(element) {
+    if (!element) return false;
+    
+    // 检查元素本身
+    if (this.checkElementIsSubmit(element)) {
+      return true;
+    }
+    
+    // 检查父级元素（最多向上查找3层）
+    let parent = element.parentElement;
+    let level = 0;
+    while (parent && level < 3) {
+      if (this.checkElementIsSubmit(parent)) {
+        return true;
+      }
+      parent = parent.parentElement;
+      level++;
+    }
+    
+    return false;
+  }
+
+  /**
+   * 检查单个元素是否为提交按钮
+   * @param {Element} element - 要检查的元素
+   * @returns {boolean} 是否为提交按钮
+   */
+  checkElementIsSubmit(element) {
+    // 只检查特定的提交按钮class
+    return element.classList?.contains('send_wording');
+  }
+
+
 
   /**
    * 重新初始化插件
    */
   async reinitializePlugins() {
-    console.log("[DOMWatcher] 检测到提交按钮点击，开始重新初始化插件按钮");
-    
     try {
-      // 先清理现有插件
+      // 清理现有插件
       await pluginRegistry.cleanupAll();
       
+      // 等待页面DOM更新
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
       // 重新初始化所有插件
-      const initResults = await pluginRegistry.initializeAll();
+      const results = await pluginRegistry.initializeAll();
       
-      if (initResults.success.length > 0) {
-        console.log(`[DOMWatcher] 重新初始化成功: ${initResults.success.join(", ")}`);
-      }
-      
-      if (initResults.failed.length > 0) {
-        console.warn(`[DOMWatcher] 重新初始化失败: ${initResults.failed.join(", ")}`);
+      if (results.failed.length > 0) {
+        console.warn(`[DOMWatcher] 重新初始化失败: ${results.failed.join(", ")}`);
       }
     } catch (error) {
       console.error("[DOMWatcher] 重新初始化插件失败:", error);

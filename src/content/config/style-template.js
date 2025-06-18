@@ -38,19 +38,19 @@ export const HTML_TEMPLATES = {
       
       <!-- 左侧编号模块 -->
       <section style="transform: skew(30deg); display: flex; align-items: flex-start; justify-content: center;">
-        <section style="background: #004af6; text-align: center; padding: 0 8px; height: 28px;">
-          <p style="transform: skew(-30deg); font-weight: bold; font-size: 18px; color: #004af6; line-height: 28px; text-align: center; -webkit-background-clip: text; background-image: linear-gradient(163deg, #ffffff 0%, #a5c0ff 100%); word-break: break-all; -webkit-text-fill-color: transparent;">
+        <section style="background: #1a6840; text-align: center; padding: 0 8px; height: 28px;">
+          <p style="transform: skew(-30deg); font-weight: bold; font-size: 18px; color: #1a6840; line-height: 28px; text-align: center; -webkit-background-clip: text; background-image: linear-gradient(163deg, #ffffff 0%, #a5ffc0 100%); word-break: break-all; -webkit-text-fill-color: transparent;">
             <span>01</span>
           </p>
         </section>
-        <section style="width: 1px; height: 42px; align-self: flex-start; background: linear-gradient(134deg, #0047d0, rgba(0, 71, 208, 0)); z-index: 2; margin-left: -1px;"></section>
+        <section style="width: 1px; height: 42px; align-self: flex-start; background: linear-gradient(134deg, #1a6840, rgba(26, 104, 64, 0)); z-index: 2; margin-left: -1px;"></section>
       </section>
 
       <!-- 右侧标题模块 -->
       <section style="display: flex; align-items: flex-start; justify-content: center; transform: skew(30deg);">
-        <section style="width: 1px; height: 42px; margin-top: -25px; margin-right: -1px; align-self: flex-start; background: linear-gradient(134deg, #ffffff, #d0e1ff); z-index: 2;"></section>
-        <section style="background: #e0ebff; text-align: center; height: 28px; padding: 0 18px;">
-          <p style="transform: skew(-30deg); font-weight: bold; font-size: 17px; color: #06378e; line-height: 28px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100vw;">
+        <section style="width: 1px; height: 42px; margin-top: -25px; margin-right: -1px; align-self: flex-start; background: linear-gradient(134deg, #ffffff, #d0ffd0); z-index: 2;"></section>
+        <section style="background: #e0ffe0; text-align: center; height: 28px; padding: 0 18px;">
+          <p style="transform: skew(-30deg); font-weight: bold; font-size: 17px; color: #1a6840; line-height: 28px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100vw;">
             <span>{{content}}</span>
           </p>
         </section>
@@ -63,15 +63,15 @@ export const HTML_TEMPLATES = {
 `,
 
     h2: `<section style="display:flex;align-items:center;padding:16px 14px 0;">
-  <div style="width:4px;height:24px;background:#004af6;margin-right:8px;border-radius:2px;"></div>
-  <p style="margin:0;font-size:16px;font-weight:600;color:#004af6;">
+  <div style="width:4px;height:24px;background:#1a6840;margin-right:8px;border-radius:2px;"></div>
+  <p style="margin:0;font-size:16px;font-weight:600;color:#1a6840;">
   {{content}}
   </p>
 </section>`,
 
     h3: `<section style="display:flex;align-items:center;padding:8px 18px;">
-  <div style="width:6px;height:6px;background:#004af6;border-radius:50%;margin-right:8px;"></div>
-  <p style="margin:0;font-size:15px;font-weight:500;color:#2c4d9c;">
+  <div style="width:6px;height:6px;background:#1a6840;border-radius:50%;margin-right:8px;"></div>
+  <p style="margin:0;font-size:15px;font-weight:500;color:#2c6840;">
   {{content}}
   </p>
 </section>`,

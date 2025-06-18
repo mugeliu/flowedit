@@ -31,7 +31,6 @@ function injectPluginUIStyles() {
       ${editorStyles}
     `;
     document.head.appendChild(style);
-    console.log("FlowEdit 插件UI样式已注入");
   }
 }
 
@@ -41,7 +40,6 @@ function injectPluginUIStyles() {
 async function initializePluginFeatures() {
   // 1. 检查工具栏是否存在（用于判断页面是否已登录）
   if (!document.querySelector("#js_toolbar_0")) {
-    console.log("[FlowEdit] 未找到js_toolbar_0工具栏页面可能未登录");
     return;
   }
 
@@ -51,19 +49,12 @@ async function initializePluginFeatures() {
   // 3. 初始化所有功能模块
   const initResults = await pluginRegistry.initializeAll();
 
-  if (initResults.success.length > 0) {
-    console.log(`成功初始化功能模块: ${initResults.success.join(", ")}`);
-  }
-
   if (initResults.failed.length > 0) {
     console.warn(`初始化失败的功能模块: ${initResults.failed.join(", ")}`);
   }
 
-  console.log("FlowEdit 插件功能模块初始化完成");
-
   // 4. 启动DOM监听服务（监听插件组件是否被页面更新移除）
   initializeDOMWatcher();
-  console.log("DOM监听服务已启动");
 }
 
 /**
@@ -80,7 +71,6 @@ async function main() {
   // 初始化应用服务（用户配置、远程样式系统等 - 预留后期实现）
   try {
     await initializeAppServices();
-    console.log("[FlowEdit]  initializeAppServices初始化成功");
   } catch (error) {
     console.error("[FlowEdit] initializeAppServices初始化失败:", error);
     // 继续执行，使用默认配置
@@ -93,7 +83,6 @@ async function main() {
 // 页面卸载时清理资源
 window.addEventListener('beforeunload', () => {
   cleanupDOMWatcher();
-  console.log("FlowEdit 资源清理完成");
 });
 
 // 启动应用

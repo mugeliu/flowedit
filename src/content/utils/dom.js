@@ -1,35 +1,7 @@
 // DOM操作工具函数
 // 移除对 selectorConfig 的依赖
 
-/**
- * 切换元素的显示/隐藏状态
- * @param {string|Array<string>} selectors 选择器或选择器数组
- * @returns {Array} 元素状态数组
- */
-export function toggleElements(selectors) {
-  const selectorArray = Array.isArray(selectors) ? selectors : [selectors];
-  const elementStates = [];
 
-  selectorArray.forEach((selector) => {
-    const elements = document.querySelectorAll(selector);
-    elements.forEach((element) => {
-      const currentDisplay =
-        element.style.display || getComputedStyle(element).display;
-      const isHidden = currentDisplay === "none";
-
-      elementStates.push({
-        element: element,
-        selector: selector,
-        previousDisplay: currentDisplay,
-        newDisplay: isHidden ? "" : "none",
-      });
-
-      element.style.display = isHidden ? "" : "none";
-    });
-  });
-
-  return elementStates;
-}
 
 /**
  * 创建带样式的DOM元素
@@ -52,6 +24,49 @@ export function createElement(tag, options = {}) {
   if (options.cssText) element.style.cssText = options.cssText;
 
   return element;
+}
+
+/**
+ * 设置元素的显示状态
+ * @param {string|Element} elementOrId 元素ID（字符串）或元素对象
+ * @param {string} display 显示状态值（'none'表示隐藏，''或其他值表示显示）
+ * @returns {boolean} 操作是否成功
+ */
+export function setElementDisplay(elementOrId, display) {
+  let element;
+  
+  if (typeof elementOrId === 'string') {
+    // 如果是字符串，尝试通过ID获取元素
+    element = document.getElementById(elementOrId);
+  } else if (elementOrId && elementOrId.nodeType === Node.ELEMENT_NODE) {
+    // 如果是元素对象
+    element = elementOrId;
+  }
+  
+  if (element) {
+    element.style.display = display;
+    return true;
+  }
+  
+  return false;
+}
+
+/**
+ * 隐藏元素
+ * @param {string|Element} elementOrId 元素ID（字符串）或元素对象
+ * @returns {boolean} 操作是否成功
+ */
+export function hideElement(elementOrId) {
+  return setElementDisplay(elementOrId, 'none');
+}
+
+/**
+ * 显示元素
+ * @param {string|Element} elementOrId 元素ID（字符串）或元素对象
+ * @returns {boolean} 操作是否成功
+ */
+export function showElement(elementOrId) {
+  return setElementDisplay(elementOrId, '');
 }
 
 /**

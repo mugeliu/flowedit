@@ -5,14 +5,18 @@
  */
 export const buttonStyles = `
   /* 扩展按钮基础样式 */
-    .flowedit-smart-btn {
-    /* 基础样式 */
+  .flowedit-smart-btn {
+    /* 基础布局样式 */
+    position: relative;
     display: inline-block;
     height: 22px;
+    margin: 8px 12px;
     cursor: pointer;
     border: none;
     outline: none;
     box-sizing: border-box;
+    vertical-align: middle;
+    flex-shrink: 0;
     
     /* 特定样式 */
     background-color: #07c160;
@@ -22,12 +26,6 @@ export const buttonStyles = `
     font-size: 12px;
     line-height: 22px;
     transition: all 0.3s ease;
-  }
-
-    /* 固定定位按钮样式 */
-  .flowedit-btn-fixed {
-    position: fixed;
-    z-index: 100;
   }
   
   /* 智能插入按钮悬浮效果 */
@@ -47,15 +45,17 @@ export const buttonStyles = `
 export const switchStyles = `
   /* Switch开关样式 */
   .flowedit-switch {
-    position: absolute;
-    top: 25%;      /* 必须指定位置 */
-    left: 5%;
+    position: relative;
+    display: inline-block;
     width: 40px;
     height: 20px;
+    margin: 8px 12px;
     cursor: pointer;
     border: none;
     outline: none;
     box-sizing: border-box;
+    vertical-align: middle;
+    flex-shrink: 0;
   }
   
   .flowedit-switch-track {
@@ -95,43 +95,40 @@ export const switchStyles = `
 export const editorStyles = `
   /* 智能插入编辑器容器样式 */
   .flowedit-editor-container {
-    position: fixed; /* 统一使用 fixed */
+    position: relative; /* 改为相对定位，适合直接插入 */
+    top: 0;
+    left: 0;
+    z-index: 1;
+    width: calc(100% + 8px);
+    box-sizing: content-box;More actions
     background: #fff;
-    border-radius: 4px;
-    box-sizing: border-box;
-    overflow: visible; /* 允许内容溢出以支持自动高度 */
-    padding: 20px;
-    z-index: 10000;
   }
   
   /* 智能插入编辑器占位元素样式 */
   .flowedit-editor-holder {
+    margin-left: -95px;
     padding: 0;
+    padding-left: 91px;
   }
   
   /* 智能插入控制栏样式 */
   .flowedit-editor-action-bar {
-    position: fixed; /* 统一使用 fixed */
+    position: relative; /* 改为相对定位，适配直接插入DOM */
     background-color: #ffffff;
     display: flex;
     justify-content: flex-end;
-    align-items: center; /* 上下居中对齐 */
+    align-items: center;
     gap: 15px;
-    z-index: 120; /* 统一层级值 */
-    bottom: 0; /* 固定在底部 */
-  }
-
-  /* 透明占位元素样式 */
-  .spacer {
-    width: 20px; /* 控制右边距 */
-    height: 1px; /* 无实际高度，仅占位 */
+    padding: 20px 20px 15px 20px; /* 添加上下内边距 */
+    box-sizing: border-box;
+    width: 768px;
   }
   
   /* 智能插入保存按钮样式 */
   .flowedit-editor-save-btn {
     padding: 4px 12px;
     height: 34px;
-    width: 98px;
+    min-width: 96px;
     display: inline-block;
     background: #07c160;
     color: white;
@@ -148,7 +145,7 @@ export const editorStyles = `
   .flowedit-editor-cancel-btn {
     padding: 4px 12px;
     height: 34px;
-    width: 98px;
+    min-width: 96px;
     display: inline-block;
     background: #999999;
     color: white;

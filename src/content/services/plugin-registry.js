@@ -28,7 +28,6 @@ class PluginRegistry {
     }
 
     this.plugins.set(name, plugin);
-    console.log(`插件 ${name} 已注册`);
   }
 
   /**
@@ -44,20 +43,17 @@ class PluginRegistry {
     }
 
     if (this.initialized.has(name)) {
-      console.warn(`插件 ${name} 已经初始化`);
       return true;
     }
 
     try {
       // 检查是否启用
       if (plugin.isEnabled && !plugin.isEnabled()) {
-        console.log(`插件 ${name} 已禁用，跳过初始化`);
         return false;
       }
 
       await plugin.initialize();
       this.initialized.add(name);
-      console.log(`插件 ${name} 初始化成功`);
       return true;
     } catch (error) {
       console.error(`插件 ${name} 初始化失败:`, error);
@@ -85,7 +81,6 @@ class PluginRegistry {
       }
     }
 
-    console.log("插件初始化完成:", results);
     return results;
   }
 
@@ -102,14 +97,12 @@ class PluginRegistry {
     }
 
     if (!this.initialized.has(name)) {
-      console.warn(`插件 ${name} 未初始化，无需清理`);
       return true;
     }
 
     try {
       plugin.cleanup();
       this.initialized.delete(name);
-      console.log(`插件 ${name} 清理成功`);
       return true;
     } catch (error) {
       console.error(`插件 ${name} 清理失败:`, error);
@@ -119,15 +112,18 @@ class PluginRegistry {
 
   /**
    * 清理所有已初始化的插件
-   * @returns {Object} 清理结果统计
+   * @returns {Promise<Object>} 清理结果统计
    */
-  cleanupAll() {
+  async cleanupAll() {
     const results = {
       success: [],
       failed: [],
     };
 
-    for (const name of this.initialized) {
+    // 创建已初始化插件的副本，避免在迭代过程中修改原集合
+    const pluginsToCleanup = Array.from(this.initialized);
+
+    for (const name of pluginsToCleanup) {
       const success = this.cleanupPlugin(name);
       if (success) {
         results.success.push(name);
@@ -136,7 +132,9 @@ class PluginRegistry {
       }
     }
 
-    console.log("插件清理完成:", results);
+    // 等待一个微任务周期，确保DOM清理完成
+    await new Promise(resolve => setTimeout(resolve, 0));
+
     return results;
   }
 

@@ -135,12 +135,10 @@ export const featureConfig = {
  * DOM选择器配置
  */
 export const selectorConfig = {
-  toolbar: "#js_toolbar_0", // 工具栏容器 - 用于添加自定义按钮和开关
-  editorContent: 'div[contenteditable="true"].ProseMirror', // 原编辑器容器 - 智能插入功能的目标容器
-  editorWrapper: "#edui1_iframeholder", // 原编辑器容器的父元素
-  buttonArea: "#bottom_main", // 按钮区域 - 用于添加保存和取消按钮
-  sidebar: "#js_side_article_list", // 侧边栏 - 用于侧边栏切换功能
-  authorArea: "#js_author_area", // 作者区域 - 智能编辑器定位参考元素
-  ueditor: "#ueditor_0", // UEditor 容器
-  botBar: ".js_bot_bar", // 底部工具栏 - 控制栏定位参考元素
+  toolbar: "js_toolbar_0", // 工具栏容器 - 用于添加自定义按钮和开关 (使用getElementById)
+  editorContent: 'div[contenteditable="true"].ProseMirror', // 原编辑器容器 - 智能插入功能的目标容器 (使用safeQuerySelector)
+  editorWrapper: "edui1_iframeholder", // 原编辑器容器的父元素 (使用getElementById)
+  sidebar: "js_side_article_list", // 侧边栏 - 用于侧边栏切换功能 (使用getElementById)
+  authorArea: "js_author_area", // 作者区域 - 智能编辑器定位参考元素 (使用getElementById)
+  footerToolbar: "js_button_area", // 底部工具栏 - 控制栏定位参考元素 (使用getElementById)
 };

@@ -33,7 +33,6 @@ class UserConfigManager {
       // 加载用户配置
       await this.loadUserConfig();
       
-      console.log('用户配置管理器初始化完成');
       return true;
     } catch (error) {
       console.error('用户配置管理器初始化失败:', error);

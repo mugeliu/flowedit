@@ -1,4 +1,3 @@
-import { computePosition, offset, flip, shift } from "@floating-ui/dom";
 import { createElement, safeQuerySelector } from "../../utils/dom.js";
 import { selectorConfig } from "../../config/index.js";
 import { activateSmartEditor } from "./manager.js";
@@ -9,40 +8,29 @@ import { activateSmartEditor } from "./manager.js";
  */
 export function createSmartButton() {
   const btn = createElement("button", {
-    className: "flowedit-smart-btn flowedit-btn-fixed",
+    className: "flowedit-smart-btn",
     textContent: "智能插入",
   });
 
+  // 添加数据属性用于DOM监听器识别
+  btn.setAttribute('data-flowedit-plugin', 'smart-button');
+  btn.setAttribute('data-flowedit', 'true');
+
   btn.addEventListener("click", handleSmartButtonClick);
 
-  // 插入到 body
-  document.body.appendChild(btn);
-
-  // 查找工具栏容器和最后一个子元素作为定位参考
-  const toolbarContainer = safeQuerySelector(selectorConfig.toolbar);
+  // 查找工具栏容器作为插入目标
+  const toolbarContainer = document.getElementById(selectorConfig.toolbar);
+  
   if (!toolbarContainer) {
-    throw new Error(`工具栏容器未找到: ${selectorConfig.toolbar}`);
+    const error = `工具栏容器未找到: ${selectorConfig.toolbar}`;
+    console.error('[SmartButton]', error);
+    throw new Error(error);
   }
 
-  const referenceElement =
-    toolbarContainer.lastElementChild || toolbarContainer;
+  // 直接插入到工具栏容器的末尾
+  toolbarContainer.appendChild(btn);
 
-  // 使用 Floating UI 定位到参考元素的视觉位置
-  computePosition(referenceElement, btn, {
-    placement: "right-start",
-    middleware: [
-      offset(referenceElement.offsetWidth), // 正偏移使其显示在参考元素的右侧
-      flip(),
-      shift({ padding: 8 }),
-    ],
-  }).then(({ x, y }) => {
-    Object.assign(btn.style, {
-      left: `${x}px`,
-      top: `${y}px`,
-    });
-  });
-
-  // 返回包含清理函数的对象
+  // 返回清理函数
   const cleanup = () => {
     if (btn.parentNode) {
       btn.parentNode.removeChild(btn);

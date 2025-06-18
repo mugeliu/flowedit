@@ -1,10 +1,11 @@
 // 智能编辑器控制栏管理
-import { createElement, safeQuerySelector } from "../../utils/dom.js";
+import {
+  createElement,
+  safeQuerySelector,
+  hideElement,
+  showElement,
+} from "../../utils/dom.js";
 import { selectorConfig } from "../../config/index.js";
-import { computePosition, autoUpdate } from "@floating-ui/dom";
-
-// 存储控制栏的清理函数
-let controlBarCleanupAutoUpdate = null;
 
 /**
  * 创建编辑器控制栏
@@ -32,68 +33,23 @@ export function createEditorControls(callbacks = {}) {
     className: "flowedit-editor-cancel-btn",
   });
 
-  // 创建透明占位元素用于布局
-  const spacerEl = createElement("div", {
-    className: "spacer",
-  });
-
   controlBar.appendChild(saveBtn);
   controlBar.appendChild(cancelBtn);
-  controlBar.appendChild(spacerEl);
 
-  // 查找参考元素（只使用底部工具栏）
-  const referenceElement = safeQuerySelector(selectorConfig.botBar);
+  // 查找底部工具栏元素
+  const footerToolbar = document.getElementById(selectorConfig.footerToolbar);
 
-  if (!referenceElement) {
-    console.warn("找不到botBar元素，将控制栏添加到body并使用默认定位");
+  if (!footerToolbar) {
+    console.warn("找不到底部工具栏元素，将控制栏添加到body");
     document.body.appendChild(controlBar);
   } else {
-    // 将控制栏添加到 body
-    document.body.appendChild(controlBar);
+    // 隐藏原始的底部工具栏
+    hideElement(footerToolbar);
 
-    // 使用 Floating UI 定位实现完全覆盖效果
-    const updatePosition = () => {
-      computePosition(referenceElement, controlBar, {
-        strategy: "fixed",
-        middleware: [
-          {
-            name: "cover",
-            fn: ({ rects }) => ({
-              x: rects.reference.x,
-              y: rects.reference.y,
-            }),
-          },
-          {
-            name: "size",
-            fn: ({ rects }) => ({
-              data: {
-                width: rects.reference.width,
-                height: rects.reference.height,
-              },
-            }),
-          },
-        ],
-      }).then(({ x, y }) => {
-        // 获取参考元素的尺寸
-        const referenceRect = referenceElement.getBoundingClientRect();
-
-        Object.assign(controlBar.style, {
-          left: `${x}px`,
-          top: `${y}px`,
-          width: `${referenceRect.width}px`,
-          height: `${referenceRect.height}px`,
-        });
-      });
-    };
-
-    // 初始定位
-    updatePosition();
-
-    // 自动更新位置
-    controlBarCleanupAutoUpdate = autoUpdate(
-      referenceElement,
+    // 将自定义控制栏插入到底部工具栏的兄弟节点位置
+    footerToolbar.parentNode.insertBefore(
       controlBar,
-      updatePosition
+      footerToolbar.nextSibling
     );
   }
 
@@ -106,7 +62,7 @@ export function createEditorControls(callbacks = {}) {
     cancelBtn.addEventListener("click", onCancel);
   }
 
-  console.log("智能编辑器控制栏创建完成，使用 Floating UI 定位");
+  console.log("智能编辑器控制栏创建完成，已插入到DOM中");
 
   return controlBar;
 }
@@ -116,14 +72,14 @@ export function createEditorControls(callbacks = {}) {
  * @param {HTMLElement} controlBar 控制栏元素
  */
 export function removeEditorControls(controlBar) {
-  // 清理自动更新
-  if (controlBarCleanupAutoUpdate) {
-    controlBarCleanupAutoUpdate();
-    controlBarCleanupAutoUpdate = null;
-  }
-
   if (controlBar) {
     controlBar.remove();
     console.log("智能编辑器控制栏已移除");
+  }
+
+  // 恢复显示原始的底部工具栏
+  const footerToolbar = document.getElementById(selectorConfig.footerToolbar);
+  if (footerToolbar) {
+    showElement(footerToolbar);
   }
 }
