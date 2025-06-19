@@ -1,0 +1,458 @@
+/**
+ * 自定义微信图片工具样式
+ */
+
+/* 图片工具容器 */
+.image-tool {
+  margin: 10px 0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* 图片容器基础样式 */
+.image-tool__image-container {
+  position: relative;
+  display: block;
+}
+
+/* 上传插槽样式 */
+.image-tool__upload-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 150px;
+  border: 3px dashed #007cff;
+  border-radius: 12px;
+  background: #f0f8ff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: #007cff;
+  font-size: 16px;
+  font-weight: 600;
+  padding: 20px;
+}
+
+.image-tool__upload-slot:hover {
+  border-color: #0056cc;
+  background: #e6f3ff;
+  color: #0056cc;
+  transform: scale(1.02);
+}
+
+.image-tool__upload-slot svg {
+  margin-bottom: 12px;
+  opacity: 0.8;
+  width: 32px;
+  height: 32px;
+}
+
+.image-tool__upload-slot span {
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+}
+
+/* 图片覆盖层样式 */
+.image-tool__overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.image-tool__image-container:hover .image-tool__overlay,
+.image-tool__slot:hover .image-tool__overlay {
+  opacity: 1;
+}
+
+.image-tool__change-btn {
+  background: #1da1f2;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.3s ease;
+}
+
+.image-tool__change-btn:hover {
+  background: #1991db;
+}
+
+/* 并排显示样式 */
+.image-tool__image-container--side-by-side {
+  display: flex;
+  gap: 15px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.image-tool__slot {
+  position: relative;
+  flex: 1;
+  min-height: 150px;
+  max-height: 200px;
+}
+
+.image-tool__slot .image-tool__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+/* 轮播样式 */
+.image-tool__image-container--carousel {
+  position: relative;
+  overflow: hidden;
+  min-height: 150px;
+  max-height: 200px;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.image-tool__carousel-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 150px;
+  max-height: 200px;
+}
+
+.image-tool__carousel-container .image-tool__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.image-tool__carousel-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 18px;
+  z-index: 2;
+  transition: background-color 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.image-tool__carousel-btn:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.image-tool__carousel-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.image-tool__carousel-btn--prev {
+  left: 10px;
+}
+
+.image-tool__carousel-btn--next {
+  right: 10px;
+}
+
+.image-tool__carousel-indicator {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  z-index: 2;
+}
+
+.image-tool__carousel-counter {
+  font-weight: 500;
+}
+
+/* 添加更多图片按钮样式 */
+.image-tool__add-more {
+  margin-top: 10px;
+  text-align: center;
+}
+
+.image-tool__add-more-btn {
+  background: #f0f8ff;
+  border: 1px dashed #007cff;
+  color: #007cff;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.3s ease;
+}
+
+.image-tool__add-more-btn:hover {
+  background: #007cff;
+  color: white;
+  border-color: #007cff;
+}
+
+/* 上传按钮样式 */
+.image-tool__upload-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 12px;
+  padding: 40px 20px;
+  border: 3px dashed #007cff;
+  border-radius: 12px;
+  background-color: #f0f8ff;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: #007cff;
+  font-size: 16px;
+  font-weight: 600;
+  min-height: 150px;
+}
+
+.image-tool__upload-button:hover {
+  border-color: #0056cc;
+  background-color: #e6f3ff;
+  color: #0056cc;
+  transform: scale(1.02);
+}
+
+.image-tool__upload-button svg {
+  fill: currentColor;
+  opacity: 0.8;
+  width: 32px;
+  height: 32px;
+}
+
+/* 加载状态样式 */
+.image-tool__loader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 12px;
+  padding: 40px 20px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+}
+
+.image-tool__loader-spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid #e0e0e0;
+  border-top: 2px solid #007cff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.image-tool__loader-text {
+  color: #666;
+  font-size: 14px;
+}
+
+/* 错误状态样式 */
+.image-tool__error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 12px;
+  padding: 40px 20px;
+  background-color: #fff5f5;
+  border: 1px solid #fed7d7;
+  border-radius: 8px;
+}
+
+.image-tool__error-text {
+  color: #e53e3e;
+  font-size: 14px;
+  text-align: center;
+}
+
+.image-tool__retry-button {
+  padding: 8px 16px;
+  background-color: #007cff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: background-color 0.3s ease;
+}
+
+.image-tool__retry-button:hover {
+  background-color: #0056cc;
+}
+
+/* 图片容器样式 */
+.image-tool__image-container {
+  position: relative;
+  max-width: 500px;
+  margin: 0 auto;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.image-tool__image {
+  width: 100%;
+  height: auto;
+  max-height: 300px;
+  display: block;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+/* 图片样式变体 */
+.image-tool__image-container--stretched {
+  width: 100%;
+}
+
+.image-tool__image-container--with-border {
+  border: 1px solid #e0e0e0;
+  padding: 8px;
+  background-color: white;
+}
+
+.image-tool__image-container--with-background {
+  background-color: #f5f5f5;
+  padding: 20px;
+}
+
+.image-tool__image-container--with-border.image-tool__image-container--with-background {
+  border: 1px solid #e0e0e0;
+  background-color: #f9f9f9;
+  padding: 20px;
+}
+
+/* 图片标题样式 */
+.image-tool__caption {
+  margin-top: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: #666;
+  text-align: center;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  font-style: italic;
+}
+
+/* 设置按钮样式 */
+.cdx-settings-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-right: 4px;
+}
+
+.cdx-settings-button:hover {
+  background-color: #f0f0f0;
+}
+
+.cdx-settings-button--active {
+  background-color: #007cff;
+  color: white;
+}
+
+.cdx-settings-button--active:hover {
+  background-color: #0056cc;
+}
+
+.cdx-settings-button svg {
+  fill: currentColor;
+  width: 16px;
+  height: 16px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .image-tool__upload-button {
+    padding: 30px 15px;
+    font-size: 13px;
+    /* 保持蓝色主题样式 */
+    border: 3px dashed #007cff;
+    background-color: #f0f8ff;
+    color: #007cff;
+  }
+  
+  .image-tool__loader,
+  .image-tool__error {
+    padding: 30px 15px;
+  }
+  
+  .image-tool__caption {
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+}
+
+/* 拖拽状态样式 */
+.image-tool__upload-button.dragover {
+  border-color: #007cff;
+  background-color: #e6f3ff;
+  transform: scale(1.02);
+}
+
+/* 图片加载动画 */
+.image-tool__image {
+  opacity: 0;
+  animation: fadeIn 0.3s ease forwards;
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
+}
+
+/* 工具提示样式 */
+.image-tool__upload-button::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.image-tool__upload-button:hover::after {
+  opacity: 1;
+}

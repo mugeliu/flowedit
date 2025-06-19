@@ -3,6 +3,7 @@ import {
   buttonStyles,
   switchStyles,
   editorStyles,
+  customImageToolStyles,
 } from "./styles/components.js";
 import { pluginRegistry } from "./services/plugin-registry.js";
 import smartEditorPlugin from "./features/smart-editor/index.js";
@@ -29,6 +30,7 @@ function injectPluginUIStyles() {
       ${buttonStyles}
       ${switchStyles}
       ${editorStyles}
+      ${customImageToolStyles}
     `;
     document.head.appendChild(style);
   }
