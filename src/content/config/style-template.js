@@ -18,79 +18,39 @@ export const HTML_TEMPLATES = {
 
   // 内联样式配置
   inlineStyles: {
-    bold: "font-weight:bold;",
-    italic: "font-style:italic;",
-    underline: "text-decoration:underline;",
-    strikethrough: "text-decoration:line-through;",
-    code: "background:rgba(26,104,64,0.1);padding:2px 4px;border-radius:3px;font-family:'Courier New',monospace;font-size:0.9em;",
-    mark: "background:rgba(26,104,64,0.2);padding:1px 2px;border-radius:2px;",
-    small: "font-size:0.85em;",
-    sup: "font-size:0.75em;vertical-align:super;",
-    sub: "font-size:0.75em;vertical-align:sub;",
-    link: "color:rgba(26,104,64,1);text-decoration:underline;transition:color 0.2s ease;",
-    cite: "display:block;margin-top:0.5em;font-size:0.9em;color:rgba(26,104,64,0.7);",
+    a: `<span textstyle style="color: rgb(16, 185, 129); text-decoration: underline; text-decoration-color: rgba(16, 185, 129, 0.5); text-underline-offset: 2px;">{{content}}</span>`,
+
+    b: `<span textstyle style="font-weight: 700; color: rgb(16, 185, 129);">{{content}}</span>`,
+    
+    i: `<span textstyle style="font-style: italic; color: rgb(16, 185, 129); letter-spacing: 0.5px; font-weight: 500;">{{content}}</span>`,
+    
+    u: `<span textstyle style="text-decoration: underline; text-decoration-color: rgb(16, 185, 129); text-underline-offset: 3px; text-decoration-thickness: 2px;">{{content}}</span>`,
+    
+    mark: `<span textstyle style="background: rgba(16, 185, 129, 0.2); padding: 0.1em 0.4em; border-radius: 3px;">{{content}}</span>`,
+    
+    code: `<span textstyle style="font-family: 'Consolas', 'Monaco', 'Courier New', monospace; font-size: 0.85em; background: rgba(16, 185, 129, 0.1); color: rgb(6, 95, 70); padding: 0.25em 0.6em; border-radius: 5px; border: 1px solid rgba(16, 185, 129, 0.25); font-weight: 500; letter-spacing: 0.3px;">{{content}}</span>`,
+
+    sup: `<sup textstyle style="color: rgba(16, 185, 129, 0.7); font-size: 0.7em; margin-left: 0.2em;">{{sup}}</sup>`
   },
   header: {
-    h1: `<section style="width: 100%; display: flex; justify-content: center; align-items: center; padding: 20px 14px 0;">
-  <section style="display: flex; flex-direction: column; align-items: center; justify-content: flex-start;">
+    h1: `<section style="font-style: normal;font-variant-ligatures: normal;font-variant-caps: normal;letter-spacing: 0.5px;orphans: 2;text-indent: 0px;text-transform: none;widows: 2;word-spacing: 0px;-webkit-text-stroke-width: 0px;white-space: normal;text-decoration-thickness: initial;text-decoration-style: initial;text-decoration-color: initial;box-sizing: border-box;border-width: 0px;border-style: solid;font-size: 20px;font-weight: 600;margin: 1.8em 0px 1.2em;text-align: center;line-height: 1.4;font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, &quot;Helvetica Neue&quot;, Arial, sans-serif;display: flex;justify-content: center;padding: 0px;color: rgb(4, 120, 87);"><section style="display: inline-block;padding: 1em 2.2em;color: rgb(255, 255, 255);background: linear-gradient(135deg, rgb(16, 185, 129) 0%, rgb(5, 150, 105) 100%);border-radius: 12px;box-shadow: rgba(16, 185, 129, 0.25) 0px 6px 20px -4px, rgba(0, 0, 0, 0.1) 0px 2px 8px -2px;"><span leaf="">{{content}}</span></section></section>`,
+
+    h2: `<section style="font-style: normal;font-variant-ligatures: normal;font-variant-caps: normal;letter-spacing: 0.3px;orphans: 2;text-indent: 0px;text-transform: none;widows: 2;word-spacing: 0px;-webkit-text-stroke-width: 0px;white-space: normal;text-decoration-thickness: initial;text-decoration-style: initial;text-decoration-color: initial;box-sizing: border-box;border-width: 0px;border-style: solid;font-size: 18px;font-weight: 600;margin: 1.5em 0px 1em;text-align: left;line-height: 1.4;font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, &quot;Helvetica Neue&quot;, Arial, sans-serif;display: block;padding: 0px;color: rgb(4, 120, 87);"><section style="display: inline-flex; align-items: center; padding: 0.8em 1.8em 0.8em 1.2em; background: rgba(16, 185, 129, 0.06); border-left: 4px solid rgb(16, 185, 129); border-radius: 0px 8px 8px 0px; min-width: fit-content;"><span style="display: inline-block; width: 8px; height: 8px; background: rgb(16, 185, 129); border-radius: 50%; margin-right: 0.8em; vertical-align: middle;"></span><span leaf="">{{content}}</span></section></section>`,
     
-    <section style="display: flex; align-items: flex-start; justify-content: center;">
-      
-      <!-- 左侧编号模块 -->
-      <section style="transform: skew(30deg); display: flex; align-items: flex-start; justify-content: center;">
-        <section style="background: #1a6840; text-align: center; padding: 0 8px; height: 28px;">
-          <p style="transform: skew(-30deg); font-weight: bold; font-size: 18px; color: #1a6840; line-height: 28px; text-align: center; -webkit-background-clip: text; background-image: linear-gradient(163deg, #ffffff 0%, #a5ffc0 100%); word-break: break-all; -webkit-text-fill-color: transparent;">
-            <span>01</span>
-          </p>
-        </section>
-        <section style="width: 1px; height: 42px; align-self: flex-start; background: linear-gradient(134deg, #1a6840, rgba(26, 104, 64, 0)); z-index: 2; margin-left: -1px;"></section>
-      </section>
-
-      <!-- 右侧标题模块 -->
-      <section style="display: flex; align-items: flex-start; justify-content: center; transform: skew(30deg);">
-        <section style="width: 1px; height: 42px; margin-top: -25px; margin-right: -1px; align-self: flex-start; background: linear-gradient(134deg, #ffffff, #d0ffd0); z-index: 2;"></section>
-        <section style="background: #e0ffe0; text-align: center; height: 28px; padding: 0 18px;">
-          <p style="transform: skew(-30deg); font-weight: bold; font-size: 17px; color: #1a6840; line-height: 28px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100vw;">
-            <span>{{content}}</span>
-          </p>
-        </section>
-      </section>
-
-    </section>
-
-  </section>
-</section>
-`,
-
-    h2: `<section style="display:flex;align-items:center;padding:16px 14px 0;">
-  <div style="width:4px;height:24px;background:#1a6840;margin-right:8px;border-radius:2px;"></div>
-  <p style="margin:0;font-size:16px;font-weight:600;color:#1a6840;">
-  {{content}}
-  </p>
-</section>`,
-
-    h3: `<section style="display:flex;align-items:center;padding:8px 18px;">
-  <div style="width:6px;height:6px;background:#1a6840;border-radius:50%;margin-right:8px;"></div>
-  <p style="margin:0;font-size:15px;font-weight:500;color:#2c6840;">
-  {{content}}
-  </p>
-</section>`,
+    h3: `<section style="font-style: normal;font-variant-ligatures: normal;font-variant-caps: normal;letter-spacing: 0.2px;orphans: 2;text-indent: 0px;text-transform: none;widows: 2;word-spacing: 0px;-webkit-text-stroke-width: 0px;white-space: normal;text-decoration-thickness: initial;text-decoration-style: initial;text-decoration-color: initial;box-sizing: border-box;border-width: 0px;border-style: solid;font-size: 17px;font-weight: 500;margin: 1.2em 0px 0.8em;text-align: left;line-height: 1.5;font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, &quot;Helvetica Neue&quot;, Arial, sans-serif;display: block;padding: 0px;color: rgb(4, 120, 87);"><section style="display: inline-flex; align-items: center; padding: 0.6em 1.5em 0.6em 1em; background: linear-gradient(90deg, rgba(16, 185, 129, 0.04) 0%, rgba(16, 185, 129, 0.01) 80%, transparent 100%); border-left: 3px solid rgba(16, 185, 129, 0.6); border-radius: 0px 6px 6px 0px; min-width: fit-content;"><span style="display: inline-block; width: 6px; height: 6px; background: rgba(16, 185, 129, 0.8); border-radius: 50%; margin-right: 0.6em; vertical-align: middle;"></span><span leaf="">{{content}}</span></section></section>`,
   },
 
-  paragraph: {
-    //default: `<section mpa-font-style="mbraxlmy23cq" style="font-size:14px;margin-bottom:8px;line-height:2em;margin-left:32px;margin-right:32px;visibility:visible;" data-mpa-action-id="mbraxlnm103x" data-pm-slice="0 0 []"><span leaf="" style="visibility:visible;"><span textstyle="" style="letter-spacing:2px;visibility:visible;">{{content}}</span></span></section>`,
-    default: `<section style="margin-bottom:8px;margin-left:16px;margin-right:16px;"><div style="font-size:14px; line-height:2em;"><span style="letter-spacing:2px;">{{content}}</span></div></section>`,
-  },
+paragraph: {
+    default: `<section style="font-style: normal;font-variant-ligatures: normal;font-variant-caps: normal;orphans: 2;text-indent: 0px;text-transform: none;widows: 2;word-spacing: 0px;-webkit-text-stroke-width: 0px;white-space: normal;text-decoration-thickness: initial;text-decoration-style: initial;text-decoration-color: initial;box-sizing: border-box;border-width: 0px;border-style: solid;margin: 0.8em 0px;text-align: left;line-height: 1.7;font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, &quot;Helvetica Neue&quot;, Arial, sans-serif;display: block;padding: 0px;"><section style="font-size: 16px; color: rgb(55, 65, 81); letter-spacing: 0.3px; padding: 0.5em 1.2em;"><span leaf="">{{content}}</span></section></section>`,
+},
 
-  quote: {
-    //default: `<section data-block="quote" style="margin-bottom:8px;"><blockquote style="background-color:rgba(26,104,64,0.1);border-left:4px solid #1a6840;margin:1.5em 10px;padding:1em 1.5em;border-radius:6px;"><p style="font-size:1.05em;color:#212529;margin:0;font-style:italic;">{{content}}</p><span style="display:block;text-align:right;color:rgba(26,104,64,0.7);font-size:1em;margin-top:1em;">—— {{caption}}</span></blockquote></section>`,
-    default: `<section style="margin-bottom:8px;margin-left:16px;margin-right:16px;"><blockquote style="background-color:rgba(26,104,64,0.1); border-left:4px solid #1a6840; padding:1em 1.5em; border-radius:6px; margin:0;"><p style="font-size:1.05em; color:#212529; margin:0; font-style:italic;">{{content}}</p><span style="display:block; text-align:right; color:rgba(26,104,64,0.7); font-size:1em; margin-top:1em;">—— {{caption}}</span></blockquote></section>`,
-  },
+quote: {
+    default: `<section style="font-style: normal;font-variant-ligatures: normal;font-variant-caps: normal;orphans: 2;text-indent: 0px;text-transform: none;widows: 2;word-spacing: 0px;-webkit-text-stroke-width: 0px;white-space: normal;text-decoration-thickness: initial;text-decoration-style: initial;text-decoration-color: initial;box-sizing: border-box;border-width: 0px;border-style: solid;margin: 1.5em 0px;text-align: left;line-height: 1.6;font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, &quot;Helvetica Neue&quot;, Arial, sans-serif;display: block;padding: 0px;"><section style="background: rgba(16, 185, 129, 0.06); border-left: 4px solid rgb(16, 185, 129); padding: 1.2em 1.8em; border-radius: 0px 8px 8px 0px; box-shadow: rgba(16, 185, 129, 0.1) 0px 2px 8px -2px;"><section style="font-size: 16px; color: rgb(55, 65, 81); font-style: italic; margin: 0px 0px 1em 0px; letter-spacing: 0.2px;"><span leaf="">{{content}}</span></section><section style="display: flex; justify-content: flex-end; color: rgba(16, 185, 129, 0.8); font-size: 14px; font-weight: 500; font-style: normal;"><span leaf="">{{caption}}</span></section></section></section>`,
+},
 
-  delimiter: {
-    //default: `<section data-block="delimiter" style="text-indent:0px;margin-bottom:8px;"><hr style="border:0;height:1px;background-image:linear-gradient(to right,rgba(26,104,64,0),rgba(26,104,64,0.25),rgba(26,104,64,0));margin:2em 0;"></section>`,
-    default: `<section style="margin-bottom:8px;margin-left:16px;margin-right:16px;"><hr style="border:0; height:1px; background-image:linear-gradient(to right, rgba(26,104,64,0), rgba(26,104,64,0.25), rgba(26,104,64,0)); margin:2em 0;"></section>`,
-  },
+delimiter: {
+    default: `<section style="font-style: normal;font-variant-ligatures: normal;font-variant-caps: normal;orphans: 2;text-indent: 0px;text-transform: none;widows: 2;word-spacing: 0px;-webkit-text-stroke-width: 0px;white-space: normal;text-decoration-thickness: initial;text-decoration-style: initial;text-decoration-color: initial;box-sizing: border-box;border-width: 0px;border-style: solid;margin: 2em 0px;text-align: center;line-height: 1;font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, &quot;Helvetica Neue&quot;, Arial, sans-serif;display: flex;justify-content: center;padding: 0px;"><section style="width: 80%; height: 2px; background: linear-gradient(90deg, transparent 0%, rgba(16, 185, 129, 0.2) 20%, rgba(16, 185, 129, 0.6) 50%, rgba(16, 185, 129, 0.2) 80%, transparent 100%); border-radius: 1px;"></section></section>`,
+},
 
   raw: {
     default: ``,

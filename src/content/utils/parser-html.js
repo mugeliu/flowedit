@@ -110,84 +110,78 @@ class BaseBlockProcessor {
   processInlineStyles(text) {
     if (!text) return "";
 
-    let processedText = String(text);
+    const htmlString = `<div>${text}</div>`;
+    const doc = new DOMParser().parseFromString(htmlString, "text/html");
     const styles = this.templates.inlineStyles;
 
-    // 增强现有的HTML标签，添加内联样式
-    const styleEnhancements = {
-      "<b>": `<strong style="${styles.bold}">`,
-      "</b>": "</strong>",
-      "<strong>": `<strong style="${styles.bold}">`,
-      "<i>": `<em style="${styles.italic}">`,
-      "</i>": "</em>",
-      "<em>": `<em style="${styles.italic}">`,
-      "<u>": `<u style="${styles.underline}">`,
-      "<s>": `<s style="${styles.strikethrough}">`,
-      "<del>": `<del style="${styles.strikethrough}">`,
-      "<code>": `<code style="${styles.code}">`,
-      "<mark>": `<mark style="${styles.mark}">`,
-      "<small>": `<small style="${styles.small}">`,
-      "<sup>": `<sup style="${styles.sup}">`,
-      "<sub>": `<sub style="${styles.sub}">`
-    };
-
-    // 处理链接标签
-    processedText = this.processLinkTags(processedText);
-
-    // 应用样式增强
-    Object.entries(styleEnhancements).forEach(([tag, replacement]) => {
-      if (!replacement.includes("style=") || !processedText.includes(tag)) {
-        processedText = processedText.replace(
-          new RegExp(tag.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g"),
-          replacement
-        );
-      }
+    // 处理链接 (<a> → 使用样式模板)
+    doc.querySelectorAll('a').forEach(a => {
+      const content = a.innerHTML;
+      const styledHtml = styles.a.replace(/{{content}}/g, content);
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = styledHtml;
+      a.replaceWith(...tempDiv.childNodes);
     });
 
-    return processedText;
+    // 处理加粗 (<b>, <strong> → 使用样式模板)
+    doc.querySelectorAll('b, strong').forEach(b => {
+      const content = b.innerHTML;
+      const styledHtml = styles.b.replace(/{{content}}/g, content);
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = styledHtml;
+      b.replaceWith(...tempDiv.childNodes);
+    });
+
+    // 处理斜体 (<i>, <em> → 使用样式模板)
+    doc.querySelectorAll('i, em').forEach(i => {
+      const content = i.innerHTML;
+      const styledHtml = styles.i.replace(/{{content}}/g, content);
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = styledHtml;
+      i.replaceWith(...tempDiv.childNodes);
+    });
+
+    // 处理下划线 (<u> → 使用样式模板)
+    doc.querySelectorAll('u').forEach(u => {
+      const content = u.innerHTML;
+      const styledHtml = styles.u.replace(/{{content}}/g, content);
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = styledHtml;
+      u.replaceWith(...tempDiv.childNodes);
+    });
+
+    // 处理高亮 (<mark> → 使用样式模板)
+    doc.querySelectorAll('mark').forEach(mark => {
+      const content = mark.innerHTML;
+      const styledHtml = styles.mark.replace(/{{content}}/g, content);
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = styledHtml;
+      mark.replaceWith(...tempDiv.childNodes);
+    });
+
+    // 处理行内代码 (<code> → 使用样式模板)
+    doc.querySelectorAll('code').forEach(code => {
+      const content = code.innerHTML;
+      const styledHtml = styles.code.replace(/{{content}}/g, content);
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = styledHtml;
+      code.replaceWith(...tempDiv.childNodes);
+    });
+
+    // 处理上标 (<sup> → 使用样式模板)
+    doc.querySelectorAll('sup').forEach(sup => {
+      const content = sup.innerHTML;
+      const styledHtml = styles.sup.replace(/{{sup}}/g, content);
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = styledHtml;
+      sup.replaceWith(...tempDiv.childNodes);
+    });
+
+    // 返回转换后的 HTML（仅 div 内容）
+    return doc.body.querySelector('div').innerHTML;
   }
 
-  /**
-   * 处理链接标签
-   * @param {string} text 包含链接的文本
-   * @returns {string} 处理后的文本
-   */
-  processLinkTags(text) {
-    const linkStyle = this.templates.inlineStyles.link;
 
-    return text.replace(
-      /<a\s+href=["']([^"']+)["']([^>]*)>/g,
-      (match, href, otherAttrs) => {
-        if (otherAttrs.includes("style=")) {
-          return match;
-        }
-
-        try {
-          const url = new URL(href);
-          const hostname = url.hostname;
-
-          if (hostname === "mp.weixin.qq.com") {
-            return `<a href="${href}" style="${linkStyle}"${otherAttrs}>`;
-          } else {
-            return this.handleNonWeixinLink(href, otherAttrs, linkStyle);
-          }
-        } catch (error) {
-          return `<a href="${href}" style="${linkStyle}"${otherAttrs}>`;
-        }
-      }
-    );
-  }
-
-  /**
-   * 处理非微信公众号链接
-   * @param {string} href 链接地址
-   * @param {string} otherAttrs 其他属性
-   * @param {string} linkStyle 链接样式
-   * @returns {string} 处理后的链接HTML
-   */
-  handleNonWeixinLink(href, otherAttrs, linkStyle) {
-    return `<a href="${href}" style="${linkStyle}"${otherAttrs}>`;
-  }
 
   /**
    * 清理和验证HTML内容
@@ -324,12 +318,14 @@ class QuoteBlockProcessor extends BaseBlockProcessor {
 
     let rendered = template.replace(/{{content}}/g, content);
     
-    // 处理 caption
-    if (this.processCaptions && blockData.caption) {
-      const caption = `<cite style="${this.templates.inlineStyles.cite}">${this.sanitizeHtml(this.processInlineStyles(blockData.caption))}</cite>`;
-      rendered = rendered.replace(/{{caption}}/g, caption);
-    } else {
-      rendered = rendered.replace(/{{caption}}/g, "");
+    // 处理 caption - 只有当模板中包含{{caption}}占位符时才处理
+    if (template.includes('{{caption}}')) {
+      if (this.processCaptions && blockData.caption) {
+        const caption = this.sanitizeHtml(this.processInlineStyles(blockData.caption));
+        rendered = rendered.replace(/{{caption}}/g, caption);
+      } else {
+        rendered = rendered.replace(/{{caption}}/g, "");
+      }
     }
     
     return rendered;
