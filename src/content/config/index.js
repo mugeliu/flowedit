@@ -1,6 +1,8 @@
 // 配置管理
 
 import { IconH1, IconH2, IconH3 } from "@codexteam/icons";
+import { createWeChatImageUploader } from "../tools/custom-wechat-image-tool.js";
+
 /**
  * Editor.js 编辑器配置
  */
@@ -50,11 +52,22 @@ export const editorConfig = {
       },
     },
     image: {
-      class: "CustomImageTool", // 使用自定义微信图片工具
+      class: "ImageTool", // 将在editor.js中解析为实际的类引用
       inlineToolbar: true,
       config: {
-        endpoints: {},
-        types: 'image/*'
+        types: "image/*",
+        captionPlaceholder: "图片描述",
+        endpoints: {
+          byFile: "/api/upload",
+          byUrl: "/api/upload",
+        },
+        features: {
+          caption: "optional", // caption作为可选功能
+          withBorder: true, // 启用边框功能
+          withBackground: true, // 启用背景功能
+          stretched: true, // 启用拉伸功能
+        },
+        uploader: createWeChatImageUploader(),
       },
     },
     delimiter: {

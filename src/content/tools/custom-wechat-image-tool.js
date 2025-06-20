@@ -1,210 +1,267 @@
-import ImageTool from "@editorjs/image";
+/**
+ * 微信图片上传工具模块
+ * 提供微信图片上传相关的方法
+ */
 
 /**
- * 自定义微信图片上传工具
- * 继承自 @editorjs/image 的 ImageTool
+ * 强制清理图片工具UI状态
+ * 解决EditorJS hidePreloader方法不生效的问题
  */
-export default class CustomImageTool extends ImageTool {
-  /**
-   * 构造函数
-   */
-  constructor({ data, config, api, readOnly, block }) {
-    // 直接传递原始配置给父类，不修改uploader
-    super({ data, config, api, readOnly, block });
-    
-  }
-
-  /**
-   * 重写父类的uploadFile方法，直接处理文件上传
-   * @param {File} file - 要上传的文件
-   */
-  uploadFile(file) {
-    console.log('=== CustomImageTool.uploadFile 开始 ===');
-    console.log('文件信息:', {
-      name: file.name,
-      size: file.size,
-      type: file.type,
-      lastModified: file.lastModified
+function forceCleanImageToolUI() {
+  setTimeout(() => {
+    // 强制清理preloader样式和状态
+    const preloaders = document.querySelectorAll(
+      ".image-tool__image-preloader"
+    );
+    preloaders.forEach((preloader) => {
+      preloader.style.backgroundImage = "";
+      preloader.style.display = "none";
     });
-    
+
+    // 强制重置容器状态类
+    const containers = document.querySelectorAll(".image-tool");
+    containers.forEach((container) => {
+      container.classList.remove("image-tool--uploading", "image-tool--filled");
+      container.classList.add("image-tool--empty");
+    });
+  }, 50);
+}
+
+/**
+ * 验证图片文件
+ * @param {File} file - 要验证的文件
+ * @returns {Promise<void>} 验证结果
+ */
+function validateImageFile(file) {
+  return new Promise((resolve, reject) => {
     // 检查文件大小（10MB限制）
     if (file.size > 10 * 1024 * 1024) {
-      console.log('❌ 文件大小检查失败: 文件大小超过10MB限制');
-      this.uploadingFailed("文件大小不能超过10MB");
+      reject(new Error("文件大小不能超过10MB"));
       return;
     }
-    console.log('✅ 文件大小检查通过');
 
-    // 获取微信token
-    const token = this.getWeChatToken();
-    console.log('获取到的token:', token);
-    
-    if (!token) {
-      console.log('❌ Token检查失败: 未找到微信token');
-      this.uploadingFailed("未找到微信token，请确保在微信公众号后台中使用");
+    // 检查文件类型
+    const allowedTypes = [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/gif",
+      "image/webp",
+    ];
+    if (!allowedTypes.includes(file.type)) {
+      reject(new Error("仅支持 JPEG、PNG、GIF、WebP 格式的图片"));
       return;
     }
-    console.log('✅ Token检查通过');
 
-    // 显示加载状态
-    console.log('显示加载状态...');
-    this.ui.showPreloader();
+    resolve();
+  });
+}
 
-    // 执行实际的上传逻辑
-    console.log('🚀 开始执行上传逻辑...');
-    this.performUpload(file, token)
-      .then(result => {
-        console.log('✅ 上传成功:', result);
-        // 成功时调用onUpload
-        this.onUpload({
+
+
+/**
+ * 从 background script 获取微信数据
+ * @returns {Promise} Promise对象，成功时resolve微信数据，失败时reject错误信息
+ */
+async function getWeChatDataFromBackground() {
+  return new Promise((resolve, reject) => {
+    chrome.runtime.sendMessage(
+      { type: "get_wechat_data" },
+      (response) => {
+        if (response && response.success) {
+          resolve(response.data);
+        } else {
+          reject(new Error(response?.error || "无法获取微信数据"));
+        }
+      }
+    );
+  });
+}
+
+/**
+ * 执行微信图片上传
+ * @param {File} file - 要上传的文件
+ * @returns {Promise<{url: string}>} 上传结果
+ */
+export async function performWeChatUpload(file) {
+  let wechatData;
+  
+  console.log("开始执行微信图片上传");
+  
+  try {
+    wechatData = await getWeChatDataFromBackground();
+  } catch (error) {
+    console.error("获取微信数据失败:", error);
+    throw new Error("无法获取微信数据，请确保在微信公众号后台中使用");
+  }
+  
+  if (!wechatData.token) {
+    throw new Error("未找到微信token，请确保在微信公众号后台中使用");
+  }
+
+  // 构建FormData
+  const formData = new FormData();
+  const fileId = "p" + Date.now();
+
+  formData.append("id", fileId);
+  formData.append("name", file.name);
+  formData.append("type", file.type);
+  formData.append("lastModifiedDate", new Date().toString());
+  formData.append("size", file.size.toString());
+  formData.append("file", file, file.name);
+
+  // 构建上传URL和参数
+  const uploadUrl = "https://mp.weixin.qq.com/cgi-bin/filetransfer";
+  const urlParams = {
+    action: "upload_material",
+    f: "json",
+    scene: "8",
+    writetype: "doublewrite",
+    groupid: "1",
+    // 使用从 background script 获取的动态参数
+    ticket_id: wechatData.userName,
+    ticket: wechatData.ticket,
+    svr_time: wechatData.time,
+    token: wechatData.token,
+    lang: "zh_CN",
+    seq: Date.now().toString(),
+    t: Math.random().toString(),
+  };
+  const params = new URLSearchParams(urlParams);
+  const fullUrl = `${uploadUrl}?${params.toString()}`;
+
+  // 请求头
+  const headers = {
+    accept: "*/*",
+    "accept-language": "zh-CN,zh;q=0.9,en;q=0.8",
+    dnt: "1",
+    origin: "https://mp.weixin.qq.com",
+    priority: "u=1, i",
+    referer: window.location.href,
+    "sec-ch-ua":
+      '"Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"',
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": '"macOS"',
+    "sec-fetch-dest": "empty",
+    "sec-fetch-mode": "cors",
+    "sec-fetch-site": "same-origin",
+    "user-agent": navigator.userAgent,
+  };
+
+  try {
+    const response = await fetch(fullUrl, {
+      method: "POST",
+      body: formData,
+      headers: headers,
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+
+    // 检查微信API响应
+    if (data.base_resp && data.base_resp.ret === 0) {
+      return {
+        url: data.cdn_url,
+      };
+    } else {
+      const errorMsg = data.base_resp?.err_msg || "上传失败";
+      const retCode = data.base_resp?.ret || "未知错误";
+      throw new Error(`${errorMsg} (错误码: ${retCode})`);
+    }
+  } catch (error) {
+    console.error("图片上传失败:", error);
+    const errorMessage = error.message || "上传失败";
+    throw new Error(`图片上传失败: ${errorMessage}`);
+  }
+}
+
+/**
+ * 创建微信图片上传器配置
+ * @returns {Object} 微信图片上传器配置对象
+ */
+export function createWeChatImageUploader() {
+  return {
+    /**
+     * 通过文件上传图片到微信服务器
+     * @param {File} file - 要上传的文件
+     * @returns {Promise} Promise对象，成功时resolve上传结果，失败时reject错误信息
+     */
+    async uploadByFile(file) {
+      try {
+        // 验证文件
+        await validateImageFile(file);
+
+        // 执行上传逻辑
+        const result = await performWeChatUpload(file);
+
+        // 成功时返回EditorJS期望的格式
+        return {
           success: 1,
           file: {
-            url: result.url
-          }
-        });
-      })
-      .catch(error => {
-        console.log('❌ 上传失败:', error);
-        // 失败时调用uploadingFailed
-        this.uploadingFailed(error.message || error.toString());
-      });
-  }
-
-
-
-  /**
-   * 执行微信图片上传
-   * @param {File} file - 要上传的文件
-   * @param {string} token - 微信token
-   * @returns {Promise<{url: string}>} 上传结果
-   */
-  async performUpload(file, token) {
-    console.log('=== performUpload 开始 ===');
-    console.log('上传参数:', {
-      fileName: file.name,
-      fileSize: file.size,
-      fileType: file.type,
-      token: token
-    });
-    
-    // 构建FormData - 按照微信API的正确格式
-    const formData = new FormData();
-    
-    // 添加文件元数据
-    const fileId = 'p' + Date.now();
-    const formDataParams = {
-      id: fileId,
-      name: file.name,
-      type: file.type,
-      lastModifiedDate: file.lastModifiedDate || new Date().toString(),
-      size: file.size.toString()
-    };
-    
-    console.log('FormData参数:', formDataParams);
-    
-    formData.append("id", fileId);
-    formData.append("name", file.name);
-    formData.append("type", file.type);
-    formData.append("lastModifiedDate", file.lastModifiedDate || new Date().toString());
-    formData.append("size", file.size.toString());
-    
-    // 添加实际文件
-    formData.append("upfile", file, file.name);
-    console.log('已添加文件到FormData');
-
-    // 构建上传URL - 使用正确的t参数格式
-    const uploadUrl = "https://mp.weixin.qq.com/cgi-bin/uploadimg2cdn";
-    const urlParams = {
-      lang: "zh_CN",
-      token: token,
-      t: Math.random().toString() // 使用随机数而不是时间戳
-    };
-    const params = new URLSearchParams(urlParams);
-    const fullUrl = `${uploadUrl}?${params.toString()}`;
-    
-    console.log('请求URL参数:', urlParams);
-    console.log('完整请求URL:', fullUrl);
-
-    // 自定义请求头
-    const headers = {
-      "accept": "*/*",
-      "accept-language": "zh-CN,zh;q=0.9,en;q=0.8",
-      "origin": "https://mp.weixin.qq.com",
-      "referer": window.location.href,
-      "sec-fetch-dest": "empty",
-      "sec-fetch-mode": "cors",
-      "sec-fetch-site": "same-origin",
-      "user-agent": navigator.userAgent
-    };
-    
-    console.log('请求头:', headers);
-    console.log('当前页面URL:', window.location.href);
-
-    try {
-      console.log('🌐 发送fetch请求...');
-      const response = await fetch(fullUrl, {
-        method: "POST",
-        body: formData,
-        headers: headers,
-        credentials: "include"
-      });
-      
-      console.log('📡 收到响应:', {
-        status: response.status,
-        statusText: response.statusText,
-        ok: response.ok,
-        headers: Object.fromEntries(response.headers.entries())
-      });
-
-      // 微信API总是返回200状态码，需要检查响应体中的base_resp
-      if (!response.ok) {
-        console.log('❌ HTTP响应错误');
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      console.log('📦 响应数据:', data);
-      console.log("upload_data", data);
-
-      // 检查微信API响应：ret=0表示成功，负值表示失败
-      if (data.base_resp && data.base_resp.ret === 0) {
-        console.log('✅ 微信API响应成功');
-        // 成功：返回图片URL
-        return {
-          url: data.url
+            url: result.url,
+            caption: file.name ? file.name.replace(/\.[^/.]+$/, "") : "",
+          },
         };
-      } else {
-        console.log('❌ 微信API响应失败:', data.base_resp);
-        // 失败：base_resp.ret为负值（如-203）
-        const errorMsg = data.base_resp?.err_msg || "上传失败";
-        const retCode = data.base_resp?.ret || "未知错误";
-        throw new Error(`${errorMsg} (错误码: ${retCode})`);
+      } catch (error) {
+        console.error("图片上传失败:", error);
+
+        // 强制清理UI状态
+        forceCleanImageToolUI();
+
+        throw error;
       }
-    } catch (error) {
-      console.log('💥 请求异常:', error);
-      console.error("图片上传失败:", error);
-      const errorMessage = error.message || "上传失败";
-      throw new Error(`图片上传失败: ${errorMessage}`);
-    }
-  }
+    },
 
-  /**
-   * 获取微信token
-   * @returns {string|null} 微信token
-   */
-  getWeChatToken() {
-    // 从URL参数中获取token
-    const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get('token');
-    
-    return token;
-  }
+    /**
+     * 通过URL上传图片到微信服务器
+     * @param {string} url - 图片URL
+     * @returns {Promise} Promise对象，成功时resolve上传结果，失败时reject错误信息
+     */
+    async uploadByUrl(url) {
+      try {
+        // 下载图片转换为File对象
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
 
+        const blob = await response.blob();
 
-  /**
-   * 指定工具是否为内联工具
-   */
-  static get isInline() {
-    return false;
-  }
+        // 从URL中提取文件名
+        const urlParts = url.split("/");
+        const fileName = urlParts[urlParts.length - 1] || "image.jpg";
+
+        // 创建File对象
+        const file = new File([blob], fileName, {
+          type: blob.type || "image/jpeg",
+        });
+
+        // 验证文件
+        await validateImageFile(file);
+
+        // 使用文件上传逻辑
+        const result = await performWeChatUpload(file);
+
+        // 成功时返回EditorJS期望的格式
+        return {
+          success: 1,
+          file: {
+            url: result.url,
+            caption: file.name ? file.name.replace(/\.[^/.]+$/, "") : "",
+          },
+        };
+      } catch (error) {
+        console.error("通过URL上传图片失败:", error);
+
+        // 强制清理UI状态
+        forceCleanImageToolUI();
+
+        throw error;
+      }
+    },
+  };
 }

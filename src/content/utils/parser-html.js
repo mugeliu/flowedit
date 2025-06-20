@@ -380,6 +380,128 @@ class DelimiterBlockProcessor extends BaseBlockProcessor {
 }
 
 /**
+ * Image 块处理器 - 处理图片显示和样式
+ */
+class ImageBlockProcessor extends BaseBlockProcessor {
+  /**
+   * 预处理图片数据
+   * @param {Object} blockData 块数据
+   * @param {Object} block 完整块对象
+   * @returns {Object} 处理后的数据
+   */
+  preprocessData(blockData, block) {
+    const processedData = { ...blockData };
+    
+    // 确保必要的字段存在
+    if (!processedData.file) {
+      processedData.file = {};
+    }
+    
+    // 处理图片URL
+    if (!processedData.file.url && processedData.url) {
+      processedData.file.url = processedData.url;
+    }
+    
+    return processedData;
+  }
+
+  /**
+   * 渲染图片内容
+   * @param {Object} blockData 块数据
+   * @param {Object} block 完整块对象
+   * @returns {string} 渲染后的内容
+   */
+  renderContent(blockData, block) {
+    const imageUrl = blockData.file?.url || blockData.url || '';
+    
+    if (!imageUrl) {
+      console.warn('Image block missing URL:', blockData);
+      return '<div style="color: #999; font-style: italic;">图片加载失败</div>';
+    }
+    
+    // 构建图片HTML
+    let imageHtml = `<img src="${this.escapeHtml(imageUrl)}"`;
+    
+    // 添加alt属性
+    if (blockData.caption) {
+      imageHtml += ` alt="${this.escapeHtml(blockData.caption)}"`;
+    }
+    
+    // 添加样式属性
+    const styles = [];
+    
+    // 处理图片对齐
+    if (blockData.stretched) {
+      styles.push('width: 100%');
+    }
+    
+    if (blockData.withBorder) {
+      styles.push('border: 1px solid #e1e8ed');
+    }
+    
+    if (blockData.withBackground) {
+      styles.push('background: #f8f9fa', 'padding: 15px');
+    }
+    
+    // 默认样式
+    styles.push('max-width: 100%', 'height: auto', 'display: block');
+    
+    if (styles.length > 0) {
+      imageHtml += ` style="${styles.join('; ')}"`;
+    }
+    
+    imageHtml += ' />';
+    
+    return imageHtml;
+  }
+
+  /**
+   * 后处理 - 添加图片说明
+   * @param {string} template 模板字符串
+   * @param {string} content 渲染后的内容
+   * @param {Object} blockData 块数据
+   * @param {Object} block 完整块对象
+   * @returns {string} 最终HTML
+   */
+  postprocess(template, content, blockData, block) {
+    if (!template) {
+      // 如果没有模板，使用默认包装
+      let html = `<figure style="margin: 16px 0; text-align: center;">${content}`;
+      
+      // 添加图片说明
+      if (blockData.caption) {
+        const caption = this.sanitizeHtml(this.processInlineStyles(blockData.caption));
+        html += `<figcaption style="margin-top: 8px; font-size: 14px; color: #666; font-style: italic;">${caption}</figcaption>`;
+      }
+      
+      html += '</figure>';
+      return html;
+    }
+
+    // 使用模板渲染
+    let rendered = template.replace(/{{content}}/g, content);
+    
+    // 处理图片说明占位符
+    if (template.includes('{{caption}}')) {
+      if (blockData.caption) {
+        const caption = this.sanitizeHtml(this.processInlineStyles(blockData.caption));
+        rendered = rendered.replace(/{{caption}}/g, caption);
+      } else {
+        rendered = rendered.replace(/{{caption}}/g, '');
+      }
+    }
+    
+    // 处理图片URL占位符
+    if (template.includes('{{url}}')) {
+      const imageUrl = blockData.file?.url || blockData.url || '';
+      rendered = rendered.replace(/{{url}}/g, this.escapeHtml(imageUrl));
+    }
+    
+    return rendered;
+  }
+}
+
+/**
  * 块处理器工厂类
  */
 class BlockProcessorFactory {
@@ -399,6 +521,7 @@ class BlockProcessorFactory {
     this.registerProcessor('quote', new QuoteBlockProcessor(this.templates));
     this.registerProcessor('list', new ListBlockProcessor(this.templates));
     this.registerProcessor('delimiter', new DelimiterBlockProcessor(this.templates));
+    this.registerProcessor('image', new ImageBlockProcessor(this.templates));
     this.registerProcessor('paragraph', new BaseBlockProcessor(this.templates));
   }
 

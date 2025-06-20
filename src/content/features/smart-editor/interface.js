@@ -1,10 +1,5 @@
 // 智能编辑器界面管理
-import {
-  createElement,
-  safeQuerySelector,
-  hideElement,
-  showElement,
-} from "../../utils/dom.js";
+import { createElement, hideElement, showElement } from "../../utils/dom.js";
 import { selectorConfig } from "../../config/index.js";
 
 /**

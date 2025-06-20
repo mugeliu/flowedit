@@ -56,6 +56,10 @@ export const HTML_TEMPLATES = {
     default: ``,
   },
 
+  image: {
+    default: `<section style="text-align: center" ><img style="max-width: 100%;" src="{{url}}" alt="{{caption}}"><img class="ProseMirror-separator"></section>`,
+  },
+
   list: {
     ordered: `<section data-block="list" data-style="ordered" style="text-indent:0px;margin-bottom:8px;"><ol style="margin:1.5em 8px;padding-left:2em;">{{items}}</ol></section>`,
 

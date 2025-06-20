@@ -17,7 +17,7 @@
       "run_at": "document_end"
     }
   ],
-  "permissions": ["scripting"],
+  "permissions": ["scripting", "storage"],
   "host_permissions": ["https://mp.weixin.qq.com/cgi-bin/appmsg?*"],
   "web_accessible_resources": [
     {
