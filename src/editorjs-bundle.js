@@ -3,7 +3,7 @@ import Header from "@editorjs/header";
 import Paragraph from "@editorjs/paragraph";
 import Quote from "@editorjs/quote";
 // import ImageTool from "@editorjs/image"; // 替换为自定义实现
-import CustomWeChatImageTool from './content/tools/custom-wechat-image-tool.js';
+import CustomImageTool from './content/tools/custom-wechat-image-tool.js';
 import RawTool from "@editorjs/raw";
 import DragDrop from "editorjs-drag-drop";
 import Delimiter from "@editorjs/delimiter";
@@ -20,7 +20,8 @@ if (typeof window !== "undefined") {
     Header,
     Paragraph,
     Quote,
-    ImageTool: CustomWeChatImageTool, // 使用自定义微信图片工具
+    ImageTool: CustomImageTool, // 使用自定义微信图片工具
+    CustomImageTool, // 添加CustomImageTool导出
     RawTool,
     Delimiter,
     Marker,

@@ -50,10 +50,11 @@ export const editorConfig = {
       },
     },
     image: {
-      class: "ImageTool", // 将在editor.js中解析为实际的类引用
+      class: "CustomImageTool", // 使用自定义微信图片工具
       inlineToolbar: true,
       config: {
         endpoints: {},
+        types: 'image/*'
       },
     },
     delimiter: {
@@ -80,7 +81,7 @@ export const editorConfig = {
   },
 
   // 其他 Editor.js 配置选项
-  minHeight: 300,
+  minHeight: 400,
   logLevel: "WARN", // 'VERBOSE', 'INFO', 'WARN', 'ERROR'
 
   // 初始内容配置
