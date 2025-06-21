@@ -57,7 +57,16 @@ export const HTML_TEMPLATES = {
   },
 
   image: {
-    default: `<section style="text-align: center" ><img style="max-width: 100%;" src="{{url}}" alt="{{caption}}"><img class="ProseMirror-separator"></section>`,
+    default: `<section nodeleaf>
+  <figure style="box-sizing: border-box; border: 0px solid #e5e5e5; margin: 1.5em 8px; text-align: left; line-height: 1.75; font-family: Optima-Regular, sans-serif; font-size: 16px; color: #3f3f3f;">
+    <span leaf="">
+      <img src="{{url}}" alt="{{caption}}" style="box-sizing: border-box; border: 1px solid rgba(0,0,0,0.04); display: block; vertical-align: middle; max-width: 100%; height: auto !important; margin: 0.1em auto 0.5em; border-radius: 8px; width: 661px !important;">
+    </span>
+    <figcaption style="box-sizing: border-box; border: 0; text-align: center; line-height: 1.75; font-family: Optima-Regular, sans-serif; font-size: 0.8em; color: #888;">
+      <span leaf="">{{caption}}</span>
+    </figcaption>
+  </figure>
+</section>`,
   },
 
   list: {

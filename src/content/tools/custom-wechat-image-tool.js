@@ -210,7 +210,7 @@ export function createWeChatImageUploader() {
         console.error("图片上传失败:", error);
 
         // 强制清理UI状态
-        forceCleanImageToolUI();
+       // forceCleanImageToolUI();
 
         throw error;
       }
@@ -258,7 +258,7 @@ export function createWeChatImageUploader() {
         console.error("通过URL上传图片失败:", error);
 
         // 强制清理UI状态
-        forceCleanImageToolUI();
+        //forceCleanImageToolUI();
 
         throw error;
       }
