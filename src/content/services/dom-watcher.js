@@ -1,45 +1,58 @@
-// DOM事件监听服务
-// 用于监听提交按钮点击事件并重新初始化插件组件
+// DOM变化监听服务
+// 使用MutationObserver监听工具栏元素的子元素变化，当插件元素被移除时重新初始化
 
 import { pluginRegistry } from "./plugin-registry.js";
 
 /**
- * DOM事件监听器类
- * 监听提交按钮的点击事件，当检测到点击时重新初始化插件按钮
+ * DOM变化监听器类
+ * 使用MutationObserver监听工具栏容器的子元素变化
  */
 class DOMWatcher {
   constructor() {
     this.isWatching = false;
     this.reinitTimeout = null;
-    this.clickHandler = null;
+    this.mutationObserver = null;
+    this.targetElement = null;
+    this.pendingRemoval = false; // 标记是否有节点被移除
   }
 
   /**
-   * 开始监听点击事件
+   * 开始监听DOM变化
    */
   startWatching() {
     if (this.isWatching) {
       return;
     }
 
-    // 创建点击事件处理器
-    this.clickHandler = (event) => {
-      this.handleSubmitClick(event);
-    };
+    // 获取目标容器
+    this.targetElement = document.getElementById('edui1_toolbarboxouter');
+    if (!this.targetElement) {
+      console.error('[DOMWatcher] ❌ 容器未找到');
+      return;
+    }
 
-    // 使用事件委托监听整个文档的点击事件
-    document.addEventListener('click', this.clickHandler, true);
+    // 创建MutationObserver
+    this.mutationObserver = new MutationObserver((mutations) => {
+      this.handleMutations(mutations);
+    });
+
+    // 启动监听
+    this.mutationObserver.observe(this.targetElement, {
+      childList: true,
+      subtree: true
+    });
     
     this.isWatching = true;
+    console.log('[DOMWatcher] 🔍 开始监听渲染变化');
   }
 
   /**
-   * 停止监听点击事件
+   * 停止监听DOM变化
    */
   stopWatching() {
-    if (this.clickHandler) {
-      document.removeEventListener('click', this.clickHandler, true);
-      this.clickHandler = null;
+    if (this.mutationObserver) {
+      this.mutationObserver.disconnect();
+      this.mutationObserver = null;
     }
     
     if (this.reinitTimeout) {
@@ -47,65 +60,92 @@ class DOMWatcher {
       this.reinitTimeout = null;
     }
     
+    this.targetElement = null;
+    this.pendingRemoval = false;
     this.isWatching = false;
+    console.log('[DOMWatcher] 停止监听工具栏元素变化');
   }
 
   /**
-   * 处理提交按钮点击事件
-   * @param {Event} event - 点击事件
+   * 处理DOM变化 - 监听逻辑
+   * @param {MutationRecord[]} mutations - 变化记录数组
    */
-  handleSubmitClick(event) {
-    const target = event.target;
-    
-    // 检查点击的元素是否是提交按钮
-    if (this.isSubmitButton(target)) {
-      
-      // 使用防抖，避免频繁重新初始化
-      if (this.reinitTimeout) {
-        clearTimeout(this.reinitTimeout);
+  handleMutations(mutations) {
+    mutations.forEach(mutation => {
+      if (mutation.type === 'childList') {
+        // 阶段1：检测到移除
+        if (mutation.removedNodes.length > 0) {
+          this.pendingRemoval = true;
+        }
+
+        // 阶段2：移除后检测新增（渲染完成）
+        if (this.pendingRemoval && mutation.addedNodes.length > 0) {
+          this.pendingRemoval = false;
+          this.checkFeatureNode(); // 关键点：在此处检查
+        }
       }
-      
-      this.reinitTimeout = setTimeout(() => {
-        this.reinitializePlugins();
-      }, 800); // 800ms延迟，给页面更新足够时间
-    }
+    });
   }
 
   /**
-   * 判断元素是否为提交按钮
-   * @param {Element} element - 要检查的元素
-   * @returns {boolean} 是否为提交按钮
+   * 检查特征节点
+   * @returns {boolean} 是否存在特征节点
    */
-  isSubmitButton(element) {
-    if (!element) return false;
+  checkFeatureNode() {
+    if (!this.targetElement) return false;
     
-    // 检查元素本身
-    if (this.checkElementIsSubmit(element)) {
-      return true;
-    }
+    // 目标特征
+    const TARGET_FEATURES = {
+      classStartsWith: "flowedit",
+      hasAttribute: "data-flowedit-plugin"
+    };
     
-    // 检查父级元素（最多向上查找3层）
-    let parent = element.parentElement;
-    let level = 0;
-    while (parent && level < 3) {
-      if (this.checkElementIsSubmit(parent)) {
-        return true;
+    const nodes = this.targetElement.querySelectorAll(`[${TARGET_FEATURES.hasAttribute}]`);
+    let found = false;
+
+    nodes.forEach(node => {
+      if (Array.from(node.classList).some(c => c.startsWith(TARGET_FEATURES.classStartsWith))) {
+        console.log('[DOMWatcher] ✅ 特征节点存在:', node);
+        found = true;
       }
-      parent = parent.parentElement;
-      level++;
+    });
+
+    if (!found) {
+      console.log('[DOMWatcher] ⚠️ 未找到特征节点');
+      // 如果节点不存在则初始化插件重新添加
+      this.scheduleReinit();
     }
     
-    return false;
+    return found;
   }
 
   /**
-   * 检查单个元素是否为提交按钮
+   * 判断元素是否为插件元素
    * @param {Element} element - 要检查的元素
-   * @returns {boolean} 是否为提交按钮
+   * @returns {boolean} 是否为插件元素
    */
-  checkElementIsSubmit(element) {
-    // 只检查特定的提交按钮class
-    return element.classList?.contains('send_wording');
+  isPluginElement(element) {
+    // 检查元素是否有插件相关的标识
+    const hasFloweditClass = Array.from(element.classList || []).some(className => 
+      className.startsWith('flowedit')
+    );
+    const hasFloweditDataAttr = element.hasAttribute('data-flowedit-plugin');
+    
+    return hasFloweditClass || hasFloweditDataAttr;
+  }
+
+  /**
+   * 安排重新初始化
+   */
+  scheduleReinit() {
+    // 使用防抖，避免频繁重新初始化
+    if (this.reinitTimeout) {
+      clearTimeout(this.reinitTimeout);
+    }
+    
+    this.reinitTimeout = setTimeout(() => {
+      this.reinitializePlugins();
+    }, 100); // 500ms延迟，给页面更新足够时间
   }
 
 
@@ -119,7 +159,7 @@ class DOMWatcher {
       await pluginRegistry.cleanupAll();
       
       // 等待页面DOM更新
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 300));
       
       // 重新初始化所有插件
       const results = await pluginRegistry.initializeAll();

@@ -48,7 +48,7 @@ temp/
 .DS_Store
 
 # build文件
-.dist
-.assets/editorjs
+/dist/
+/assets/editorjs/
 
 

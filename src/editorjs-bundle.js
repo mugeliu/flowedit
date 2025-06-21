@@ -19,7 +19,7 @@ if (typeof window !== "undefined") {
     Header,
     Paragraph,
     Quote,
-    ImageTool, // 使用自定义微信图片工具
+    ImageTool, 
     RawTool,
     Delimiter,
     Marker,
