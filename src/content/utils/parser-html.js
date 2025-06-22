@@ -25,13 +25,13 @@ class BaseBlockProcessor {
   process(blockData, block) {
     // 1. 预处理数据
     const processedData = this.preprocessData(blockData, block);
-    
+
     // 2. 获取模板
     const template = this.getTemplate(processedData, block);
-    
+
     // 3. 渲染内容
     const content = this.renderContent(processedData, block);
-    
+
     // 4. 后处理
     return this.postprocess(template, content, processedData, block);
   }
@@ -66,7 +66,8 @@ class BaseBlockProcessor {
         return blockTemplates[`h${level}`] || blockTemplates.default;
 
       case "list":
-        const style = blockData.style === "ordered" ? "ordered" : "unordered";
+      case "List":
+        const style = blockData.style === "ordered" ? "ordered" : (blockData.style === "checklist" ? "checklist" : "unordered");
         return blockTemplates[style] || blockTemplates.default;
 
       default:
@@ -82,7 +83,9 @@ class BaseBlockProcessor {
    */
   renderContent(blockData, block) {
     // 默认处理：处理内联样式
-    return this.sanitizeHtml(this.processInlineStyles(blockData.text || blockData.content || ""));
+    return this.sanitizeHtml(
+      this.processInlineStyles(blockData.text || blockData.content || "")
+    );
   }
 
   /**
@@ -115,73 +118,71 @@ class BaseBlockProcessor {
     const styles = this.templates.inlineStyles;
 
     // 处理链接 (<a> → 使用样式模板)
-    doc.querySelectorAll('a').forEach(a => {
+    doc.querySelectorAll("a").forEach((a) => {
       const content = a.innerHTML;
       const styledHtml = styles.a.replace(/{{content}}/g, content);
-      const tempDiv = document.createElement('div');
+      const tempDiv = document.createElement("div");
       tempDiv.innerHTML = styledHtml;
       a.replaceWith(...tempDiv.childNodes);
     });
 
     // 处理加粗 (<b>, <strong> → 使用样式模板)
-    doc.querySelectorAll('b, strong').forEach(b => {
+    doc.querySelectorAll("b, strong").forEach((b) => {
       const content = b.innerHTML;
       const styledHtml = styles.b.replace(/{{content}}/g, content);
-      const tempDiv = document.createElement('div');
+      const tempDiv = document.createElement("div");
       tempDiv.innerHTML = styledHtml;
       b.replaceWith(...tempDiv.childNodes);
     });
 
     // 处理斜体 (<i>, <em> → 使用样式模板)
-    doc.querySelectorAll('i, em').forEach(i => {
+    doc.querySelectorAll("i, em").forEach((i) => {
       const content = i.innerHTML;
       const styledHtml = styles.i.replace(/{{content}}/g, content);
-      const tempDiv = document.createElement('div');
+      const tempDiv = document.createElement("div");
       tempDiv.innerHTML = styledHtml;
       i.replaceWith(...tempDiv.childNodes);
     });
 
     // 处理下划线 (<u> → 使用样式模板)
-    doc.querySelectorAll('u').forEach(u => {
+    doc.querySelectorAll("u").forEach((u) => {
       const content = u.innerHTML;
       const styledHtml = styles.u.replace(/{{content}}/g, content);
-      const tempDiv = document.createElement('div');
+      const tempDiv = document.createElement("div");
       tempDiv.innerHTML = styledHtml;
       u.replaceWith(...tempDiv.childNodes);
     });
 
     // 处理高亮 (<mark> → 使用样式模板)
-    doc.querySelectorAll('mark').forEach(mark => {
+    doc.querySelectorAll("mark").forEach((mark) => {
       const content = mark.innerHTML;
       const styledHtml = styles.mark.replace(/{{content}}/g, content);
-      const tempDiv = document.createElement('div');
+      const tempDiv = document.createElement("div");
       tempDiv.innerHTML = styledHtml;
       mark.replaceWith(...tempDiv.childNodes);
     });
 
     // 处理行内代码 (<code> → 使用样式模板)
-    doc.querySelectorAll('code').forEach(code => {
+    doc.querySelectorAll("code").forEach((code) => {
       const content = code.innerHTML;
       const styledHtml = styles.code.replace(/{{content}}/g, content);
-      const tempDiv = document.createElement('div');
+      const tempDiv = document.createElement("div");
       tempDiv.innerHTML = styledHtml;
       code.replaceWith(...tempDiv.childNodes);
     });
 
     // 处理上标 (<sup> → 使用样式模板)
-    doc.querySelectorAll('sup').forEach(sup => {
+    doc.querySelectorAll("sup").forEach((sup) => {
       const content = sup.innerHTML;
       const styledHtml = styles.sup.replace(/{{sup}}/g, content);
-      const tempDiv = document.createElement('div');
+      const tempDiv = document.createElement("div");
       tempDiv.innerHTML = styledHtml;
       sup.replaceWith(...tempDiv.childNodes);
     });
 
     // 返回转换后的 HTML（仅 div 内容）
-    return doc.body.querySelector('div').innerHTML;
+    return doc.body.querySelector("div").innerHTML;
   }
-
-
 
   /**
    * 清理和验证HTML内容
@@ -221,10 +222,12 @@ class BaseBlockProcessor {
    * @returns {string} 后备HTML
    */
   createFallbackHtml(block) {
-    const rawContent = block.data?.text || block.data?.content || block.data?.code || "";
-    const content = block.type === "code" 
-      ? this.escapeHtml(rawContent)
-      : this.sanitizeHtml(this.processInlineStyles(rawContent));
+    const rawContent =
+      block.data?.text || block.data?.content || block.data?.code || "";
+    const content =
+      block.type === "code"
+        ? this.escapeHtml(rawContent)
+        : this.sanitizeHtml(this.processInlineStyles(rawContent));
 
     const fallbackStyles = this.templates.fallback;
 
@@ -243,7 +246,7 @@ class BaseBlockProcessor {
 class HeaderBlockProcessor extends BaseBlockProcessor {
   renderContent(blockData, block) {
     // Header 不需要处理内联样式，直接返回转义后的文本
-    return this.escapeHtml(blockData.text || '');
+    return this.escapeHtml(blockData.text || "");
   }
 }
 
@@ -252,8 +255,8 @@ class HeaderBlockProcessor extends BaseBlockProcessor {
  */
 class CodeBlockProcessor extends BaseBlockProcessor {
   renderContent(blockData, block) {
-    const code = blockData.code || '';
-    
+    const code = blockData.code || "";
+
     // 代码块不处理内联样式，但需要HTML转义
     return this.escapeHtml(code);
   }
@@ -275,13 +278,13 @@ class CodeBlockProcessor extends BaseBlockProcessor {
 class RawBlockProcessor extends BaseBlockProcessor {
   process(blockData, block) {
     // raw 类型直接返回 HTML 内容，不需要模板处理
-    const html = blockData.html || '';
-    
+    const html = blockData.html || "";
+
     // 验证 HTML 是否合理
     if (!this.isValidHtml(html)) {
-      console.warn('Invalid HTML detected in raw block');
+      console.warn("Invalid HTML detected in raw block");
     }
-    
+
     return this.sanitizeHtml(html);
   }
 
@@ -293,8 +296,8 @@ class RawBlockProcessor extends BaseBlockProcessor {
   isValidHtml(html) {
     try {
       const parser = new DOMParser();
-      const doc = parser.parseFromString(html, 'text/html');
-      return !doc.querySelector('parsererror');
+      const doc = parser.parseFromString(html, "text/html");
+      return !doc.querySelector("parsererror");
     } catch (e) {
       return false;
     }
@@ -310,6 +313,19 @@ class QuoteBlockProcessor extends BaseBlockProcessor {
     this.processCaptions = options.processCaptions !== false; // 默认处理
   }
 
+  /**
+   * 渲染引用块内容，处理内联样式
+   * @param {Object} blockData 块数据
+   * @param {Object} block 完整块对象
+   * @returns {string} 渲染后的内容
+   */
+  renderContent(blockData, block) {
+    // 处理引用块的文本内容，包括内联样式
+    return this.sanitizeHtml(
+      this.processInlineStyles(blockData.text || blockData.content || "")
+    );
+  }
+
   postprocess(template, content, blockData, block) {
     if (!template) {
       console.warn(`未找到块类型 ${block.type} 的模板`);
@@ -317,50 +333,263 @@ class QuoteBlockProcessor extends BaseBlockProcessor {
     }
 
     let rendered = template.replace(/{{content}}/g, content);
-    
+
     // 处理 caption - 只有当模板中包含{{caption}}占位符时才处理
-    if (template.includes('{{caption}}')) {
+    if (template.includes("{{caption}}")) {
       if (this.processCaptions && blockData.caption) {
-        const caption = this.sanitizeHtml(this.processInlineStyles(blockData.caption));
+        const caption = this.sanitizeHtml(
+          this.processInlineStyles(blockData.caption)
+        );
         rendered = rendered.replace(/{{caption}}/g, caption);
       } else {
         rendered = rendered.replace(/{{caption}}/g, "");
       }
     }
-    
+
     return rendered;
   }
 }
 
 /**
- * List 块处理器 - 列表项处理
+ * List 块处理器 - 处理列表显示（仅展示，无交互功能）
+ * 基于EditorJS List插件的数据结构
  */
 class ListBlockProcessor extends BaseBlockProcessor {
+  /**
+   * 预处理数据 - 标准化列表数据结构
+   * @param {Object} blockData 块数据
+   * @param {Object} block 完整块对象
+   * @returns {Object} 处理后的数据
+   */
+  preprocessData(blockData, block) {
+    return {
+      style: blockData.style || 'unordered',
+      items: Array.isArray(blockData.items) ? blockData.items : [],
+      meta: blockData.meta || {}
+    };
+  }
+
+  /**
+   * 获取模板
+   * @param {Object} blockData 块数据
+   * @param {Object} block 完整块对象
+   * @returns {string|null} 模板字符串
+   */
+  getTemplate(blockData, block) {
+    const blockTemplates = this.templates.List || this.templates[block.type];
+    if (!blockTemplates) {
+      return null;
+    }
+
+    switch (blockData.style) {
+      case 'ordered':
+        return blockTemplates.ordered;
+      case 'unordered':
+        return blockTemplates.unordered;
+      case 'checklist':
+        return blockTemplates.checklist || blockTemplates.unordered;
+      default:
+        return blockTemplates.unordered;
+    }
+  }
+
+  /**
+   * 渲染内容 - 列表内容由postprocess方法处理
+   * @param {Object} blockData 块数据
+   * @param {Object} block 完整块对象
+   * @returns {string} 空字符串
+   */
+  renderContent(blockData, block) {
+    return '';
+  }
+
+  /**
+   * 后处理 - 处理列表项渲染和占位符替换
+   * @param {string} template 模板字符串
+   * @param {string} content 渲染后的内容（对于列表为空）
+   * @param {Object} blockData 块数据
+   * @param {Object} block 完整块对象
+   * @returns {string} 最终HTML
+   */
   postprocess(template, content, blockData, block) {
     if (!template) {
       console.warn(`未找到块类型 ${block.type} 的模板`);
       return this.createFallbackHtml(block);
     }
 
-    // 处理列表项
-    const items = (blockData.items || [])
-      .map((item) => {
-        const processedItem = this.sanitizeHtml(this.processInlineStyles(item));
-        return this.renderListItem(processedItem);
-      })
-      .join("");
-    
-    return template.replace(/{{items}}/g, items);
+    // 渲染列表项
+    const renderedItems = this.renderListItems(blockData.items, blockData.style, 1, blockData.meta);
+    let result = template.replace(/{{items}}/g, renderedItems);
+
+    // 处理有序列表的样式类型
+    if (blockData.style === 'ordered') {
+      const listStyle = this.getListStyleType(blockData.meta.counterType, 1);
+      result = result.replace(/{{listStyle}}/g, listStyle);
+    } else {
+      result = result.replace(/{{listStyle}}/g, '');
+    }
+
+    return result;
   }
 
   /**
    * 渲染列表项
-   * @param {string} content 列表项内容
+   * @param {Array} items 列表项数组（EditorJS List格式）
+   * @param {string} listStyle 列表样式
+   * @param {number} level 嵌套级别
+   * @param {Object} parentMeta 父级元数据
    * @returns {string} 渲染后的列表项HTML
    */
-  renderListItem(content) {
-    const listItemTemplate = this.templates.listItem;
-    return listItemTemplate.replace(/{{content}}/g, content);
+  renderListItems(items, listStyle, level = 1, parentMeta = {}) {
+    if (!Array.isArray(items) || items.length === 0) {
+      return '';
+    }
+
+    return items.map((item) => {
+      // 处理EditorJS List格式的项
+      if (!item || typeof item !== 'object') {
+        return '';
+      }
+
+      // 获取列表项内容
+      const content = item.content || '';
+      const processedContent = this.sanitizeHtml(content);
+      const itemMeta = item.meta || {};
+      
+      // 处理checklist的选中状态
+      let isChecked = false;
+      if (listStyle === 'checklist' && typeof itemMeta.checked === 'boolean') {
+        isChecked = itemMeta.checked;
+      }
+
+      // 渲染当前列表项
+      let html = this.renderSingleListItem(processedContent, listStyle, isChecked);
+
+      // 处理嵌套列表
+      if (item.items && Array.isArray(item.items) && item.items.length > 0) {
+        const nestedStyle = listStyle; // 嵌套列表保持相同样式
+        const nestedLevel = level + 1;
+        const nestedTemplate = this.getNestedTemplate(nestedStyle);
+        
+        if (nestedTemplate) {
+          let nestedHtml = nestedTemplate;
+          
+          // 处理嵌套列表的样式类型
+          if (nestedStyle === 'ordered') {
+            const nestedListStyle = this.getListStyleType(parentMeta.counterType || null, nestedLevel);
+            nestedHtml = nestedHtml.replace(/{{listStyle}}/g, nestedListStyle);
+          } else {
+            nestedHtml = nestedHtml.replace(/{{listStyle}}/g, '');
+          }
+          
+          // 处理嵌套层级的缩进
+          const paddingLeft = nestedLevel * 1.5; // 每层增加1.5em缩进
+          nestedHtml = nestedHtml.replace(/{{paddingLeft}}/g, paddingLeft);
+          
+          // 递归渲染嵌套列表项
+          const nestedItems = this.renderListItems(item.items, nestedStyle, nestedLevel, parentMeta || {});
+          if (nestedItems) {
+            html += nestedHtml.replace(/{{items}}/g, nestedItems);
+          }
+        }
+      }
+
+      return html;
+    }).filter(item => item).join('');
+  }
+
+  /**
+   * 渲染单个列表项（仅展示，无交互功能）
+   * @param {string} content 列表项内容
+   * @param {string} listStyle 列表样式
+   * @param {boolean} isChecked checklist是否选中（仅用于显示状态）
+   * @returns {string} 渲染后的列表项HTML
+   */
+  renderSingleListItem(content, listStyle, isChecked = false) {
+    // 修复模板键名问题
+    const templates = this.templates.listItem;
+    if (!templates) {
+      return `<li>${content || ''}</li>`; // 后备方案
+    }
+    
+    if (listStyle === 'checklist') {
+      // 仅展示复选框状态，不提供交互功能
+      const checkSymbol = isChecked ? '☑' : '☐';
+      return (templates.checklist || templates.default)
+        .replace(/{{checkbox}}/g, checkSymbol)
+        .replace(/{{content}}/g, content || '');
+    } else {
+      return templates.default.replace(/{{content}}/g, content || '');
+    }
+  }
+
+  /**
+   * 获取嵌套列表模板
+   * @param {string} style 列表样式
+   * @returns {string} 嵌套列表模板
+   */
+  getNestedTemplate(style) {
+    // 修复模板键名问题：List（大写）vs list（小写）
+    const templates = this.templates.List || this.templates.list;
+    if (!templates) {
+      return null;
+    }
+    
+    switch (style) {
+      case 'ordered':
+        return templates.nestedOrdered;
+      case 'unordered':
+        return templates.nestedUnordered;
+      case 'checklist':
+        return templates.nestedChecklist;
+      default:
+        return templates.nestedUnordered;
+    }
+  }
+
+  /**
+   * 获取列表样式类型
+   * @param {string} counterType 计数器类型
+   * @param {number} level 嵌套层级
+   * @returns {string} 列表样式类型
+   */
+  getListStyleType(counterType, level) {
+    // 如果指定了counterType，优先使用
+    if (counterType) {
+      switch (counterType) {
+        case 'numeric':
+        case 'decimal':
+          return 'decimal';
+        case 'alpha':
+        case 'lower-alpha':
+          return 'lower-alpha';
+        case 'upper-alpha':
+          return 'upper-alpha';
+        case 'roman':
+        case 'lower-roman':
+          return 'lower-roman';
+        case 'upper-roman':
+          return 'upper-roman';
+        default:
+          return 'decimal';
+      }
+    }
+    
+    // 根据层级自动选择样式
+    switch (level) {
+      case 1:
+        return 'decimal';
+      case 2:
+        return 'lower-alpha';
+      case 3:
+        return 'lower-roman';
+      case 4:
+        return 'decimal';
+      case 5:
+        return 'lower-alpha';
+      default:
+        return 'decimal';
+    }
   }
 }
 
@@ -375,7 +604,7 @@ class DelimiterBlockProcessor extends BaseBlockProcessor {
 
   renderContent(blockData, block) {
     // 直接返回空内容，模板本身就是分隔符
-    return '';
+    return "";
   }
 }
 
@@ -391,17 +620,12 @@ class ImageBlockProcessor extends BaseBlockProcessor {
    */
   preprocessData(blockData, block) {
     const processedData = { ...blockData };
-    
+
     // 确保必要的字段存在
     if (!processedData.file) {
       processedData.file = {};
     }
-    
-    // 处理图片URL
-    if (!processedData.file.url && processedData.url) {
-      processedData.file.url = processedData.url;
-    }
-    
+
     return processedData;
   }
 
@@ -412,46 +636,49 @@ class ImageBlockProcessor extends BaseBlockProcessor {
    * @returns {string} 渲染后的内容
    */
   renderContent(blockData, block) {
-    const imageUrl = blockData.file?.url || blockData.url || '';
-    
+    const imageUrl = blockData.file?.url || "";
+
     if (!imageUrl) {
-      console.warn('Image block missing URL:', blockData);
-      return '<div style="color: #999; font-style: italic;">图片加载失败</div>';
+      console.warn("Image block missing URL:", blockData);
+      return '<section style="color: #999; font-style: italic;">图片加载失败</section>';
     }
-    
+
     // 构建图片HTML
     let imageHtml = `<img src="${this.escapeHtml(imageUrl)}"`;
-    
+
     // 添加alt属性
-    if (blockData.caption) {
-      imageHtml += ` alt="${this.escapeHtml(blockData.caption)}"`;
+    const altText = blockData.file?.filename || "";
+    if (altText) {
+      imageHtml += ` alt="${this.escapeHtml(altText)}"`;
     }
-    
+
     // 添加样式属性
     const styles = [];
-    
-    // 处理图片对齐
+
+    // 处理图片拉伸
     if (blockData.stretched) {
-      styles.push('width: 100%');
+      styles.push("width: 100%");
     }
-    
+
+    // 处理边框
     if (blockData.withBorder) {
-      styles.push('border: 1px solid #e1e8ed');
+      styles.push("border: 1px solid #e1e8ed");
     }
-    
+
+    // 处理背景
     if (blockData.withBackground) {
-      styles.push('background: #f8f9fa', 'padding: 15px');
+      styles.push("background: #f8f9fa", "padding: 15px");
     }
-    
+
     // 默认样式
-    styles.push('max-width: 100%', 'height: auto', 'display: block');
-    
+    styles.push("max-width: 100%", "height: auto", "display: block");
+
     if (styles.length > 0) {
-      imageHtml += ` style="${styles.join('; ')}"`;
+      imageHtml += ` style="${styles.join("; ")}"`;
     }
-    
-    imageHtml += ' />';
-    
+
+    imageHtml += " />";
+
     return imageHtml;
   }
 
@@ -466,37 +693,37 @@ class ImageBlockProcessor extends BaseBlockProcessor {
   postprocess(template, content, blockData, block) {
     if (!template) {
       // 如果没有模板，使用默认包装
-      let html = `<figure style="margin: 16px 0; text-align: center;">${content}`;
-      
-      // 添加图片说明
+      let html = `<section><figure style="margin: 16px 0; text-align: center;">${content}`;
+
+      // 添加图片说明 - caption不处理内联样式
       if (blockData.caption) {
-        const caption = this.sanitizeHtml(this.processInlineStyles(blockData.caption));
+        const caption = this.sanitizeHtml(blockData.caption);
         html += `<figcaption style="margin-top: 8px; font-size: 14px; color: #666; font-style: italic;">${caption}</figcaption>`;
       }
-      
-      html += '</figure>';
+
+      html += "</figure></section>";
       return html;
     }
 
     // 使用模板渲染
     let rendered = template.replace(/{{content}}/g, content);
-    
-    // 处理图片说明占位符
-    if (template.includes('{{caption}}')) {
+
+    // 处理图片说明占位符 - caption不处理内联样式
+    if (template.includes("{{caption}}")) {
       if (blockData.caption) {
-        const caption = this.sanitizeHtml(this.processInlineStyles(blockData.caption));
+        const caption = this.sanitizeHtml(blockData.caption);
         rendered = rendered.replace(/{{caption}}/g, caption);
       } else {
-        rendered = rendered.replace(/{{caption}}/g, '');
+        rendered = rendered.replace(/{{caption}}/g, "");
       }
     }
-    
+
     // 处理图片URL占位符
-    if (template.includes('{{url}}')) {
-      const imageUrl = blockData.file?.url || blockData.url || '';
+    if (template.includes("{{url}}")) {
+      const imageUrl = blockData.file?.url || "";
       rendered = rendered.replace(/{{url}}/g, this.escapeHtml(imageUrl));
     }
-    
+
     return rendered;
   }
 }
@@ -515,14 +742,17 @@ class BlockProcessorFactory {
    * 初始化默认处理器
    */
   initializeDefaultProcessors() {
-    this.registerProcessor('header', new HeaderBlockProcessor(this.templates));
-    this.registerProcessor('code', new CodeBlockProcessor(this.templates));
-    this.registerProcessor('raw', new RawBlockProcessor(this.templates));
-    this.registerProcessor('quote', new QuoteBlockProcessor(this.templates));
-    this.registerProcessor('list', new ListBlockProcessor(this.templates));
-    this.registerProcessor('delimiter', new DelimiterBlockProcessor(this.templates));
-    this.registerProcessor('image', new ImageBlockProcessor(this.templates));
-    this.registerProcessor('paragraph', new BaseBlockProcessor(this.templates));
+    this.registerProcessor("header", new HeaderBlockProcessor(this.templates));
+    this.registerProcessor("code", new CodeBlockProcessor(this.templates));
+    this.registerProcessor("raw", new RawBlockProcessor(this.templates));
+    this.registerProcessor("quote", new QuoteBlockProcessor(this.templates));
+    this.registerProcessor("List", new ListBlockProcessor(this.templates));
+    this.registerProcessor(
+      "delimiter",
+      new DelimiterBlockProcessor(this.templates)
+    );
+    this.registerProcessor("image", new ImageBlockProcessor(this.templates));
+    this.registerProcessor("paragraph", new BaseBlockProcessor(this.templates));
   }
 
   /**
@@ -558,7 +788,10 @@ class BlockProcessorFactory {
 class HtmlParser {
   constructor(customTemplates = {}) {
     // 如果传入自定义模板则使用自定义模板，否则使用默认模板
-    this.templates = Object.keys(customTemplates).length > 0 ? customTemplates : HTML_TEMPLATES;
+    this.templates =
+      Object.keys(customTemplates).length > 0
+        ? customTemplates
+        : HTML_TEMPLATES;
     this.processorFactory = new BlockProcessorFactory(this.templates);
   }
 
@@ -602,8 +835,6 @@ class HtmlParser {
     const processor = this.processorFactory.getProcessor(block.type);
     return processor.process(block.data || {}, block);
   }
-
-
 
   /**
    * 解析EditorJS数据
@@ -688,8 +919,7 @@ class HtmlParser {
 
     if (wrapInContainer) {
       return `<div class="editorjs-content" style="max-width: 800px; margin: 0 auto; padding: 20px;">
-${content}
-</div>`;
+              ${content}</div>`;
     }
 
     return content;

@@ -6,7 +6,7 @@ import ImageTool from "@editorjs/image";
 import RawTool from "@editorjs/raw";
 import DragDrop from "editorjs-drag-drop";
 import Delimiter from "@editorjs/delimiter";
-import List from "@editorjs/list";
+import EditorjsList from "@editorjs/list";
 import Code from "@editorjs/code";
 import Marker from "@editorjs/marker";
 import InlineCode from "@editorjs/inline-code";
@@ -19,13 +19,13 @@ if (typeof window !== "undefined") {
     Header,
     Paragraph,
     Quote,
-    ImageTool, 
+    ImageTool,
     RawTool,
     Delimiter,
     Marker,
     InlineCode,
     Underline,
-    List,
+    EditorjsList,
     Code,
     DragDrop,
   };

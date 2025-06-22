@@ -57,24 +57,19 @@ function validateImageFile(file) {
   });
 }
 
-
-
 /**
  * 从 background script 获取微信数据
  * @returns {Promise} Promise对象，成功时resolve微信数据，失败时reject错误信息
  */
 async function getWeChatDataFromBackground() {
   return new Promise((resolve, reject) => {
-    chrome.runtime.sendMessage(
-      { type: "get_wechat_data" },
-      (response) => {
-        if (response && response.success) {
-          resolve(response.data);
-        } else {
-          reject(new Error(response?.error || "无法获取微信数据"));
-        }
+    chrome.runtime.sendMessage({ type: "get_wechat_data" }, (response) => {
+      if (response && response.success) {
+        resolve(response.data);
+      } else {
+        reject(new Error(response?.error || "background script 加载失败"));
       }
-    );
+    });
   });
 }
 
@@ -85,18 +80,17 @@ async function getWeChatDataFromBackground() {
  */
 export async function performWeChatUpload(file) {
   let wechatData;
-  
+
   console.log("开始执行微信图片上传");
-  
+
   try {
     wechatData = await getWeChatDataFromBackground();
   } catch (error) {
-    console.error("获取微信数据失败:", error);
-    throw new Error("无法获取微信数据，请确保在微信公众号后台中使用");
+    throw new Error("无法获取wx数据，请确保在微信公众号后台中使用");
   }
-  
+
   if (!wechatData.token) {
-    throw new Error("未找到微信token，请确保在微信公众号后台中使用");
+    throw new Error("wx数据中未找到微信token，请确保在微信公众号后台中使用");
   }
 
   // 构建FormData
@@ -173,9 +167,8 @@ export async function performWeChatUpload(file) {
       throw new Error(`${errorMsg} (错误码: ${retCode})`);
     }
   } catch (error) {
-    console.error("图片上传失败:", error);
     const errorMessage = error.message || "上传失败";
-    throw new Error(`图片上传失败: ${errorMessage}`);
+    throw new Error(`图片上传图库失败: ${errorMessage}`);
   }
 }
 
@@ -203,16 +196,18 @@ export function createWeChatImageUploader() {
           success: 1,
           file: {
             url: result.url,
-            caption: file.name ? file.name.replace(/\.[^/.]+$/, "") : "",
+            fileName: file.name ? file.name.replace(/\.[^/.]+$/, "") : "",
           },
         };
       } catch (error) {
-        console.error("图片上传失败:", error);
-
         // 强制清理UI状态
-       // forceCleanImageToolUI();
-
-        throw error;
+        forceCleanImageToolUI();
+        return {
+          success: 0,
+          file: {
+            error: error.message,
+          },
+        };
       }
     },
 
@@ -251,16 +246,17 @@ export function createWeChatImageUploader() {
           success: 1,
           file: {
             url: result.url,
-            caption: file.name ? file.name.replace(/\.[^/.]+$/, "") : "",
+            fileName: file.name ? file.name.replace(/\.[^/.]+$/, "") : "",
           },
         };
       } catch (error) {
-        console.error("通过URL上传图片失败:", error);
-
         // 强制清理UI状态
-        //forceCleanImageToolUI();
+        forceCleanImageToolUI();
 
-        throw error;
+        return {
+          success: 0, // 关键！告诉 Image Tool 上传失败
+          file: { error: error.message },
+        };
       }
     },
   };

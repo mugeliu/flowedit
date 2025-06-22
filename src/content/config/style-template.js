@@ -11,10 +11,10 @@
  */
 export const HTML_TEMPLATES = {
   // 头部模板
-  head: `<section></section>`,
+  head: ``,
 
   // 尾部模板
-  ending: `<section></section>`,
+  ending: ``,
 
   // 内联样式配置
   inlineStyles: {
@@ -57,30 +57,33 @@ export const HTML_TEMPLATES = {
   },
 
   image: {
-    default: `<section nodeleaf>
-  <figure style="box-sizing: border-box; border: 0px solid #e5e5e5; margin: 1.5em 8px; text-align: left; line-height: 1.75; font-family: Optima-Regular, sans-serif; font-size: 16px; color: #3f3f3f;">
-    <span leaf="">
-      <img src="{{url}}" alt="{{caption}}" style="box-sizing: border-box; border: 1px solid rgba(0,0,0,0.04); display: block; vertical-align: middle; max-width: 100%; height: auto !important; margin: 0.1em auto 0.5em; border-radius: 8px; width: 661px !important;">
-    </span>
-    <figcaption style="box-sizing: border-box; border: 0; text-align: center; line-height: 1.75; font-family: Optima-Regular, sans-serif; font-size: 0.8em; color: #888;">
-      <span leaf="">{{caption}}</span>
-    </figcaption>
-  </figure>
-</section>`,
+    default: `<section><figure style="margin: 10px 0px; padding: 0px; display: flex; flex-direction: column; justify-content: center; align-items: center; visibility: visible;"><span leaf="" style="visibility: visible;"><img src="{{url}}" style="display: block; margin: 0px auto; max-width: 100%; border-style: none; border-radius: 4px; object-fit: fill; box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px; height: auto !important; visibility: visible !important; width: 677px !important;" /></span><figcaption style="color: #888; font-size: 12px; line-height: 1.5em; letter-spacing: 0em; text-align: center; font-weight: normal; margin: 5px 0px 0px 0px; padding: 0px;"><span leaf="">{{caption}}</span></figcaption></figure></section>`,
   },
 
-  list: {
-    ordered: `<section data-block="list" data-style="ordered" style="text-indent:0px;margin-bottom:8px;"><ol style="margin:1.5em 8px;padding-left:2em;">{{items}}</ol></section>`,
+  List: {
+    ordered: `<section data-block="list" data-style="ordered" style="text-indent:0px;margin:1.2em 0;"><ol style="list-style-type:{{listStyle}};padding-left:2em;">{{items}}</ol></section>`,
 
-    unordered: `<section data-block="list" data-style="unordered" style="text-indent:0px;margin-bottom:8px;"><ul style="margin:1.5em 8px;padding-left:2em;">{{items}}</ul></section>`,
+    unordered: `<section data-block="list" data-style="unordered" style="text-indent:0px;margin:1.2em 0;"><ul style="list-style-type:disc;padding-left:2em;">{{items}}</ul></section>`,
+
+    checklist: `<section data-block="list" data-style="checklist" style="text-indent:0px;margin:1.2em 0;"><ul style="list-style:none;padding-left:1em;">{{items}}</ul></section>`,
+
+    // 嵌套列表容器模板
+    nestedOrdered: `<ol style="list-style-type:{{listStyle}};padding-left:{{paddingLeft}}em;margin:0.5em 0;">{{items}}</ol>`,
+
+    nestedUnordered: `<ul style="list-style-type:disc;padding-left:{{paddingLeft}}em;margin:0.5em 0;">{{items}}</ul>`,
+
+    nestedChecklist: `<ul style="list-style:none;padding-left:{{paddingLeft}}em;margin:0.5em 0;">{{items}}</ul>`,
+  },
+
+  // 列表项子模板
+  listItem: {
+    default: `<li style="margin:0.3em 0;line-height:1.6;"><section><span leaf="">{{content}}</span></section></li>`,
+    checklist: `<li style="margin:0.3em 0;line-height:1.6;"><section><span style="margin-right:0.5em;font-family:monospace;font-size:1.1em;color:rgb(16, 185, 129);">{{checkbox}}</span><span leaf="">{{content}}</span></section></li>`,
   },
 
   code: {
     default: `<section><pre style="--md-primary-color:rgba(26,104,64,1);text-align:left;line-height:1.5;font-family:Menlo,Monaco,'Courier New',monospace;font-size:90%;overflow-x:auto;border-radius:8px;padding:1em;margin:10px 8px;background-color:#2d2d2d;border:1px solid #1a6840;" class="hljs code__pre"><span style="display:block;padding-bottom:10px;" class="mac-sign"><svg viewBox="0 0 450 130" height="13px" width="45px" y="0px" x="0px" version="1.1" xmlns="http://www.w3.org/2000/svg"><ellipse fill="rgb(237,108,96)" stroke-width="2" stroke="rgb(220,60,54)" ry="52" rx="50" cy="65" cx="50"></ellipse><ellipse fill="rgb(247,193,81)" stroke-width="2" stroke="rgb(218,151,33)" ry="52" rx="50" cy="65" cx="225"></ellipse><ellipse fill="rgb(100,200,86)" stroke-width="2" stroke="rgb(27,161,37)" ry="52" rx="50" cy="65" cx="400"></ellipse></svg></span><code style="--md-primary-color:rgba(26,104,64,1);text-align:left;line-height:1.75;font-family:'Fira Code',Menlo,Operator Mono,Consolas,Monaco,monospace;font-size:90%;margin:0;white-space:pre;word-wrap:break-word;overflow-wrap:break-word;color:#e0e0e0;" class="language-python">{{content}}</code></pre></section>`,
   },
-
-  // 列表项子模板
-  listItem: `<li style="margin:0.3em 0;">{{content}}</li>`,
 
   // 后备HTML模板
   fallback: {

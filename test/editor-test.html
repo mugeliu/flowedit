@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Editor.js 自定义图片上传测试</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+        background-color: #f4f5f7;
+        padding: 20px;
+        color: #333;
+        line-height: 1.6;
+      }
+      .container {
+        max-width: 800px;
+        margin: 20px auto;
+        background-color: #fff;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      }
+      #editorjs {
+        padding: 20px;
+      }
+      .controls {
+        padding: 20px;
+        text-align: center;
+        border-top: 1px solid #e0e0e0;
+      }
+      button {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.2s;
+      }
+      button:hover {
+        background-color: #0056b3;
+      }
+      #output {
+        margin-top: 20px;
+        background-color: #2d3748;
+        color: #f7fafc;
+        padding: 15px;
+        border-radius: 5px;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        font-family: "Courier New", Courier, monospace;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1
+        style="
+          text-align: center;
+          padding: 20px 0;
+          border-bottom: 1px solid #e0e0e0;
+        "
+      >
+        Editor.js 自定义图片上传测试
+      </h1>
+      <div id="editorjs"></div>
+      <div class="controls">
+        <button id="saveButton">保存内容</button>
+        <div id="output">保存后的JSON数据将显示在这里...</div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/image@2.10.1"></script>
+
+    <script>
+      /**
+       * 步骤 2: 创建我们的自定义上传函数
+       *
+       * @param {File} file - 用户通过文件选择器选择的文件对象
+       * @returns {Promise<object>} - 必须返回一个 Promise，
+       * 解析后的对象需要符合 Editor.js Image Tool 的格式。
+       */
+      function customUploader(file) {
+        // 这个函数必须返回一个 Promise
+        return new Promise((resolve, reject) => {
+          console.log("自定义上传函数已触发，开始模拟上传...");
+
+          // 模拟 1 秒的网络延迟
+          setTimeout(() => {
+            // 检查文件是否存在
+            if (!file) {
+              reject("没有选择文件");
+              return;
+            }
+
+            console.log("文件大小：");
+            if (file.size > 1 * 1024 * 1024) {
+              reject("文件大小不能超过10MB");
+              return;
+            }
+            console.log("文件大小：", file.size);
+
+            // 使用 URL.createObjectURL 在浏览器本地创建一个临时 URL
+            // 在真实场景中，这里会是上传到服务器后返回的永久 URL
+            const localImageUrl = URL.createObjectURL(file);
+
+            console.log("图片模拟上传成功，生成的本地 URL:", localImageUrl);
+
+            // 模拟一个成功的后端响应
+            // 这是 Editor.js Image Tool 要求的标准返回格式
+            const response = {
+              success: 1,
+              file: {
+                url: localImageUrl,
+                // 你还可以返回其他元数据
+                name: file.name,
+                size: file.size,
+              },
+            };
+
+            // 解析 Promise 并返回数据
+            resolve(response);
+          }, 1000); // 1000 毫秒的延迟
+        });
+      }
+
+      /**
+       * 步骤 3: 初始化 Editor.js 实例
+       */
+      const editor = new EditorJS({
+        holder: "editorjs",
+        placeholder: "点击这里开始写作，或点击 + 添加图片",
+
+        tools: {
+          image: {
+            class: ImageTool,
+            config: {
+              /**
+               * 关键配置：使用 'uploader' 属性来指定自定义的上传逻辑
+               */
+              buttonContent: "上传图片",
+              captionPlaceholder: "图片描述",
+              features: {
+                border: false,
+                caption: true,
+                stretch: false,
+              },
+              uploader: {
+                /**
+                 * `uploadByFile` 是一个函数，它接收一个 File 对象
+                 * 并应该返回一个包含上传文件数据的 Promise。
+                 */
+                uploadByFile: customUploader,
+              },
+            },
+          },
+        },
+      });
+
+      /**
+       * 步骤 4: 添加保存按钮的逻辑
+       */
+      const saveButton = document.getElementById("saveButton");
+      const output = document.getElementById("output");
+
+      saveButton.addEventListener("click", () => {
+        editor
+          .save()
+          .then((savedData) => {
+            console.log("保存的数据:", savedData);
+            // 使用 JSON.stringify 美化输出
+            output.textContent = JSON.stringify(savedData, null, 2);
+          })
+          .catch((error) => {
+            console.error("保存失败:", error);
+            output.textContent = "保存失败，请查看控制台获取详情。";
+          });
+      });
+    </script>
+  </body>
+</html>

@@ -139,8 +139,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/header@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/quote@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/simple-image@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/nested-list@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@editorjs/checklist@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/list@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/link@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/embed@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@editorjs/table@latest"></script>
@@ -157,7 +156,7 @@
     <script src="../../src/content/config/style-template.js"></script>
     <script>
       // 直接嵌入 HTML 解析器代码（避免 ES6 模块导入问题）
-      
+
       // HTML模板配置（从 style-template.js 获取）
       const HTML_TEMPLATES = window.HTML_TEMPLATES || {
         inlineStyles: {
@@ -167,23 +166,23 @@
           u: `<span style="text-decoration: underline; text-decoration-color: rgb(16, 185, 129); text-underline-offset: 3px; text-decoration-thickness: 2px;">{{content}}</span>`,
           mark: `<span style="background: rgba(16, 185, 129, 0.2); padding: 0.1em 0.4em; border-radius: 3px;">{{content}}</span>`,
           code: `<span style="font-family: 'Consolas', 'Monaco', 'Courier New', monospace; font-size: 0.85em; background: rgba(16, 185, 129, 0.1); color: rgb(6, 95, 70); padding: 0.25em 0.6em; border-radius: 5px; border: 1px solid rgba(16, 185, 129, 0.25); font-weight: 500; letter-spacing: 0.3px;">{{content}}</span>`,
-          sup: `<sup style="color: rgba(16, 185, 129, 0.7); font-size: 0.7em; margin-left: 0.2em;">{{sup}}</sup>`
+          sup: `<sup style="color: rgba(16, 185, 129, 0.7); font-size: 0.7em; margin-left: 0.2em;">{{sup}}</sup>`,
         },
         paragraph: {
-          default: `<section style="font-style: normal;font-variant-ligatures: normal;font-variant-caps: normal;orphans: 2;text-indent: 0px;text-transform: none;widows: 2;word-spacing: 0px;-webkit-text-stroke-width: 0px;white-space: normal;text-decoration-thickness: initial;text-decoration-style: initial;text-decoration-color: initial;box-sizing: border-box;border-width: 0px;border-style: solid;margin: 0.8em 0px;text-align: left;line-height: 1.7;font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, &quot;Helvetica Neue&quot;, Arial, sans-serif;display: block;padding: 0px;"><section style="font-size: 16px; color: rgb(55, 65, 81); letter-spacing: 0.3px; padding: 0.5em 1.2em;"><span leaf="">{{content}}</span></section></section>`
+          default: `<section style="font-style: normal;font-variant-ligatures: normal;font-variant-caps: normal;orphans: 2;text-indent: 0px;text-transform: none;widows: 2;word-spacing: 0px;-webkit-text-stroke-width: 0px;white-space: normal;text-decoration-thickness: initial;text-decoration-style: initial;text-decoration-color: initial;box-sizing: border-box;border-width: 0px;border-style: solid;margin: 0.8em 0px;text-align: left;line-height: 1.7;font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, &quot;Helvetica Neue&quot;, Arial, sans-serif;display: block;padding: 0px;"><section style="font-size: 16px; color: rgb(55, 65, 81); letter-spacing: 0.3px; padding: 0.5em 1.2em;"><span leaf="">{{content}}</span></section></section>`,
         },
         header: {
           h1: `<section style="font-style: normal;font-variant-ligatures: normal;font-variant-caps: normal;letter-spacing: 0.5px;orphans: 2;text-indent: 0px;text-transform: none;widows: 2;word-spacing: 0px;-webkit-text-stroke-width: 0px;white-space: normal;text-decoration-thickness: initial;text-decoration-style: initial;text-decoration-color: initial;box-sizing: border-box;border-width: 0px;border-style: solid;font-size: 20px;font-weight: 600;margin: 1.8em 0px 1.2em;text-align: center;line-height: 1.4;font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, &quot;Helvetica Neue&quot;, Arial, sans-serif;display: flex;justify-content: center;padding: 0px;color: rgb(4, 120, 87);"><section style="display: inline-block;padding: 1em 2.2em;color: rgb(255, 255, 255);background: linear-gradient(135deg, rgb(16, 185, 129) 0%, rgb(5, 150, 105) 100%);border-radius: 12px;box-shadow: rgba(16, 185, 129, 0.25) 0px 6px 20px -4px, rgba(0, 0, 0, 0.1) 0px 2px 8px -2px;"><span leaf="">{{content}}</span></section></section>`,
-          h2: `<section style="font-style: normal;font-variant-ligatures: normal;font-variant-caps: normal;letter-spacing: 0.3px;orphans: 2;text-indent: 0px;text-transform: none;widows: 2;word-spacing: 0px;-webkit-text-stroke-width: 0px;white-space: normal;text-decoration-thickness: initial;text-decoration-style: initial;text-decoration-color: initial;box-sizing: border-box;border-width: 0px;border-style: solid;font-size: 18px;font-weight: 600;margin: 1.5em 0px 1em;text-align: left;line-height: 1.4;font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, &quot;Helvetica Neue&quot;, Arial, sans-serif;display: block;padding: 0px;color: rgb(4, 120, 87);"><section style="display: inline-flex; align-items: center; padding: 0.8em 1.8em 0.8em 1.2em; background: rgba(16, 185, 129, 0.06); border-left: 4px solid rgb(16, 185, 129); border-radius: 0px 8px 8px 0px; min-width: fit-content;"><span style="display: inline-block; width: 8px; height: 8px; background: rgb(16, 185, 129); border-radius: 50%; margin-right: 0.8em; vertical-align: middle;"></span><span leaf="">{{content}}</span></section></section>`
-        }
+          h2: `<section style="font-style: normal;font-variant-ligatures: normal;font-variant-caps: normal;letter-spacing: 0.3px;orphans: 2;text-indent: 0px;text-transform: none;widows: 2;word-spacing: 0px;-webkit-text-stroke-width: 0px;white-space: normal;text-decoration-thickness: initial;text-decoration-style: initial;text-decoration-color: initial;box-sizing: border-box;border-width: 0px;border-style: solid;font-size: 18px;font-weight: 600;margin: 1.5em 0px 1em;text-align: left;line-height: 1.4;font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, &quot;Helvetica Neue&quot;, Arial, sans-serif;display: block;padding: 0px;color: rgb(4, 120, 87);"><section style="display: inline-flex; align-items: center; padding: 0.8em 1.8em 0.8em 1.2em; background: rgba(16, 185, 129, 0.06); border-left: 4px solid rgb(16, 185, 129); border-radius: 0px 8px 8px 0px; min-width: fit-content;"><span style="display: inline-block; width: 8px; height: 8px; background: rgb(16, 185, 129); border-radius: 50%; margin-right: 0.8em; vertical-align: middle;"></span><span leaf="">{{content}}</span></section></section>`,
+        },
       };
-      
+
       // 简化的 HTML 解析器类
       class CustomHtmlParser {
         constructor(templates = HTML_TEMPLATES) {
           this.templates = templates;
         }
-        
+
         processInlineStyles(text) {
           if (!text) return "";
 
@@ -192,98 +191,104 @@
           const styles = this.templates.inlineStyles;
 
           // 处理链接
-          doc.querySelectorAll('a').forEach(a => {
+          doc.querySelectorAll("a").forEach((a) => {
             const content = a.innerHTML;
             const styledHtml = styles.a.replace(/{{content}}/g, content);
-            const tempDiv = document.createElement('div');
+            const tempDiv = document.createElement("div");
             tempDiv.innerHTML = styledHtml;
             a.replaceWith(...tempDiv.childNodes);
           });
 
           // 处理加粗
-          doc.querySelectorAll('b, strong').forEach(b => {
+          doc.querySelectorAll("b, strong").forEach((b) => {
             const content = b.innerHTML;
             const styledHtml = styles.b.replace(/{{content}}/g, content);
-            const tempDiv = document.createElement('div');
+            const tempDiv = document.createElement("div");
             tempDiv.innerHTML = styledHtml;
             b.replaceWith(...tempDiv.childNodes);
           });
 
           // 处理斜体
-          doc.querySelectorAll('i, em').forEach(i => {
+          doc.querySelectorAll("i, em").forEach((i) => {
             const content = i.innerHTML;
             const styledHtml = styles.i.replace(/{{content}}/g, content);
-            const tempDiv = document.createElement('div');
+            const tempDiv = document.createElement("div");
             tempDiv.innerHTML = styledHtml;
             i.replaceWith(...tempDiv.childNodes);
           });
 
           // 处理下划线
-          doc.querySelectorAll('u').forEach(u => {
+          doc.querySelectorAll("u").forEach((u) => {
             const content = u.innerHTML;
             const styledHtml = styles.u.replace(/{{content}}/g, content);
-            const tempDiv = document.createElement('div');
+            const tempDiv = document.createElement("div");
             tempDiv.innerHTML = styledHtml;
             u.replaceWith(...tempDiv.childNodes);
           });
 
           // 处理高亮
-          doc.querySelectorAll('mark').forEach(mark => {
+          doc.querySelectorAll("mark").forEach((mark) => {
             const content = mark.innerHTML;
             const styledHtml = styles.mark.replace(/{{content}}/g, content);
-            const tempDiv = document.createElement('div');
+            const tempDiv = document.createElement("div");
             tempDiv.innerHTML = styledHtml;
             mark.replaceWith(...tempDiv.childNodes);
           });
 
           // 处理行内代码
-          doc.querySelectorAll('code').forEach(code => {
+          doc.querySelectorAll("code").forEach((code) => {
             const content = code.innerHTML;
             const styledHtml = styles.code.replace(/{{content}}/g, content);
-            const tempDiv = document.createElement('div');
+            const tempDiv = document.createElement("div");
             tempDiv.innerHTML = styledHtml;
             code.replaceWith(...tempDiv.childNodes);
           });
 
           // 处理上标
-          doc.querySelectorAll('sup').forEach(sup => {
+          doc.querySelectorAll("sup").forEach((sup) => {
             const content = sup.innerHTML;
             const styledHtml = styles.sup.replace(/{{sup}}/g, content);
-            const tempDiv = document.createElement('div');
+            const tempDiv = document.createElement("div");
             tempDiv.innerHTML = styledHtml;
             sup.replaceWith(...tempDiv.childNodes);
           });
 
-          return doc.body.querySelector('div').innerHTML;
+          return doc.body.querySelector("div").innerHTML;
         }
-        
+
         parseBlock(block) {
           if (!block || !block.type) {
             console.warn("无效的块数据:", block);
             return "";
           }
-          
+
           const blockData = block.data || {};
           let content = "";
-          
+
           // 根据块类型处理内容
           switch (block.type) {
-            case 'paragraph':
+            case "paragraph":
               content = this.processInlineStyles(blockData.text || "");
-              return this.templates.paragraph.default.replace(/{{content}}/g, content);
-              
-            case 'header':
+              return this.templates.paragraph.default.replace(
+                /{{content}}/g,
+                content
+              );
+
+            case "header":
               const level = Math.min(Math.max(blockData.level || 1, 1), 6);
-              const headerTemplate = this.templates.header[`h${level}`] || this.templates.header.h2;
+              const headerTemplate =
+                this.templates.header[`h${level}`] || this.templates.header.h2;
               content = this.escapeHtml(blockData.text || "");
               return headerTemplate.replace(/{{content}}/g, content);
-              
+
             default:
-              content = this.processInlineStyles(blockData.text || blockData.content || "");
+              content = this.processInlineStyles(
+                blockData.text || blockData.content || ""
+              );
               return `<div style="margin: 10px 0; padding: 10px; border-left: 3px solid #ccc;">${content}</div>`;
           }
         }
-        
+
         escapeHtml(text) {
           if (!text) return "";
           return String(text)
@@ -293,24 +298,24 @@
             .replace(/"/g, "&quot;")
             .replace(/'/g, "&#39;");
         }
-        
+
         parse(editorData) {
           if (!editorData || !Array.isArray(editorData.blocks)) {
             console.warn("无效的EditorJS数据");
             return "";
           }
-          
+
           const htmlBlocks = editorData.blocks
-            .map(block => this.parseBlock(block))
-            .filter(html => html.trim());
-            
+            .map((block) => this.parseBlock(block))
+            .filter((html) => html.trim());
+
           return htmlBlocks.join("\n");
         }
       }
-      
+
       // 创建解析器实例
       const customHtmlParser = new CustomHtmlParser();
-      
+
       // 包装器类，保持与原有接口兼容
       class HTMLParser {
         constructor() {
@@ -371,11 +376,11 @@
 
       // 创建全局实例
       const htmlParser = new HTMLParser();
-      
+
       // 导出到全局作用域
       window.HTMLParser = HTMLParser;
       window.htmlParser = htmlParser;
-      
+
       // 自动初始化
       htmlParser.init();
     </script>
@@ -411,16 +416,14 @@
                 },
               },
               image: SimpleImage,
-              list: {
-                class: NestedList,
+              List: {
+                class: EditorjsList,
                 inlineToolbar: true,
                 config: {
                   defaultStyle: "unordered",
+                  maxLevel: 5,
+                  styles: ["ordered", "unordered"],
                 },
-              },
-              checklist: {
-                class: Checklist,
-                inlineToolbar: true,
               },
               linkTool: {
                 class: LinkTool,

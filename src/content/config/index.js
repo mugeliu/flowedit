@@ -10,7 +10,6 @@ export const editorConfig = {
   // Editor.js 基础配置
   placeholder: "开始输入内容...",
   autofocus: true,
-  hideToolbar: false,
 
   // 工具配置
   tools: {
@@ -53,16 +52,12 @@ export const editorConfig = {
     },
     image: {
       class: "ImageTool", // 将在editor.js中解析为实际的类引用
-      inlineToolbar: true,
       config: {
         types: "image/*",
         captionPlaceholder: "图片描述",
-        endpoints: {
-          byFile: "/api/upload",
-          byUrl: "/api/upload",
-        },
+        buttonContent: "选择图片",
         features: {
-          caption: "optional", // caption作为可选功能
+          caption: true, // caption作为可选功能
           withBorder: true, // 启用边框功能
           withBackground: true, // 启用背景功能
           stretched: true, // 启用拉伸功能
@@ -76,8 +71,13 @@ export const editorConfig = {
     raw: {
       class: "RawTool", // 将在editor.js中解析为实际的类引用
     },
-    list: {
-      class: "List", // 将在editor.js中解析为实际的类引用
+    List: {
+      class: "EditorjsList", // 将在editor.js中解析为实际的类引用
+      inlineToolbar: true,
+      config: {
+        defaultStyle: "unordered",
+        maxLevel: 5,
+      },
     },
     code: {
       class: "Code", // 将在editor.js中解析为实际的类引用
