@@ -1,7 +1,7 @@
 /**
  * TemplateManager 类
  * 专门负责管理HTML模板配置
- * 重构后的版本，职责更加清晰
+ * 简化版本，避免过度设计
  */
 
 // 导入默认HTML模板配置
@@ -14,17 +14,10 @@ class TemplateManager {
    */
   constructor(customTemplates = {}) {
     // 如果传入自定义模板则使用自定义模板，否则使用默认模板
-    this.templates = Object.keys(customTemplates).length > 0
-      ? { ...customTemplates }
-      : { ...HTML_TEMPLATES };
-  }
-
-  /**
-   * 获取所有模板配置
-   * @returns {Object} 当前模板配置
-   */
-  getTemplates() {
-    return { ...this.templates };
+    this.templates =
+      Object.keys(customTemplates).length > 0
+        ? customTemplates
+        : HTML_TEMPLATES;
   }
 
   /**
@@ -38,16 +31,16 @@ class TemplateManager {
 
   /**
    * 获取特定块类型的特定变体模板
+   * 简化版本：只获取指定变体，不进行复杂的回退逻辑
    * @param {string} blockType 块类型
    * @param {string} variant 变体名称
-   * @param {string} defaultVariant 默认变体名称
    * @returns {string|null} 模板字符串或null
    */
-  getTemplateVariant(blockType, variant, defaultVariant = "default") {
+  getTemplateVariant(blockType, variant) {
     const blockTemplates = this.templates[blockType];
     if (!blockTemplates) return null;
-    
-    return blockTemplates[variant] || blockTemplates[defaultVariant] || Object.values(blockTemplates)[0] || null;
+
+    return blockTemplates[variant] || null;
   }
 
   /**
@@ -75,75 +68,11 @@ class TemplateManager {
   }
 
   /**
-   * 获取后备样式
-   * @returns {Object} 后备样式
+   * 获取所有模板配置
+   * @returns {Object} 当前模板配置
    */
-  getFallbackStyles() {
-    return this.templates.fallback || {};
-  }
-
-  /**
-   * 设置完整模板配置
-   * @param {Object} templates 新的模板配置
-   */
-  setTemplates(templates) {
-    this.templates = { ...templates };
-  }
-
-  /**
-   * 注册自定义模板
-   * @param {string} blockType 块类型
-   * @param {string|Object} template 模板字符串或模板对象
-   * @param {string} variant 模板变体（可选）
-   */
-  registerTemplate(blockType, template, variant = "default") {
-    if (!this.templates[blockType]) {
-      this.templates[blockType] = {};
-    }
-
-    if (typeof template === "string") {
-      this.templates[blockType][variant] = template;
-    } else if (typeof template === "object") {
-      this.templates[blockType] = { ...this.templates[blockType], ...template };
-    }
-  }
-
-  /**
-   * 动态添加或修改模板
-   * @param {string} blockType 块类型
-   * @param {string} variant 模板变体
-   * @param {string} template 模板字符串
-   */
-  setTemplate(blockType, variant, template) {
-    if (!this.templates[blockType]) {
-      this.templates[blockType] = {};
-    }
-    this.templates[blockType][variant] = template;
-  }
-
-  /**
-   * 获取可用的模板列表
-   * @returns {Object} 模板配置
-   */
-  getAvailableTemplates() {
-    return { ...this.templates };
-  }
-
-  /**
-   * 检查模板是否存在
-   * @param {string} blockType 块类型
-   * @param {string} variant 变体名称（可选）
-   * @returns {boolean} 模板是否存在
-   */
-  hasTemplate(blockType, variant = null) {
-    const blockTemplates = this.templates[blockType];
-    if (!blockTemplates) return false;
-    
-    if (variant) {
-      return !!blockTemplates[variant];
-    }
-    
-    return Object.keys(blockTemplates).length > 0;
+  getTemplates() {
+    return this.templates;
   }
 }
 

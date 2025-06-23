@@ -22,7 +22,11 @@ export const HTML_TEMPLATES = {
 
     b: `<span textstyle style="font-weight: 700; color: rgb(16, 185, 129);">{{content}}</span>`,
 
+    strong: `<span textstyle style="font-weight: 700; color: rgb(16, 185, 129);">{{content}}</span>`,
+
     i: `<span textstyle style="font-style: italic; color: rgb(16, 185, 129); letter-spacing: 0.5px; font-weight: 500;">{{content}}</span>`,
+
+    em: `<span textstyle style="font-style: italic; color: rgb(16, 185, 129); letter-spacing: 0.5px; font-weight: 500;">{{content}}</span>`,
 
     u: `<span textstyle style="text-decoration: underline; text-decoration-color: rgb(16, 185, 129); text-underline-offset: 3px; text-decoration-thickness: 2px;">{{content}}</span>`,
 
@@ -30,7 +34,7 @@ export const HTML_TEMPLATES = {
 
     code: `<span textstyle style="font-family: 'Consolas', 'Monaco', 'Courier New', monospace; font-size: 0.85em; background: rgba(16, 185, 129, 0.1); color: rgb(6, 95, 70); padding: 0.25em 0.6em; border-radius: 5px; border: 1px solid rgba(16, 185, 129, 0.25); font-weight: 500; letter-spacing: 0.3px;">{{content}}</span>`,
 
-    sup: `<sup textstyle style="color: rgba(16, 185, 129, 0.7); font-size: 0.7em; margin-left: 0.2em;">{{sup}}</sup>`,
+    sup: `<sup textstyle style="color: rgba(16, 185, 129, 0.7); font-size: 0.7em; margin-left: 0.2em;">{{content}}</sup>`,
   },
   header: {
     h1: `<section style="font-style: normal;font-variant-ligatures: normal;font-variant-caps: normal;letter-spacing: 0.5px;orphans: 2;text-indent: 0px;text-transform: none;widows: 2;word-spacing: 0px;-webkit-text-stroke-width: 0px;white-space: normal;text-decoration-thickness: initial;text-decoration-style: initial;text-decoration-color: initial;box-sizing: border-box;border-width: 0px;border-style: solid;font-size: 20px;font-weight: 600;margin: 1.8em 0px 1.2em;text-align: center;line-height: 1.4;font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, &quot;Helvetica Neue&quot;, Arial, sans-serif;display: flex;justify-content: center;padding: 0px;color: rgb(4, 120, 87);"><section style="display: inline-block;padding: 1em 2.2em;color: rgb(255, 255, 255);background: linear-gradient(135deg, rgb(16, 185, 129) 0%, rgb(5, 150, 105) 100%);border-radius: 12px;box-shadow: rgba(16, 185, 129, 0.25) 0px 6px 20px -4px, rgba(0, 0, 0, 0.1) 0px 2px 8px -2px;"><span leaf="">{{content}}</span></section></section>`,
@@ -42,7 +46,6 @@ export const HTML_TEMPLATES = {
 
   paragraph: {
     default: `<section style="font-style: normal;font-variant-ligatures: normal;font-variant-caps: normal;orphans: 2;text-indent: 0px;text-transform: none;widows: 2;word-spacing: 0px;-webkit-text-stroke-width: 0px;white-space: normal;text-decoration-thickness: initial;text-decoration-style: initial;text-decoration-color: initial;box-sizing: border-box;border-width: 0px;border-style: solid;margin: 0.8em 0px;text-align: left;line-height: 1.7;font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, &quot;Helvetica Neue&quot;, Arial, sans-serif;display: block;padding: 0px;"><section style="font-size: 16px; color: rgb(55, 65, 81); letter-spacing: 0.3px; padding: 0.5em 0.5em;"><span leaf="">{{content}}</span></section></section>`,
-    blankline: `<p style="margin-bottom: 0px; visibility: visible;"><span leaf="" style="visibility: visible;"><br style="visibility: visible;"></span></p>`,
   },
 
   quote: {
@@ -54,7 +57,7 @@ export const HTML_TEMPLATES = {
   },
 
   raw: {
-    default: ``,
+    default: `<section>{{content}}</section>`,
   },
 
   image: {
@@ -84,14 +87,6 @@ export const HTML_TEMPLATES = {
 
   code: {
     default: `<section><pre style="--md-primary-color:rgba(26,104,64,1);text-align:left;line-height:1.5;font-family:Menlo,Monaco,'Courier New',monospace;font-size:90%;overflow-x:auto;border-radius:8px;padding:1em;margin:10px 8px;background-color:#2d2d2d;border:1px solid #1a6840;" class="hljs code__pre"><span style="display:block;padding-bottom:10px;" class="mac-sign"><svg viewBox="0 0 450 130" height="13px" width="45px" y="0px" x="0px" version="1.1" xmlns="http://www.w3.org/2000/svg"><ellipse fill="rgb(237,108,96)" stroke-width="2" stroke="rgb(220,60,54)" ry="52" rx="50" cy="65" cx="50"></ellipse><ellipse fill="rgb(247,193,81)" stroke-width="2" stroke="rgb(218,151,33)" ry="52" rx="50" cy="65" cx="225"></ellipse><ellipse fill="rgb(100,200,86)" stroke-width="2" stroke="rgb(27,161,37)" ry="52" rx="50" cy="65" cx="400"></ellipse></svg></span><code style="--md-primary-color:rgba(26,104,64,1);text-align:left;line-height:1.75;font-family:'Fira Code',Menlo,Operator Mono,Consolas,Monaco,monospace;font-size:90%;margin:0;white-space:pre;word-wrap:break-word;overflow-wrap:break-word;color:#e0e0e0;" class="language-python">{{content}}</code></pre></section>`,
-  },
-
-  // 后备HTML模板
-  fallback: {
-    container:
-      "margin:1.5em 8px;padding:0.5em;border:1px dashed rgba(26,104,64,0.3);background-color:rgba(26,104,64,0.05);",
-    warning: "color:rgba(26,104,64,0.7);font-size:0.8em;",
-    content: "margin-top:0.5em;",
   },
 };
 
