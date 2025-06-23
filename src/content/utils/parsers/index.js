@@ -1,147 +1,277 @@
 /**
- * EditorJS HTML Parser
- * 简化设计，提供核心解析功能和样式支持
+ * HTML解析器模块主入口
+ * 提供统一的导出接口和工厂方法
+ * 重构后的版本，职责清晰，依赖关系简单
  */
 
-// 导入解析器
-import defaultParsers from './blocks/index.js';
-// 导入样式配置
-import { defaultStyleConfig } from '../../config/style-config.js';
+import TemplateManager from './template-manager.js';
+import ProcessorRegistry from './processor-registry.js';
+import HtmlParser from './html-parser.js';
+import ConfigManager from './config-manager.js';
+import {
+  BaseBlockProcessor,
+  HeaderBlockProcessor,
+  CodeBlockProcessor,
+  RawBlockProcessor,
+  QuoteBlockProcessor,
+  ListBlockProcessor,
+  DelimiterBlockProcessor,
+  ImageBlockProcessor
+} from './block-processor.js';
 
 /**
- * 解析器函数类型定义
- * @typedef {Function} ParserFunction
- * @param {Object} block - EditorJS 块数据
- * @returns {string} HTML 字符串
+ * 创建HTML解析器实例的工厂方法
+ * @param {Object} config 配置对象
+ * @returns {HtmlParser} HTML解析器实例
  */
-
-/**
- * 解析选项类型定义
- * @typedef {Object} Options
- * @property {boolean} strict - 严格模式，遇到未知块类型时抛出错误
- * @property {Function} styleProvider - 样式提供函数
- */
-
-/**
- * 处理单个块的解析
- * @param {Object} block - EditorJS 块数据
- * @param {Object} parsers - 解析器映射对象
- * @param {Options} options - 解析选项
- * @returns {string} HTML 字符串
- */
-function parseBlock(block, parsers, options) {
-  if (block.type in parsers) {
-    const parserOptions = { styleProvider: options.styleProvider };
-    return parsers[block.type](block, parserOptions);
-  }
-
-  const error = `[editorjs-html]: Parser function for ${block.type} does not exist`;
-  if (options.strict) {
-    throw new Error(error);
-  } else {
-    console.error(error);
-    return '';
-  }
+export function createHtmlParser(config = {}) {
+  return new HtmlParser(config);
 }
 
 /**
- * 解析整个 EditorJS 数据
- * @param {Object} editorData - EditorJS 输出数据，包含 blocks 数组
- * @param {Object} parsers - 解析器映射对象
- * @param {Options} options - 解析选项
- * @returns {string} HTML 字符串
+ * 创建配置管理器实例的工厂方法
+ * @param {Object} initialConfig 初始配置
+ * @returns {ConfigManager} 配置管理器实例
  */
-function parse({ blocks }, parsers, options) {
-  return blocks.reduce((accumulator, block) => {
-    return accumulator + parseBlock(block, parsers, options);
-  }, '');
+export function createConfigManager(initialConfig = {}) {
+  return new ConfigManager(initialConfig);
 }
 
 /**
- * 创建解析器实例
- * @param {Object} config - 配置对象
- * @param {Object} config.styleConfig - 样式配置对象，null表示无样式
- * @param {Object} config.plugins - 自定义解析器映射
- * @param {Object} config.options - 解析选项
- * @returns {Object} 解析器实例，包含 parse 和 parseBlock 方法
+ * 创建模板管理器实例的工厂方法
+ * @param {Object} customTemplates 自定义模板
+ * @returns {TemplateManager} 模板管理器实例
  */
-export function createParser({
-  styleConfig = null,
-  plugins = {},
-  options = { strict: false }
-} = {}) {
-  const combinedParsers = { ...defaultParsers, ...plugins };
-  const styleProvider = styleConfig ? createStyleProvider(styleConfig) : null;
-  const parserOptions = { ...options, styleProvider };
-
-  return {
-    parse: (blocks) => parse(blocks, combinedParsers, parserOptions),
-    parseBlock: (block) => parseBlock(block, combinedParsers, parserOptions),
-  };
+export function createTemplateManager(customTemplates = {}) {
+  return new TemplateManager(customTemplates);
 }
 
 /**
- * 创建带默认样式的解析器实例（便捷函数）
- * @param {Object} plugins - 自定义解析器映射
- * @param {Object} options - 解析选项
- * @returns {Object} 解析器实例
+ * 创建处理器注册表实例的工厂方法
+ * @param {TemplateManager} templateManager 模板管理器实例
+ * @returns {ProcessorRegistry} 处理器注册表实例
  */
-export function createStyledParser(plugins = {}, options = { strict: false }) {
-  return createParser({
-    styleConfig: defaultStyleConfig,
-    plugins,
-    options
-  });
+export function createProcessorRegistry(templateManager) {
+  return new ProcessorRegistry(templateManager);
 }
 
 /**
- * 创建样式提供函数
- * @param {Object} styleConfig - 样式配置对象
- * @returns {Function} 样式提供函数
+ * 快速解析EditorJS数据为HTML的便捷方法
+ * @param {Object} editorData EditorJS数据
+ * @param {Object} config 配置选项
+ * @returns {string} HTML字符串
  */
-export function createStyleProvider(styleConfig = defaultStyleConfig) {
+export function parseToHtml(editorData, config = {}) {
+  const parser = createHtmlParser(config);
+  return parser.parseDocument(editorData, config.options);
+}
+
+/**
+ * 快速解析EditorJS数据并返回元数据的便捷方法
+ * @param {Object} editorData EditorJS数据
+ * @param {Object} config 配置选项
+ * @returns {Object} 包含HTML和元数据的对象
+ */
+export function parseWithMetadata(editorData, config = {}) {
+  const parser = createHtmlParser(config);
+  return parser.parseWithMeta(editorData, config.options);
+}
+
+/**
+ * 安全解析EditorJS数据的便捷方法
+ * @param {Object} editorData EditorJS数据
+ * @param {Object} config 配置选项
+ * @returns {Object} 解析结果（包含错误处理）
+ */
+export function safeParse(editorData, config = {}) {
+  const parser = createHtmlParser(config);
+  return parser.safeParse(editorData, config.options);
+}
+
+/**
+ * 验证EditorJS数据格式的便捷方法
+ * @param {Object} editorData EditorJS数据
+ * @param {Object} config 配置选项
+ * @returns {Object} 验证结果
+ */
+export function validateEditorData(editorData, config = {}) {
+  const parser = createHtmlParser(config);
+  return parser.validateEditorData(editorData);
+}
+
+/**
+ * 获取默认配置的便捷方法
+ * @returns {Object} 默认配置
+ */
+export function getDefaultConfig() {
+  const configManager = createConfigManager();
+  return configManager.getDefaultConfig();
+}
+
+/**
+ * 获取支持的块类型列表
+ * @param {Object} config 配置选项
+ * @returns {Array<string>} 支持的块类型
+ */
+export function getSupportedBlockTypes(config = {}) {
+  const parser = createHtmlParser(config);
+  return parser.getSupportedBlockTypes();
+}
+
+/**
+ * 预设配置
+ */
+export const presets = {
   /**
-   * 获取指定元素类型和变体的样式
-   * @param {string} elementType - 元素类型 (header, paragraph, emphasis等)
-   * @param {string} variant - 样式变体 (h1, h2, strong等)
-   * @returns {Object} 合并后的样式对象
+   * 基础配置 - 最小功能集
    */
-  return function(elementType, variant = 'default') {
-    const baseStyles = styleConfig.base || {};
-    const elementStyles = styleConfig[elementType] || {};
-    
-    // 对于内联样式元素（emphasis），智能继承基础样式
-    if (elementType === 'emphasis') {
-      // 从基础样式中提取可继承的属性（颜色、字体等）
-      const inheritableBaseStyles = {
-        color: baseStyles.color,
-        fontFamily: baseStyles.fontFamily,
-        fontSize: baseStyles.fontSize
-      };
-      
-      // 过滤掉undefined的属性
-      const filteredBaseStyles = Object.fromEntries(
-        Object.entries(inheritableBaseStyles).filter(([_, value]) => value !== undefined)
-      );
-      
-      if (typeof elementStyles === 'object' && elementStyles[variant]) {
-        return { ...filteredBaseStyles, ...elementStyles[variant] };
-      }
-      return { ...filteredBaseStyles, ...elementStyles };
+  basic: {
+    templates: {},
+    processors: {
+      header: { enabled: true, options: {} },
+      paragraph: { enabled: true, options: {} },
+      raw: { enabled: true, options: {} }
+    },
+    options: {
+      skipEmpty: true,
+      wrapInContainer: false,
+      includeMetadata: false,
+      strictMode: false
     }
-    
-    // 对于块级元素，合并基础样式
-    if (typeof elementStyles === 'object' && elementStyles[variant]) {
-      return { ...baseStyles, ...elementStyles[variant] };
+  },
+
+  /**
+   * 标准配置 - 常用功能
+   */
+  standard: {
+    templates: {},
+    processors: {
+      header: { enabled: true, options: {} },
+      paragraph: { enabled: true, options: {} },
+      list: { enabled: true, options: {} },
+      quote: { enabled: true, options: {} },
+      code: { enabled: true, options: {} },
+      raw: { enabled: true, options: {} }
+    },
+    options: {
+      skipEmpty: true,
+      wrapInContainer: false,
+      includeMetadata: false,
+      strictMode: false
     }
-    
-    // 否则使用元素类型的默认样式
-    return { ...baseStyles, ...elementStyles };
-  };
+  },
+
+  /**
+   * 完整配置 - 所有功能
+   */
+  full: {
+    templates: {},
+    processors: {
+      header: { enabled: true, options: {} },
+      paragraph: { enabled: true, options: {} },
+      list: { enabled: true, options: {} },
+      quote: { enabled: true, options: {} },
+      code: { enabled: true, options: {} },
+      raw: { enabled: true, options: {} },
+      delimiter: { enabled: true, options: {} },
+      image: { enabled: true, options: {} }
+    },
+    options: {
+      skipEmpty: true,
+      wrapInContainer: true,
+      includeMetadata: true,
+      strictMode: false,
+      enableLogging: true
+    }
+  },
+
+  /**
+   * 严格模式配置 - 启用所有验证
+   */
+  strict: {
+    templates: {},
+    processors: {
+      header: { enabled: true, options: {} },
+      paragraph: { enabled: true, options: {} },
+      list: { enabled: true, options: {} },
+      quote: { enabled: true, options: {} },
+      code: { enabled: true, options: {} },
+      raw: { enabled: true, options: {} },
+      delimiter: { enabled: true, options: {} },
+      image: { enabled: true, options: {} }
+    },
+    options: {
+      skipEmpty: true,
+      wrapInContainer: true,
+      includeMetadata: true,
+      strictMode: true,
+      enableLogging: true,
+      maxBlockSize: 500000, // 500KB
+      timeout: 3000 // 3秒
+    }
+  }
+};
+
+/**
+ * 使用预设配置创建解析器
+ * @param {string} presetName 预设名称
+ * @param {Object} overrides 覆盖配置
+ * @returns {HtmlParser} HTML解析器实例
+ */
+export function createParserWithPreset(presetName, overrides = {}) {
+  if (!presets[presetName]) {
+    throw new Error(`未知的预设配置: ${presetName}`);
+  }
+  
+  const configManager = createConfigManager(presets[presetName]);
+  if (Object.keys(overrides).length > 0) {
+    configManager.updateConfig(overrides);
+  }
+  
+  return createHtmlParser(configManager.getConfig());
 }
 
-// 导出样式配置相关
-export { defaultStyleConfig } from '../../config/style-config.js';
+/**
+ * 版本信息
+ */
+export const version = '2.0.0';
 
-// 默认导出主要的解析器创建函数
-export default createParser;
+/**
+ * 模块信息
+ */
+export const moduleInfo = {
+  name: 'HTML Parser',
+  version,
+  description: '重构后的EditorJS HTML解析器，职责清晰，依赖简单',
+  author: 'FlowEdit Team',
+  dependencies: {
+    'TemplateManager': '管理HTML模板',
+    'ProcessorRegistry': '管理块处理器',
+    'HtmlParser': '主解析逻辑',
+    'ConfigManager': '配置管理',
+    'BlockProcessor': '块处理器基类和实现'
+  },
+  architecture: {
+    dependencyFlow: 'HtmlParser → ProcessorRegistry → BlockProcessor → TemplateManager',
+    principles: ['单一职责', '依赖注入', '配置驱动', '可扩展性']
+  }
+};
+
+// 导出所有类
+export {
+  TemplateManager,
+  ProcessorRegistry,
+  HtmlParser,
+  ConfigManager,
+  BaseBlockProcessor,
+  HeaderBlockProcessor,
+  CodeBlockProcessor,
+  RawBlockProcessor,
+  QuoteBlockProcessor,
+  ListBlockProcessor,
+  DelimiterBlockProcessor,
+  ImageBlockProcessor
+};
+
+// 默认导出主解析器类
+export default HtmlParser;

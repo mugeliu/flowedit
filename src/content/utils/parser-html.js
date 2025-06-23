@@ -843,16 +843,13 @@ class HtmlParser {
    * @returns {string} HTML字符串
    */
   parse(editorData, options = {}) {
-    const { skipEmpty = true } = options;
-
     if (!editorData || !Array.isArray(editorData.blocks)) {
       console.warn("无效的EditorJS数据");
       return "";
     }
 
     const htmlBlocks = editorData.blocks
-      .map((block) => this.parseBlock(block))
-      .filter((html) => (skipEmpty ? html.trim() : true));
+      .map((block) => this.parseBlock(block));
 
     const content = htmlBlocks.join("\n");
 
@@ -904,7 +901,7 @@ class HtmlParser {
    * @returns {string} 完整的HTML文档
    */
   renderDocument(editorJSData, options = {}) {
-    const { skipEmpty = true, wrapInContainer = false } = options;
+    const { skipEmpty = true, wrapInContainer = true } = options;
 
     if (!editorJSData || !Array.isArray(editorJSData.blocks)) {
       console.warn("无效的EditorJS数据");
@@ -918,8 +915,7 @@ class HtmlParser {
     const content = htmlBlocks.join("\n");
 
     if (wrapInContainer) {
-      return `<div class="editorjs-content" style="max-width: 800px; margin: 0 auto; padding: 20px;">
-              ${content}</div>`;
+      return `<section class="editorjs-content">${content}</section>`;
     }
 
     return content;

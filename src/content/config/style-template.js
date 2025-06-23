@@ -42,6 +42,7 @@ export const HTML_TEMPLATES = {
 
   paragraph: {
     default: `<section style="font-style: normal;font-variant-ligatures: normal;font-variant-caps: normal;orphans: 2;text-indent: 0px;text-transform: none;widows: 2;word-spacing: 0px;-webkit-text-stroke-width: 0px;white-space: normal;text-decoration-thickness: initial;text-decoration-style: initial;text-decoration-color: initial;box-sizing: border-box;border-width: 0px;border-style: solid;margin: 0.8em 0px;text-align: left;line-height: 1.7;font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Roboto, &quot;Helvetica Neue&quot;, Arial, sans-serif;display: block;padding: 0px;"><section style="font-size: 16px; color: rgb(55, 65, 81); letter-spacing: 0.3px; padding: 0.5em 0.5em;"><span leaf="">{{content}}</span></section></section>`,
+    blankline: `<p style="margin-bottom: 0px; visibility: visible;"><span leaf="" style="visibility: visible;"><br style="visibility: visible;"></span></p>`,
   },
 
   quote: {
