@@ -4,77 +4,86 @@
  * 简化版本，避免过度设计
  */
 
-// 导入默认HTML模板配置
-import { HTML_TEMPLATES } from "../../config/style-template.js";
+import { flexibleTemplatesWithInlineStyles, theme, blockInlineStyles } from '../../config/style-template.js';
 
-class TemplateManager {
-  /**
-   * 创建模板管理器实例
-   * @param {Object} customTemplates 自定义模板配置（可选）
-   */
-  constructor(customTemplates = {}) {
-    // 如果传入自定义模板则使用自定义模板，否则使用默认模板
-    this.templates =
-      Object.keys(customTemplates).length > 0
-        ? customTemplates
-        : HTML_TEMPLATES;
+/**
+ * 模板管理器类
+ * 负责管理和处理各种模板、样式和主题配置
+ */
+export class TemplateManager {
+  constructor() {
+    this.templates = flexibleTemplatesWithInlineStyles;
+    this.theme = theme;
+    this.blockInlineStyles = blockInlineStyles;
   }
 
   /**
-   * 获取特定块类型的模板
-   * @param {string} blockType 块类型
-   * @returns {Object|null} 模板对象或null
+   * 获取模板
+   * @param {string} type - 模板类型 (如 'header', 'paragraph')
+   * @param {string} variant - 变体 (如 'h1', 'h2', 'default')
+   * @returns {string|null} 模板字符串
    */
-  getBlockTemplate(blockType) {
-    return this.templates[blockType] || null;
+  getTemplate(type, variant = 'default') {
+    return this.templates[type]?.[variant] || null;
   }
 
   /**
-   * 获取特定块类型的特定变体模板
-   * 简化版本：只获取指定变体，不进行复杂的回退逻辑
-   * @param {string} blockType 块类型
-   * @param {string} variant 变体名称
-   * @returns {string|null} 模板字符串或null
+   * 渲染模板
+   * @param {string} template - 模板字符串
+   * @param {string} content - 内容
+   * @param {Object} styles - 样式对象
+   * @returns {string} 渲染后的HTML
    */
-  getTemplateVariant(blockType, variant) {
-    const blockTemplates = this.templates[blockType];
-    if (!blockTemplates) return null;
-
-    return blockTemplates[variant] || null;
+  renderTemplate(template, content, styles = {}) {
+    if (!template) return content;
+    
+    // 处理主题变量
+    let processedTemplate = this.processThemeVariables(template);
+    
+    // 替换内容占位符
+    processedTemplate = processedTemplate.replace(/\{\{content\}\}/g, content);
+    
+    // 处理样式变量
+    Object.entries(styles).forEach(([key, value]) => {
+      const regex = new RegExp(`\{\{${key}\}\}`, 'g');
+      processedTemplate = processedTemplate.replace(regex, value);
+    });
+    
+    return processedTemplate;
   }
 
   /**
-   * 获取内联样式模板
-   * @returns {Object} 内联样式模板
+   * 处理样式字符串中的主题变量
+   * @param {string} styleString - 样式字符串
+   * @returns {string} 处理后的样式字符串
    */
-  getInlineStyles() {
-    return this.templates.inlineStyles || {};
+  processThemeVariables(styleString) {
+    if (!styleString) return '';
+    
+    return styleString.replace(/\{\{theme\.([^}]+)\}\}/g, (match, path) => {
+      const value = this.getNestedValue(this.theme, path);
+      return value !== undefined ? value : match;
+    });
   }
 
   /**
-   * 获取头部模板
-   * @returns {string} 头部模板
+   * 获取嵌套对象的值
+   * @param {Object} obj - 对象
+   * @param {string} path - 路径（用点分隔）
+   * @returns {*} 值
    */
-  getHeadTemplate() {
-    return this.templates.head || "";
+  getNestedValue(obj, path) {
+    return path.split('.').reduce((current, key) => {
+      return current && current[key] !== undefined ? current[key] : undefined;
+    }, obj);
   }
 
   /**
-   * 获取尾部模板
-   * @returns {string} 尾部模板
+   * 获取主题配置
+   * @returns {Object} 主题对象
    */
-  getEndingTemplate() {
-    return this.templates.ending || "";
+  getTheme() {
+    return this.theme;
   }
 
-  /**
-   * 获取所有模板配置
-   * @returns {Object} 当前模板配置
-   */
-  getTemplates() {
-    return this.templates;
-  }
 }
-
-export { TemplateManager };
-export default TemplateManager;

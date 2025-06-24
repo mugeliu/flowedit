@@ -46,20 +46,48 @@ class BaseBlockProcessor {
   }
 
   /**
-   * 获取模板（子类应重写以实现自定义逻辑）
-   * 基类提供最简单的默认实现
+   * 获取模板
    * @param {Object} blockData 块数据
    * @param {Object} block 完整块对象
-   * @returns {string|null} 模板字符串
+   * @returns {Object|null} 层级模板对象或null
    */
   getTemplate(blockData, block) {
-    // 基类只提供最基本的默认模板获取
-    // 尝试获取第一个可用的模板变体
-    const blockTemplates = this.templateManager.getBlockTemplate(block.type);
-    if (!blockTemplates) return null;
+    return this.getFlexibleTemplate(blockData, block);
+  }
 
-    // 返回第一个可用的模板（通常是default或第一个定义的变体）
-    return Object.values(blockTemplates)[0] || null;
+  /**
+   * 获取层级模板（子类可重写）
+   * @param {Object} blockData 块数据
+   * @param {Object} block 完整块对象
+   * @returns {Object|null} 层级模板对象或null
+   */
+  getFlexibleTemplate(blockData, block) {
+    // 基类默认实现：根据块类型获取默认变体
+    const categoryMap = {
+      'header': 'header',
+      'paragraph': 'paragraph', 
+      'quote': 'quote',
+      'delimiter': 'delimiter',
+      'raw': 'raw',
+      'image': 'image',
+      'code': 'code',
+      'list': 'List'
+    };
+    
+    const category = categoryMap[block.type];
+    if (!category) return null;
+    
+    return this.templateManager.getFlexibleTemplate(category, 'default');
+  }
+
+  /**
+   * 获取层级模板配置
+   * @param {string} category 模板类别
+   * @param {string} variant 模板变体
+   * @returns {Object|null} 层级模板配置或null
+   */
+  getFlexibleTemplateByCategory(category, variant) {
+    return this.templateManager.getFlexibleTemplate(category, variant);
   }
 
   /**
@@ -77,7 +105,7 @@ class BaseBlockProcessor {
 
   /**
    * 构建最终HTML（内部方法）
-   * @param {string} template 模板字符串
+   * @param {Object} template 层级模板对象
    * @param {string} content 渲染后的内容
    * @param {Object} blockData 块数据
    * @param {Object} block 完整块对象
@@ -89,7 +117,31 @@ class BaseBlockProcessor {
       return this.createFallbackHtml(block);
     }
 
-    return template.replace(/{{content}}/g, content);
+    // 使用层级模板渲染逻辑
+    if (template.layers) {
+      return this.renderFlexibleTemplate(template, content, blockData);
+    }
+
+    console.warn(`无效的模板类型: ${typeof template}`);
+    return this.createFallbackHtml(block);
+  }
+
+  /**
+   * 渲染层级模板
+   * @param {Object} template 层级模板对象
+   * @param {string} content 内容
+   * @param {Object} blockData 块数据
+   * @param {Object} block 完整块对象
+   * @returns {string} 渲染后的HTML
+   */
+  renderFlexibleTemplate(template, content, blockData, block) {
+    const layers = template.layers;
+    if (!layers || !Array.isArray(layers)) {
+      return content;
+    }
+
+    const blockInlineStyles = this.templateManager.getBlockInlineStyles();
+    return this.templateManager.buildNestedHTML(layers, content, blockInlineStyles);
   }
 
   /**
@@ -100,25 +152,12 @@ class BaseBlockProcessor {
   processInlineStyles(text) {
     if (!text) return "";
 
-    const htmlString = `<div>${text}</div>`;
-    const doc = new DOMParser().parseFromString(htmlString, "text/html");
-
-    // 直接获取内联样式模板
-    const inlineStyles = this.templateManager.getInlineStyles();
-
-    // 遍历所有样式模板
-    Object.entries(inlineStyles).forEach(([tagName, template]) => {
-      doc.querySelectorAll(tagName).forEach((element) => {
-        const content = element.innerHTML;
-        const styledHtml = template.replace(/{{content}}/g, content);
-        const tempDiv = document.createElement("div");
-        tempDiv.innerHTML = styledHtml;
-        element.replaceWith(...tempDiv.childNodes);
-      });
-    });
-
-    return doc.body.querySelector("div").innerHTML;
+    // 使用 templateManager 的处理方法
+    const blockInlineStyles = this.templateManager.getBlockInlineStyles();
+    return this.templateManager.processInlineStyles(text, blockInlineStyles);
   }
+
+
 
   /**
    * 清理HTML，移除危险标签
@@ -181,20 +220,25 @@ class HeaderBlockProcessor extends BaseBlockProcessor {
    * 获取标题模板，根据级别选择对应的模板变体
    * @param {Object} blockData 块数据
    * @param {Object} block 完整块对象
-   * @returns {string|null} 模板字符串
+   * @returns {Object|null} 层级模板对象或null
    */
   getTemplate(blockData, block) {
     const level = Math.min(Math.max(blockData.level || 1, 1), 6);
 
-    // 直接获取对应级别的模板
-    let template = this.templateManager.getTemplateVariant(
-      block.type,
+    // 获取对应级别的层级模板
+    let template = this.templateManager.getFlexibleTemplate(
+      "header",
       `h${level}`
     );
 
     // 如果不存在（如 h4-h6），使用 h3 作为回退
     if (!template && level > 3) {
-      template = this.templateManager.getTemplateVariant(block.type, "h3");
+      template = this.templateManager.getFlexibleTemplate("header", "h3");
+    }
+
+    // 如果还是没有，使用h1作为最终回退
+    if (!template) {
+      template = this.templateManager.getFlexibleTemplate("header", "h1");
     }
 
     return template;
@@ -227,7 +271,7 @@ class CodeBlockProcessor extends BaseBlockProcessor {
 
   /**
    * 后处理，处理语言标识等特殊模板变量
-   * @param {string} template 模板字符串
+   * @param {Object} template 层级模板对象
    * @param {string} content 渲染后的内容
    * @param {Object} blockData 块数据
    * @param {Object} block 完整块对象
@@ -239,16 +283,69 @@ class CodeBlockProcessor extends BaseBlockProcessor {
       return this.createFallbackHtml(block);
     }
 
+    // 对于代码块，需要特殊处理语言标识
+    // 这里可以通过扩展内容或在渲染时传递额外参数来处理
+    // 暂时使用基类的 buildFinalHtml 方法
+    return this.buildFinalHtml(template, content, blockData, block);
+  }
+
+  /**
+   * 渲染代码内容，包含语言信息
+   * @param {Object} blockData 块数据
+   * @param {Object} block 完整块对象
+   * @returns {Object} 包含代码和语言信息的对象
+   */
+  renderContent(blockData, block) {
+    const code = this.escapeHtml(blockData.code || "");
+    const language = blockData.language || "";
+    
+    // 返回对象以便在模板中使用
+    return {
+      code,
+      language: this.escapeHtml(language)
+    };
+  }
+
+  /**
+   * 重写 buildFinalHtml 以处理代码块的特殊需求
+   */
+  buildFinalHtml(template, content, blockData, block) {
+    if (!template) {
+      console.warn(`未找到块类型 ${block.type} 的模板`);
+      return this.createFallbackHtml(block);
+    }
+
+    // 使用层级模板渲染逻辑
+    if (template.layers) {
+      // 如果 content 是对象，需要特殊处理
+      let finalContent = content;
+      if (typeof content === 'object' && content.code !== undefined) {
+        finalContent = content.code;
+      }
+      return this.renderFlexibleTemplate(template, finalContent, blockData, block);
+    }
+
+    console.warn(`无效的模板类型: ${typeof template}`);
+    return this.createFallbackHtml(block);
+  }
+
+  // 保留原有的 postprocess 方法作为备用
+  _legacyPostprocess(template, content, blockData, block) {
+    if (!template) {
+      console.warn(`未找到块类型 ${block.type} 的模板`);
+      return this.createFallbackHtml(block);
+    }
+
     let rendered = template.replace(/{{content}}/g, content);
 
     // 处理语言标识
-    if (template.includes("{{language}}")) {
-      const language = blockData.language || "";
-      rendered = rendered.replace(/{{language}}/g, this.escapeHtml(language));
-    }
+     if (template.includes("{{language}}")) {
+        const language = blockData.language || "";
+        rendered = rendered.replace(/{{language}}/g, this.escapeHtml(language));
+      }
 
-    return rendered;
-  }
+      return rendered;
+    }
 }
 
 /**
@@ -295,7 +392,7 @@ class QuoteBlockProcessor extends BaseBlockProcessor {
 
   /**
    * 后处理，处理caption等特殊模板变量
-   * @param {string} template 模板字符串
+   * @param {Object} template 层级模板对象
    * @param {string} content 渲染后的内容
    * @param {Object} blockData 块数据
    * @param {Object} block 完整块对象
@@ -307,21 +404,8 @@ class QuoteBlockProcessor extends BaseBlockProcessor {
       return this.createFallbackHtml(block);
     }
 
-    let rendered = template.replace(/{{content}}/g, content);
-
-    // 处理 caption
-    if (template.includes("{{caption}}")) {
-      if (this.processCaptions && blockData.caption) {
-        const caption = this.sanitizeHtml(
-          this.processInlineStyles(blockData.caption)
-        );
-        rendered = rendered.replace(/{{caption}}/g, caption);
-      } else {
-        rendered = rendered.replace(/{{caption}}/g, "");
-      }
-    }
-
-    return rendered;
+    // 使用基类的 buildFinalHtml 方法处理层级模板
+    return this.buildFinalHtml(template, content, blockData, block);
   }
 }
 
@@ -500,18 +584,20 @@ class ListBlockProcessor extends BaseBlockProcessor {
    * 获取列表模板，根据列表样式选择对应的模板变体
    * @param {Object} blockData 块数据
    * @param {Object} block 完整块对象
-   * @returns {string|null} 模板字符串
+   * @returns {Object|null} 层级模板对象或null
    */
   getTemplate(blockData, block) {
     const style = this.normalizeStyle(blockData.style);
-    let template = this.templateManager.getTemplateVariant(block.type, style);
+    let template = this.templateManager.getFlexibleTemplate("List", style);
 
     // 如果checklist模板不存在，回退到unordered
     if (!template && style === "checklist") {
-      template = this.templateManager.getTemplateVariant(
-        block.type,
-        "unordered"
-      );
+      template = this.templateManager.getFlexibleTemplate("List", "unordered");
+    }
+
+    // 如果还是没有，使用unordered作为最终回退
+    if (!template) {
+      template = this.templateManager.getFlexibleTemplate("List", "unordered");
     }
 
     return template;
@@ -543,7 +629,7 @@ class ListBlockProcessor extends BaseBlockProcessor {
 
   /**
    * 后处理，处理列表样式等特殊模板变量
-   * @param {string} template 模板字符串
+   * @param {Object} template 层级模板对象
    * @param {string} content 渲染后的内容
    * @param {Object} blockData 块数据
    * @param {Object} block 完整块对象
@@ -555,20 +641,8 @@ class ListBlockProcessor extends BaseBlockProcessor {
       return this.createFallbackHtml(block);
     }
 
-    let result = template.replace(/{{items}}/g, content);
-    const style = this.normalizeStyle(blockData.style);
-    const meta = blockData.meta || {};
-
-    // 处理列表样式变量
-    if (style === "ordered") {
-      const listStyle = getListStyleType(meta.counterType, 1);
-      result = result.replace(/{{listStyle}}/g, listStyle);
-    } else {
-      // 对于非有序列表，移除包含 {{listStyle}} 的样式属性
-      result = result.replace(/{{listStyle}}/g, "disc");
-    }
-
-    return result;
+    // 使用基类的 buildFinalHtml 方法处理层级模板
+    return this.buildFinalHtml(template, content, blockData, block);
   }
 
   /**
@@ -624,7 +698,7 @@ class ImageBlockProcessor extends BaseBlockProcessor {
 
   /**
    * 后处理，处理图片的url、caption、alt等模板变量
-   * @param {string} template 模板字符串
+   * @param {Object} template 层级模板对象
    * @param {Object} content 渲染后的内容对象
    * @param {Object} blockData 块数据
    * @param {Object} block 完整块对象
@@ -636,15 +710,14 @@ class ImageBlockProcessor extends BaseBlockProcessor {
       return this.createFallbackHtml(block);
     }
 
-    let result = template;
-
+    // 对于图片块，content 是对象，需要特殊处理
+    // 暂时使用 alt 作为主要内容传递给模板
+    let finalContent = "";
     if (typeof content === "object") {
-      result = result.replace(/{{url}}/g, content.url);
-      result = result.replace(/{{caption}}/g, content.caption);
-      result = result.replace(/{{alt}}/g, content.alt);
+      finalContent = content.alt || content.caption || "";
     }
 
-    return result;
+    return this.buildFinalHtml(template, finalContent, blockData, block);
   }
 }
 
