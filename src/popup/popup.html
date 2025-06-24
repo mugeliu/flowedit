@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FlowEdit</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    <!-- 头部 -->
+    <header class="popup-header">
+      <div class="logo-section">
+        <img src="assets/icons/icon32.png" alt="FlowEdit" class="logo">
+        <h1 class="title">FlowEdit</h1>
+      </div>
+      <div class="version">v1.0.0</div>
+    </header>
+
+    <!-- 状态指示器 -->
+    <div class="status-section">
+      <div class="status-indicator" id="statusIndicator">
+        <div class="status-dot"></div>
+        <span class="status-text" id="statusText">检测中...</span>
+      </div>
+    </div>
+
+    <!-- 功能区域 -->
+    <main class="popup-main">
+      <!-- 快速操作 -->
+      <section class="quick-actions">
+        <h2 class="section-title">快速操作</h2>
+        <div class="action-buttons">
+          <button class="action-btn primary" id="openEditor">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+              <path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
+            <span>打开编辑器</span>
+          </button>
+          
+          <button class="action-btn secondary" id="syncContent">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9c2.12 0 4.07.74 5.61 1.98"></path>
+              <path d="M17 3l4 4-4 4"></path>
+            </svg>
+            <span>同步内容</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- 设置选项 -->
+      <section class="settings-section">
+        <h2 class="section-title">设置</h2>
+        <div class="setting-item">
+          <label class="setting-label">
+            <input type="checkbox" id="autoSync" class="setting-checkbox">
+            <span class="checkmark"></span>
+            <span class="setting-text">自动同步</span>
+          </label>
+        </div>
+        
+        <div class="setting-item">
+          <label class="setting-label">
+            <input type="checkbox" id="enableNotifications" class="setting-checkbox">
+            <span class="checkmark"></span>
+            <span class="setting-text">启用通知</span>
+          </label>
+        </div>
+      </section>
+
+      <!-- 统计信息 -->
+      <section class="stats-section">
+        <h2 class="section-title">统计</h2>
+        <div class="stats-grid">
+          <div class="stat-item">
+            <div class="stat-value" id="totalBlocks">0</div>
+            <div class="stat-label">总块数</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="lastSync">--</div>
+            <div class="stat-label">最后同步</div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- 底部 -->
+    <footer class="popup-footer">
+      <div class="footer-links">
+        <a href="#" class="footer-link" id="helpLink">帮助</a>
+        <a href="#" class="footer-link" id="feedbackLink">反馈</a>
+      </div>
+    </footer>
+  </div>
+
+  <script src="popup.js" type="module"></script>
+</body>
+</html>

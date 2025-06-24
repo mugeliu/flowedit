@@ -26,7 +26,7 @@ export function getDefaultConfig() {
     options: {
       // 全局选项
       skipEmpty: true,
-      wrapInContainer: false,
+      wrapInContainer: true,
       includeMetadata: false,
       strictMode: false,
     },

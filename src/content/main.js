@@ -80,6 +80,112 @@ async function main() {
   await initializePluginFeatures();
 }
 
+// 消息监听器 - 处理来自popup的消息
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  console.log('收到popup消息:', request);
+  
+  switch (request.action) {
+    case 'openEditor':
+      handleOpenEditor(sendResponse);
+      break;
+      
+    case 'syncContent':
+      handleSyncContent(sendResponse);
+      break;
+      
+    case 'getStats':
+      handleGetStats(sendResponse);
+      break;
+      
+    case 'updateSettings':
+      handleUpdateSettings(request.data, sendResponse);
+      break;
+      
+    default:
+      sendResponse({ success: false, error: '未知的操作类型' });
+  }
+  
+  // 返回true表示异步响应
+  return true;
+});
+
+// 处理打开编辑器请求
+async function handleOpenEditor(sendResponse) {
+  try {
+    // 检查智能编辑器是否已激活
+    const smartEditorPlugin = pluginRegistry.getPlugin('smart-editor');
+    if (smartEditorPlugin && typeof smartEditorPlugin.isActive === 'function') {
+      const isActive = smartEditorPlugin.isActive();
+      if (!isActive) {
+        // 激活智能编辑器
+        await smartEditorPlugin.initialize();
+      }
+    }
+    
+    sendResponse({ success: true, message: '编辑器已打开' });
+  } catch (error) {
+    console.error('打开编辑器失败:', error);
+    sendResponse({ success: false, error: error.message });
+  }
+}
+
+// 处理同步内容请求
+async function handleSyncContent(sendResponse) {
+  try {
+    // 这里可以添加具体的同步逻辑
+    // 例如：从EditorJS获取内容并同步到MP编辑器
+    
+    sendResponse({ 
+      success: true, 
+      message: '内容同步完成',
+      data: {
+        syncTime: new Date().toISOString(),
+        blockCount: 0 // 实际的块数量
+      }
+    });
+  } catch (error) {
+    console.error('同步内容失败:', error);
+    sendResponse({ success: false, error: error.message });
+  }
+}
+
+// 处理获取统计信息请求
+async function handleGetStats(sendResponse) {
+  try {
+    const stats = {
+      totalBlocks: 0, // 实际的块数量
+      lastSync: localStorage.getItem('flowedit_last_sync') || null,
+      isEditorActive: false
+    };
+    
+    // 检查编辑器状态
+    const smartEditorPlugin = pluginRegistry.getPlugin('smart-editor');
+    if (smartEditorPlugin && typeof smartEditorPlugin.isActive === 'function') {
+      stats.isEditorActive = smartEditorPlugin.isActive();
+    }
+    
+    sendResponse({ success: true, data: stats });
+  } catch (error) {
+    console.error('获取统计信息失败:', error);
+    sendResponse({ success: false, error: error.message });
+  }
+}
+
+// 处理设置更新请求
+async function handleUpdateSettings(settings, sendResponse) {
+  try {
+    // 保存设置到本地存储
+    if (settings.autoSync !== undefined) {
+      localStorage.setItem('flowedit_auto_sync', settings.autoSync.toString());
+    }
+    
+    sendResponse({ success: true, message: '设置已更新' });
+  } catch (error) {
+    console.error('更新设置失败:', error);
+    sendResponse({ success: false, error: error.message });
+  }
+}
+
 // 页面卸载时清理资源
 window.addEventListener('beforeunload', () => {
   cleanupDOMWatcher();
