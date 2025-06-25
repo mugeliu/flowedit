@@ -1,0 +1,583 @@
+/**
+ * 模板引擎
+ * 负责处理HTML模板的渲染和变量替换
+ */
+
+import { escapeHTML, validateBlock, stylesToCSS, safeGet, isEmpty } from './utils.js';
+import { StyleCompiler } from './style-compiler.js';
+
+/**
+ * 模板引擎类
+ * 根据配置生成HTML结构
+ */
+export class TemplateEngine {
+  constructor(options = {}) {
+    this.blockTemplates = options.blockTemplates || {};
+    this.styleCompiler = new StyleCompiler(options);
+    this.cache = new Map();
+    this.options = {
+      enableCache: true,
+      escapeContent: true,
+      ...options
+    };
+  }
+
+  /**
+   * 获取指定类型和变体的模板
+   * @param {string} type - block类型
+   * @param {string} variant - 变体名称
+   * @returns {object|null} 模板配置
+   */
+  getTemplate(type, variant = 'default') {
+    const typeTemplates = this.blockTemplates[type];
+    if (!typeTemplates) return null;
+    
+    return typeTemplates[variant] || typeTemplates.default || null;
+  }
+
+  /**
+   * 构建HTML结构
+   * @param {object} block - EditorJS block数据
+   * @param {object} options - 渲染选项
+   * @returns {string} 生成的HTML
+   */
+  buildHTML(block, options = {}) {
+    if (!validateBlock(block)) {
+      return this.handleError('Invalid block data', block);
+    }
+
+    const cacheKey = this.options.enableCache ? 
+      `${block.type}-${JSON.stringify(block.data)}-${JSON.stringify(options)}` : null;
+    
+    if (cacheKey && this.cache.has(cacheKey)) {
+      return this.cache.get(cacheKey);
+    }
+
+    try {
+      const html = this.renderBlock(block, options);
+      
+      if (cacheKey) {
+        this.cache.set(cacheKey, html);
+      }
+      
+      return html;
+    } catch (error) {
+      return this.handleError('Template rendering failed', block, error);
+    }
+  }
+
+  /**
+   * 渲染单个block
+   * @param {object} block - block数据
+   * @param {object} options - 渲染选项
+   * @returns {string} HTML字符串
+   */
+  renderBlock(block, options = {}) {
+    const { type, data } = block;
+    
+    // 特殊处理不同类型的block
+    switch (type) {
+      case 'header':
+        return this.renderHeader(data, options);
+      case 'paragraph':
+        return this.renderParagraph(data, options);
+      case 'quote':
+        return this.renderQuote(data, options);
+      case 'delimiter':
+        return this.renderDelimiter(data, options);
+      case 'raw':
+        return this.renderRaw(data, options);
+      case 'image':
+        return this.renderImage(data, options);
+      case 'code':
+        return this.renderCode(data, options);
+      case 'List':
+      case 'list':
+        return this.renderList(data, options);
+      default:
+        return this.renderGeneric(type, data, options);
+    }
+  }
+
+  /**
+   * 渲染标题
+   * @param {object} data - 标题数据
+   * @param {object} options - 选项
+   * @returns {string} HTML
+   */
+  renderHeader(data, options = {}) {
+    const level = data.level || 1;
+    const variant = `h${level}`;
+    const template = this.getTemplate('header', variant);
+    
+    if (!template) {
+      return `<h${level}>${this.processContent(data.text || '', options)}</h${level}>`;
+    }
+
+    // 兼容新的children结构和旧的layers数组
+    if (template.layers) {
+      return this.renderLayers(template.layers, data.text || '', options);
+    } else {
+      return this.renderLayers(template, data.text || '', options);
+    }
+  }
+
+  /**
+   * 渲染段落
+   * @param {object} data - 段落数据
+   * @param {object} options - 选项
+   * @returns {string} HTML
+   */
+  renderParagraph(data, options = {}) {
+    const template = this.getTemplate('paragraph');
+    
+    if (!template) {
+      return `<p>${this.processContent(data.text || '', options)}</p>`;
+    }
+
+    // 兼容新的children结构和旧的layers数组
+    if (template.layers) {
+      return this.renderLayers(template.layers, data.text || '', options);
+    } else {
+      return this.renderLayers(template, data.text || '', options);
+    }
+  }
+
+  /**
+   * 渲染引用
+   * @param {object} data - 引用数据
+   * @param {object} options - 选项
+   * @returns {string} HTML
+   */
+  renderQuote(data, options = {}) {
+    const template = this.getTemplate('quote');
+    
+    if (!template) {
+      const text = this.processContent(data.text || '', options);
+      const caption = data.caption ? `<cite>${this.processContent(data.caption, options)}</cite>` : '';
+      return `<blockquote>${text}${caption}</blockquote>`;
+    }
+
+    let content = data.text || '';
+    if (data.caption) {
+      content += `<cite>${data.caption}</cite>`;
+    }
+
+    return this.renderLayers(template.layers, content, options);
+  }
+
+  /**
+   * 渲染分隔符
+   * @param {object} data - 分隔符数据
+   * @param {object} options - 选项
+   * @returns {string} HTML
+   */
+  renderDelimiter(data, options = {}) {
+    const template = this.getTemplate('delimiter');
+    
+    if (!template) {
+      return '<hr>';
+    }
+
+    return this.renderLayers(template.layers, '', options);
+  }
+
+  /**
+   * 渲染原始HTML
+   * @param {object} data - 原始数据
+   * @param {object} options - 选项
+   * @returns {string} HTML
+   */
+  renderRaw(data, options = {}) {
+    const template = this.getTemplate('raw');
+    
+    if (!template) {
+      return data.html || '';
+    }
+
+    return this.renderLayers(template.layers, data.html || '', options);
+  }
+
+  /**
+   * 渲染图片
+   * @param {object} data - 图片数据
+   * @param {object} options - 选项
+   * @returns {string} HTML
+   */
+  renderImage(data, options = {}) {
+    const template = this.getTemplate('image');
+    
+    if (!template) {
+      const alt = data.caption || '';
+      return `<img src="${data.file?.url || ''}" alt="${escapeHTML(alt)}">`;
+    }
+
+    // 为图片模板准备特殊内容
+    const imgContent = this.buildImageContent(data);
+    return this.renderLayers(template.layers, imgContent, options);
+  }
+
+  /**
+   * 构建图片内容
+   * @param {object} data - 图片数据
+   * @returns {string} 图片HTML
+   */
+  buildImageContent(data) {
+    const src = data.file?.url || '';
+    const alt = escapeHTML(data.caption || '');
+    const title = data.caption ? ` title="${alt}"` : '';
+    
+    return `<img src="${src}" alt="${alt}"${title}>`;
+  }
+
+  /**
+   * 渲染代码块
+   * @param {object} data - 代码数据
+   * @param {object} options - 选项
+   * @returns {string} HTML
+   */
+  renderCode(data, options = {}) {
+    const template = this.getTemplate('code');
+    
+    if (!template) {
+      return `<pre><code>${escapeHTML(data.code || '')}</code></pre>`;
+    }
+
+    return this.renderLayers(template.layers, data.code || '', options);
+  }
+
+  /**
+   * 渲染列表
+   * @param {object} data - 列表数据
+   * @param {object} options - 选项
+   * @returns {string} HTML
+   */
+  renderList(data, options = {}) {
+    const style = data.style || 'unordered';
+    const template = this.getTemplate('List', style);
+    
+    if (!template) {
+      const tag = style === 'ordered' ? 'ol' : 'ul';
+      const items = (data.items || []).map(item => 
+        `<li>${this.processContent(item, options)}</li>`
+      ).join('');
+      return `<${tag}>${items}</${tag}>`;
+    }
+
+    const items = this.renderListItems(data.items || [], style, options);
+    return this.renderLayers(template.layers, items, options);
+  }
+
+  /**
+   * 渲染列表项
+   * @param {array} items - 列表项数组
+   * @param {string} style - 列表样式
+   * @param {object} options - 选项
+   * @returns {string} HTML
+   */
+  renderListItems(items, style, options = {}) {
+    const itemTemplate = this.getTemplate('listItem', style === 'checklist' ? 'checklist' : 'default');
+    
+    return items.map(item => {
+      if (style === 'checklist') {
+        const checked = item.checked ? '☑' : '☐';
+        const content = `${checked} ${this.processContent(item.text || '', options)}`;
+        
+        if (itemTemplate) {
+          return this.renderLayers(itemTemplate.layers, content, options);
+        }
+        return `<li>${content}</li>`;
+      } else {
+        const content = this.processContent(item, options);
+        
+        if (itemTemplate) {
+          return this.renderLayers(itemTemplate.layers, content, options);
+        }
+        return `<li>${content}</li>`;
+      }
+    }).join('');
+  }
+
+  /**
+   * 渲染通用block类型
+   * @param {string} type - block类型
+   * @param {object} data - 数据
+   * @param {object} options - 选项
+   * @returns {string} HTML
+   */
+  renderGeneric(type, data, options = {}) {
+    const template = this.getTemplate(type);
+    
+    if (!template) {
+      // 回退到简单的div包装
+      const content = this.extractContent(data);
+      return `<div class="${type}">${this.processContent(content, options)}</div>`;
+    }
+
+    const content = this.extractContent(data);
+    // 兼容新的children结构和旧的layers数组
+    if (template.layers) {
+      return this.renderLayers(template.layers, content, options);
+    } else {
+      return this.renderLayers(template, content, options);
+    }
+  }
+
+  /**
+   * 渲染层级结构（兼容新的children结构和旧的layers数组）
+   * @param {array|object} layersOrRoot - 层级配置数组或根节点对象
+   * @param {string} content - 内容
+   * @param {object} options - 选项
+   * @returns {string} HTML
+   */
+  renderLayers(layersOrRoot, content, options = {}) {
+    // 兼容旧的layers数组格式
+    if (Array.isArray(layersOrRoot)) {
+      return this.renderLayersArray(layersOrRoot, content, options);
+    }
+    
+    // 新的children嵌套结构
+    if (layersOrRoot && typeof layersOrRoot === 'object') {
+      return this.renderChildren(layersOrRoot, content, options);
+    }
+    
+    return this.processContent(content, options);
+  }
+
+  /**
+   * 渲染旧的layers数组结构
+   * @param {array} layers - 层级配置数组
+   * @param {string} content - 内容
+   * @param {object} options - 选项
+   * @returns {string} HTML
+   */
+  renderLayersArray(layers, content, options = {}) {
+    if (!Array.isArray(layers) || layers.length === 0) {
+      return this.processContent(content, options);
+    }
+
+    // 处理内容 - 始终应用内联样式处理
+     const processedContent = this.processContent(content, options);
+    
+    // 找到内容层的索引
+     const contentLayerIndex = layers.findIndex(layer => layer.content === true);
+     
+     if (contentLayerIndex === -1) {
+       // 如果没有内容层，将内容放在最内层
+       let html = processedContent;
+       for (let i = layers.length - 1; i >= 0; i--) {
+         const layer = { ...layers[i] };
+         html = this.renderLayer(layer, html, options);
+       }
+       return html;
+     }
+    
+    // 从内容层开始构建
+    let html = this.renderLayer(layers[contentLayerIndex], processedContent, options);
+    
+    // 向外包装其他层
+    for (let i = contentLayerIndex - 1; i >= 0; i--) {
+      const layer = { ...layers[i] };
+      delete layer.content; // 确保外层不是内容层
+      html = this.renderLayer(layer, html, options);
+    }
+    
+    // 向内包装其他层
+    for (let i = contentLayerIndex + 1; i < layers.length; i++) {
+      const layer = { ...layers[i] };
+      delete layer.content; // 确保内层不是内容层
+      html = this.renderLayer(layer, html, options);
+    }
+
+    return html;
+  }
+
+  /**
+   * 渲染新的children嵌套结构
+   * @param {object} node - 节点对象
+   * @param {string} content - 内容
+   * @param {object} options - 选项
+   * @returns {string} HTML
+   */
+  renderChildren(node, content, options = {}) {
+    const { tag, style = {}, content: isContentLayer, children } = node;
+    
+    if (!tag) {
+      return this.processContent(content, options);
+    }
+
+    // 编译样式
+    const styleString = this.styleCompiler.compileStyles(style);
+    const styleAttr = styleString ? ` style="${styleString}"` : '';
+    
+    // 自闭合标签
+    if (['img', 'hr', 'br', 'input'].includes(tag)) {
+      return `<${tag}${styleAttr}>`;
+    }
+
+    let innerContent = '';
+    
+    // 如果是内容层，使用传入的内容
+    if (isContentLayer) {
+      innerContent = this.processContent(content, options);
+    }
+    // 如果有children，递归渲染子节点
+    else if (children && Array.isArray(children)) {
+      innerContent = children.map(child => {
+        // 只有当子节点或其子树中包含content: true时才传递内容
+        const shouldPassContent = child.content || this.hasContentInChildren(child.children);
+        return this.renderChildren(child, shouldPassContent ? content : null, options);
+      }).join('');
+    }
+    // 如果既不是内容层也没有children，但有内容传入，使用传入的内容
+    else if (content) {
+      innerContent = this.processContent(content, options);
+    }
+
+    return `<${tag}${styleAttr}>${innerContent}</${tag}>`;
+  }
+
+  /**
+   * 检查children树中是否包含内容层
+   * @param {array} children - 子节点数组
+   * @returns {boolean} 是否包含内容层
+   */
+  hasContentInChildren(children) {
+    if (!Array.isArray(children)) return false;
+    
+    return children.some(child => {
+      if (child.content) return true;
+      if (child.children) return this.hasContentInChildren(child.children);
+      return false;
+    });
+  }
+
+  /**
+   * 渲染单个层级
+   * @param {object} layer - 层级配置
+   * @param {string} content - 内容
+   * @param {object} options - 选项
+   * @returns {string} HTML
+   */
+  renderLayer(layer, content, options = {}) {
+    const { tag, style = {}, content: isContentLayer } = layer;
+    
+    if (!tag) return content;
+
+    // 编译样式
+    const styleString = this.styleCompiler.compileStyles(style);
+    const styleAttr = styleString ? ` style="${styleString}"` : '';
+    
+    // 自闭合标签
+    if (['img', 'hr', 'br', 'input'].includes(tag)) {
+      return `<${tag}${styleAttr}>`;
+    }
+
+    // 对于内容层，直接使用传入的内容；对于包装层，将内容作为子元素
+    return `<${tag}${styleAttr}>${content}</${tag}>`;
+  }
+
+  /**
+   * 处理内容（内联样式等）
+   * @param {string} content - 原始内容
+   * @param {object} options - 选项
+   * @returns {string} 处理后的内容
+   */
+  processContent(content, options = {}) {
+    if (typeof content !== 'string') return '';
+    
+    let processed = content;
+    
+    // 应用内联样式
+    processed = this.styleCompiler.compileInlineStyles(processed, options.customInlineStyles);
+    
+    // 转义HTML（如果需要）
+    if (this.options.escapeContent && !this.containsHTML(processed)) {
+      processed = escapeHTML(processed);
+    }
+    
+    return processed;
+  }
+
+  /**
+   * 检查内容是否包含HTML标签
+   * @param {string} content - 内容
+   * @returns {boolean} 是否包含HTML
+   */
+  containsHTML(content) {
+    return /<[^>]+>/.test(content);
+  }
+
+  /**
+   * 从数据中提取内容
+   * @param {object} data - 数据对象
+   * @returns {string} 提取的内容
+   */
+  extractContent(data) {
+    if (typeof data === 'string') return data;
+    if (!data || typeof data !== 'object') return '';
+    
+    // 常见的内容字段
+    const contentFields = ['text', 'content', 'html', 'code', 'caption'];
+    
+    for (const field of contentFields) {
+      if (data[field] && typeof data[field] === 'string') {
+        return data[field];
+      }
+    }
+    
+    return '';
+  }
+
+  /**
+   * 处理错误
+   * @param {string} message - 错误消息
+   * @param {object} block - block数据
+   * @param {Error} error - 错误对象
+   * @returns {string} 错误HTML
+   */
+  handleError(message, block, error = null) {
+    console.warn(`TemplateEngine Error: ${message}`, { block, error });
+    
+    const errorContent = `<!-- ${message} -->`;
+    return errorContent;
+  }
+
+  /**
+   * 添加block模板
+   * @param {string} type - block类型
+   * @param {string} variant - 变体名称
+   * @param {object} template - 模板配置
+   */
+  addBlockTemplate(type, variant, template) {
+    if (!this.blockTemplates[type]) {
+      this.blockTemplates[type] = {};
+    }
+    this.blockTemplates[type][variant] = template;
+    this.clearCache();
+  }
+
+  /**
+   * 清除缓存
+   */
+  clearCache() {
+    this.cache.clear();
+    this.styleCompiler.clearCache();
+  }
+
+  /**
+   * 获取缓存统计
+   * @returns {object} 统计信息
+   */
+  getCacheStats() {
+    return {
+      templateCache: {
+        size: this.cache.size,
+        enabled: this.options.enableCache
+      },
+      styleCache: this.styleCompiler.getCacheStats()
+    };
+  }
+}
+
+export default TemplateEngine;

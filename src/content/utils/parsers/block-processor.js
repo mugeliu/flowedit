@@ -63,7 +63,9 @@ class BaseBlockProcessor {
    */
   renderContent(blockData, block) {
     console.log(`[BaseBlockProcessor.renderContent] 渲染内容 - 块数据:`, blockData);
-    const content = this.escapeHtml(blockData.text || '');
+    const text = blockData.data?.text || '';
+    // 对于 paragraph 类型，应用内联样式处理
+    const content = block.type === 'paragraph' ? this.applyBlockInlineStyles(text) : this.escapeHtml(text);
     console.log(`[BaseBlockProcessor.renderContent] 提取的内容:`, content);
     return content;
   }
@@ -112,13 +114,13 @@ class BaseBlockProcessor {
   }
 
   /**
-   * 处理内联样式
+   * 应用块级内联样式
+   * 这是一个代理方法，为各个块处理器提供统一的样式处理接口
    * @param {string} text 文本内容
-   * @param {Object} blockData 块数据
-   * @returns {string} 处理后的文本
+   * @returns {string} 应用样式后的文本
    */
-  processInlineStyles(text, blockData) {
-    return this.templateManager.processInlineStyles(text, blockData);
+  applyBlockInlineStyles(text) {
+    return this.templateManager.processInlineStyles(text, this.templateManager.blockInlineStyles);
   }
 
 
@@ -134,7 +136,7 @@ class HeaderBlockProcessor extends BaseBlockProcessor {
    */
   getTemplate(blockData, block) {
     console.log(`[HeaderBlockProcessor.getTemplate] 获取标题模板 - 块数据:`, blockData);
-    const level = blockData.level || 1;
+    const level = blockData.data?.level || 1;
     const templateKey = `h${level}`;
     console.log(`[HeaderBlockProcessor.getTemplate] 模板键:`, templateKey);
     
@@ -150,7 +152,7 @@ class HeaderBlockProcessor extends BaseBlockProcessor {
    */
   renderContent(blockData, block) {
     console.log(`[HeaderBlockProcessor.renderContent] 渲染标题内容 - 块数据:`, blockData);
-    const content = this.processInlineStyles(blockData.text || '', blockData);
+    const content = this.applyBlockInlineStyles(blockData.data?.text || '');
     console.log(`[HeaderBlockProcessor.renderContent] 提取的标题内容:`, content);
     return content;
   }
@@ -165,7 +167,7 @@ class CodeBlockProcessor extends BaseBlockProcessor {
    * 渲染代码内容，转义HTML字符
    */
   renderContent(blockData, block) {
-    return this.escapeHtml(blockData.code || '');
+    return this.escapeHtml(blockData.data?.code || '');
   }
 
   /**
@@ -173,7 +175,7 @@ class CodeBlockProcessor extends BaseBlockProcessor {
    */
   getExtraData(blockData, block) {
     return {
-      language: blockData.language || 'text'
+      language: blockData.data?.language || 'text'
     };
   }
 }
@@ -187,7 +189,7 @@ class RawBlockProcessor extends BaseBlockProcessor {
    * 直接返回HTML内容
    */
   renderContent(blockData, block) {
-    return blockData.html || '';
+    return blockData.data?.html || '';
   }
 
   /**
@@ -207,7 +209,7 @@ class QuoteBlockProcessor extends BaseBlockProcessor {
    * 渲染引用内容，处理内联样式
    */
   renderContent(blockData, block) {
-    return this.processInlineStyles(blockData.text || '', blockData);
+    return this.applyBlockInlineStyles(blockData.data?.text || '');
   }
 
   /**
@@ -215,7 +217,7 @@ class QuoteBlockProcessor extends BaseBlockProcessor {
    */
   getExtraData(blockData, block) {
     return {
-      caption: blockData.caption || ''
+      caption: blockData.data?.caption || ''
     };
   }
 }
@@ -231,7 +233,7 @@ class ListBlockProcessor extends BaseBlockProcessor {
    * 根据列表样式获取模板
    */
   getTemplate(blockData, block) {
-    const style = this.normalizeStyle(blockData.style);
+    const style = this.normalizeStyle(blockData.data?.style);
     
     // 尝试获取指定样式的List模板，checklist回退到unordered
     return this.templateManager.getFlexibleTemplate('List', style) ||
@@ -242,10 +244,10 @@ class ListBlockProcessor extends BaseBlockProcessor {
    * 渲染列表项内容
    */
   renderContent(blockData, block) {
-    const items = blockData.items || [];
+    const items = blockData.data?.items || [];
     
     return items.map(item => 
-      this.processInlineStyles(item.content || '', blockData)
+      this.applyBlockInlineStyles(item.content || '')
     ).join('');
   }
 
@@ -253,7 +255,7 @@ class ListBlockProcessor extends BaseBlockProcessor {
    * 提供列表样式信息
    */
   getExtraData(blockData, block) {
-    const style = this.normalizeStyle(blockData.style);
+    const style = this.normalizeStyle(blockData.data?.style);
     return {
       listStyle: style,
       listType: style === 'ordered' ? 'ol' : 'ul'
@@ -294,18 +296,18 @@ class ImageBlockProcessor extends BaseBlockProcessor {
    * 渲染图片标题
    */
   renderContent(blockData, block) {
-    return blockData.caption || '';
+    return blockData.data?.caption || '';
   }
 
   /**
    * 提供图片相关信息
    */
   getExtraData(blockData, block) {
-    const file = blockData.file || {};
+    const file = blockData.data?.file || {};
     return {
       url: file.url || '',
-      caption: blockData.caption || '',
-      alt: blockData.caption || file.alt || ''
+      caption: blockData.data?.caption || '',
+      alt: blockData.data?.caption || file.alt || ''
     };
   }
 }

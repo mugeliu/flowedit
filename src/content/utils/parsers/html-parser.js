@@ -77,7 +77,7 @@ class HtmlParser {
       
       if (processor) {
         console.log(`[HtmlParser._parseCore] 找到处理器:`, blockData.type);
-        const blockHtml = processor.process(blockData, options);
+        const blockHtml = processor.process(blockData, blockData);
         console.log(`[HtmlParser._parseCore] 生成的HTML:`, blockHtml);
         htmlBlocks.push(blockHtml);
       } else {

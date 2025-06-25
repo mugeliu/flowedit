@@ -206,7 +206,7 @@ export class TemplateManager {
    * @returns {string} 处理后的样式字符串
    */
   processThemeVariables(styleString) {
-    if (!styleString) return '';
+    if (!styleString || typeof styleString !== 'string') return '';
     
     return styleString.replace(/\{\{theme\.([^}]+)\}\}/g, (match, path) => {
       const value = this.getNestedValue(this.theme, path);
