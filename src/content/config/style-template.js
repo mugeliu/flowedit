@@ -11,12 +11,12 @@ export const theme = {
   textSecondary: "rgb(55, 65, 81)",
   white: "rgb(255, 255, 255)",
   alpha: {
-    25: "rgba(16, 185, 129, 0.25)",
-    10: "rgba(16, 185, 129, 0.1)",
-    "06": "rgba(16, 185, 129, 0.06)",
-    20: "rgba(16, 185, 129, 0.2)",
-    60: "rgba(16, 185, 129, 0.6)",
-    80: "rgba(16, 185, 129, 0.8)",
+    light: "rgba(16, 185, 129, 0.06)",
+    subtle: "rgba(16, 185, 129, 0.1)",
+    soft: "rgba(16, 185, 129, 0.2)",
+    medium: "rgba(16, 185, 129, 0.25)",
+    strong: "rgba(16, 185, 129, 0.6)",
+    bold: "rgba(16, 185, 129, 0.8)",
   },
   // 强调色 - 绿色主题同色系
   accent: "rgb(34, 197, 94)",      // 亮绿色强调
@@ -31,10 +31,10 @@ export const blockInlineStyles = {
   em: "font-style: italic; color: {{theme.secondary}}; font-weight: 500; letter-spacing: 0.5px;",
   i: "font-style: italic; color: {{theme.secondary}}; font-weight: 500; letter-spacing: 0.5px;",
   u: "text-decoration: underline; text-decoration-color: {{theme.primary}}; text-underline-offset: 3px; text-decoration-thickness: 2px;",
-  code: "font-family: 'Consolas', 'Monaco', 'Courier New', monospace; font-size: 0.85em; background: {{theme.alpha.10}}; color: {{theme.info}}; padding: 0.25em 0.6em; border-radius: 5px; border: 1px solid {{theme.alpha.25}}; font-weight: 500; letter-spacing: 0.3px;",
-  mark: "background: {{theme.alpha.20}}; padding: 0.1em 0.4em; border-radius: 3px;",
-  a: "color: {{theme.primary}}; text-decoration: underline; text-decoration-color: {{theme.alpha.60}}; text-underline-offset: 2px;",
-  sup: "color: {{theme.alpha.80}}; font-size: 0.7em; margin-left: 0.2em;",
+  code: "font-family: 'Consolas', 'Monaco', 'Courier New', monospace; font-size: 0.85em; background: {{theme.alpha.subtle}}; color: {{theme.info}}; padding: 0.25em 0.6em; border-radius: 5px; border: 1px solid {{theme.alpha.medium}}; font-weight: 500; letter-spacing: 0.3px;",
+  mark: "background: {{theme.alpha.soft}}; padding: 0.1em 0.4em; border-radius: 3px;",
+  a: "color: {{theme.primary}}; text-decoration: underline; text-decoration-color: {{theme.alpha.strong}}; text-underline-offset: 2px;",
+  sup: "color: {{theme.alpha.bold}}; font-size: 0.7em; margin-left: 0.2em;",
 };
 
 // 模板配置
@@ -48,7 +48,7 @@ export const flexibleTemplatesWithInlineStyles = {
         },
         {
           tag: "section",
-          style: "display: inline-block; padding: 1em 2.2em; color: {{theme.white}}; background: linear-gradient(135deg, {{theme.primary}} 0%, {{theme.primaryDark}} 100%); border-radius: 12px; box-shadow: {{theme.alpha.25}} 0px 6px 20px -4px, rgba(0, 0, 0, 0.1) 0px 2px 8px -2px;",
+          style: "display: inline-block; padding: 1em 2.2em; color: {{theme.white}}; background: linear-gradient(135deg, {{theme.primary}} 0%, {{theme.primaryDark}} 100%); border-radius: 12px; box-shadow: {{theme.alpha.medium}} 0px 6px 20px -4px, rgba(0, 0, 0, 0.1) 0px 2px 8px -2px;",
         },
         {
           tag: "h1",
@@ -70,7 +70,7 @@ export const flexibleTemplatesWithInlineStyles = {
         },
         {
           tag: "section",
-          style: "display: inline-flex; align-items: center; padding: 0.8em 1.8em 0.8em 1.2em; background: {{theme.alpha.06}}; border-left: 4px solid {{theme.primary}}; border-radius: 0px 8px 8px 0px; min-width: fit-content;",
+          style: "display: inline-flex; align-items: center; padding: 0.8em 1.8em 0.8em 1.2em; background: {{theme.alpha.light}}; border-left: 4px solid {{theme.primary}}; border-radius: 0px 8px 8px 0px; min-width: fit-content;",
         },
         {
           tag: "span",
@@ -96,11 +96,11 @@ export const flexibleTemplatesWithInlineStyles = {
         },
         {
           tag: "section",
-          style: "display: inline-flex; align-items: center; padding: 0.6em 1.5em 0.6em 1em; background: linear-gradient(90deg, rgba(16, 185, 129, 0.04) 0%, rgba(16, 185, 129, 0.01) 80%, transparent 100%); border-left: 3px solid {{theme.alpha.60}}; border-radius: 0px 6px 6px 0px; min-width: fit-content;",
+          style: "display: inline-flex; align-items: center; padding: 0.6em 1.5em 0.6em 1em; background: linear-gradient(90deg, rgba(16, 185, 129, 0.04) 0%, rgba(16, 185, 129, 0.01) 80%, transparent 100%); border-left: 3px solid {{theme.alpha.strong}}; border-radius: 0px 6px 6px 0px; min-width: fit-content;",
         },
         {
           tag: "span",
-          style: "display: inline-block; width: 6px; height: 6px; background: {{theme.alpha.80}}; border-radius: 50%; margin-right: 0.6em; vertical-align: middle;",
+          style: "display: inline-block; width: 6px; height: 6px; background: {{theme.alpha.bold}}; border-radius: 50%; margin-right: 0.6em; vertical-align: middle;",
         },
         {
           tag: "h3",
@@ -150,7 +150,7 @@ export const flexibleTemplatesWithInlineStyles = {
         },
         {
           tag: "section",
-          style: "background: {{theme.alpha.06}}; border-left: 4px solid {{theme.primary}}; padding: 1.2em 1.8em; border-radius: 0px 8px 8px 0px; box-shadow: {{theme.alpha.10}} 0px 2px 8px -2px;",
+          style: "background: {{theme.alpha.light}}; border-left: 4px solid {{theme.primary}}; padding: 1.2em 1.8em; border-radius: 0px 8px 8px 0px; box-shadow: {{theme.alpha.subtle}} 0px 2px 8px -2px;",
         },
         {
           tag: "blockquote",
@@ -175,7 +175,7 @@ export const flexibleTemplatesWithInlineStyles = {
         },
         {
           tag: "hr",
-          style: "width: 80%; height: 2px; background: linear-gradient(90deg, transparent 0%, {{theme.alpha.20}} 20%, {{theme.alpha.60}} 50%, {{theme.alpha.20}} 80%, transparent 100%); border-radius: 1px; border: none;",
+          style: "width: 80%; height: 2px; background: linear-gradient(90deg, transparent 0%, {{theme.alpha.soft}} 20%, {{theme.alpha.strong}} 50%, {{theme.alpha.soft}} 80%, transparent 100%); border-radius: 1px; border: none;",
           content: true,
         },
       ],

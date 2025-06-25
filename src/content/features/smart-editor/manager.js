@@ -137,7 +137,7 @@ async function saveContent(options = {}) {
     console.log("保存的数据:", outputData);
 
     // 直接保存内容，使用解析器生成HTML
-    const success = await saveToOriginalEditor(outputData.blocks, {
+    const success = await saveToOriginalEditor(outputData, {
       ...options,
     });
 

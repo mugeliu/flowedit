@@ -14,7 +14,7 @@ import { safeQuerySelector, createElement } from './dom.js';
  * @param {boolean} options.usePreloadedStyles - 是否使用预加载的样式
  * @returns {Promise<boolean>} 保存是否成功
  */
-export async function saveToOriginalEditor(blocks, options = {}) {
+export async function saveToOriginalEditor(editorData, options = {}) {
   try {
     const {
       targetSelector = selectorConfig.editorContent,
@@ -24,15 +24,12 @@ export async function saveToOriginalEditor(blocks, options = {}) {
     } = options;
 
     // 使用HTML解析器生成HTML内容
-    const htmlContent = parseToHtml({ blocks }, {
-      options: {
-        skipEmpty: true,
-        wrapInContainer: false
-      }
+    const htmlContent = parseToHtml(editorData, {
+      skipEmpty: true,
+      wrapInContainer: false
     });
 
-    console.log('生成的HTML内容:', htmlContent);
-
+    console.log("生成的HTML内容:", htmlContent);
     // 插入到目标编辑器
     const success = await insertToEditor(htmlContent, {
       targetSelector,

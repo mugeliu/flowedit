@@ -66,14 +66,15 @@ class ProcessorRegistry {
   }
 
   /**
-   * 获取处理器
-   * @param {string} type 块类型
-   * @returns {BaseBlockProcessor} 处理器实例
+   * 获取指定类型的处理器
+   * @param {string} type - 块类型
+   * @returns {BaseBlockProcessor|null} 处理器实例
    */
   getProcessor(type) {
-    return (
-      this.processors.get(type) || new BaseBlockProcessor(this.templateManager)
-    );
+    console.log(`[ProcessorRegistry.getProcessor] 获取处理器 - 类型:${type}`);
+    const processor = this.processors.get(type) || this.processors.get('default') || null;
+    console.log(`[ProcessorRegistry.getProcessor] 找到处理器:`, processor ? processor.constructor.name : 'null');
+    return processor;
   }
 
   /**
