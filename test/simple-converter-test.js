@@ -4,7 +4,7 @@
  */
 
 // 导入实际的 converter 模块
-import { EditorJSParser, parseEditorJS, validateEditorData } from '../src/content/utils/converter/index.js';
+import { EditorJSParser, parseEditorJS, validateEditorData } from '../src/content/utils/parsers/index.js';
 
 // 模拟 EditorJS 数据 - 包含多种块类型
 const testData = {

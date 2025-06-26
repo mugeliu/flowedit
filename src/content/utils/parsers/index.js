@@ -1,140 +1,144 @@
 /**
- * HTML解析器模块主入口
- * 提供统一的导出接口和工厂方法
- * 重构后的版本，职责清晰，依赖关系简单
- * 
- * 优化特性：
- * - 实例缓存机制：避免重复创建解析器实例
- * - 参数传递优化：减少重复的参数传递
- * - 精简API：移除低频使用的便捷方法
+ * 导出入口
+ * 统一导出converter模块的所有功能
  */
 
-import { TemplateManager } from "./template-manager.js";
-import { ProcessorRegistry } from "./processor-registry.js";
-import { HtmlParser } from "./html-parser.js";
-// config-manager.js 已移除 - 功能未被实际使用
+// 导入主要类
+import { EditorJSParser } from './parser.js';
+import { TemplateEngine } from './template-engine.js';
+import { StyleCompiler } from './style-compiler.js';
+
+// 导出主要类
+export { EditorJSParser, TemplateEngine, StyleCompiler };
+
+// 导入工具函数
 import {
-  BaseBlockProcessor,
-  HeaderBlockProcessor,
-  CodeBlockProcessor,
-  RawBlockProcessor,
-  QuoteBlockProcessor,
-  ListBlockProcessor,
-  DelimiterBlockProcessor,
-  ImageBlockProcessor,
-} from "./block-processor.js";
+  camelToKebab,
+  escapeHTML,
+  deepMerge,
+  validateBlock,
+  stylesToCSS,
+  generateId,
+  isEmpty,
+  safeGet,
+  stripHTML,
+  formatFileSize
+} from './utils.js';
 
-// 缓存解析器实例以避免重复创建
-let defaultParserInstance = null;
-const parserCache = new Map();
+// 导出工具函数
+export {
+  camelToKebab,
+  escapeHTML,
+  deepMerge,
+  validateBlock,
+  stylesToCSS,
+  generateId,
+  isEmpty,
+  safeGet,
+  stripHTML,
+  formatFileSize
+};
+
+// 导出配置
+export { blockTemplates, inlineStyles } from './config.js';
+
+// 默认导出解析器
+export { EditorJSParser as default } from './parser.js';
 
 /**
- * 获取或创建解析器实例（带缓存机制）
- * @param {Object} options 解析选项
- * @returns {HtmlParser} HTML解析器实例
+ * 便捷函数：快速解析EditorJS数据
+ * @param {object} editorData - EditorJS数据
+ * @param {object} options - 解析选项
+ * @returns {string} HTML字符串
  */
-function getParserInstance(options = {}) {
-  // 如果没有选项，使用默认实例
-  if (Object.keys(options).length === 0) {
-    if (!defaultParserInstance) {
-      defaultParserInstance = new HtmlParser();
-    }
-    return defaultParserInstance;
-  }
+export function parseEditorJS(editorData, options = {}) {
+  const parser = new EditorJSParser(options);
+  return parser.parse(editorData, options);
+}
+
+/**
+ * 便捷函数：创建解析器实例
+ * @param {object} options - 配置选项
+ * @returns {EditorJSParser} 解析器实例
+ */
+export function createParser(options = {}) {
+  return new EditorJSParser(options);
+}
+
+/**
+ * 便捷函数：解析单个block
+ * @param {object} block - block数据
+ * @param {object} options - 解析选项
+ * @returns {string} HTML字符串
+ */
+export function parseBlock(block, options = {}) {
+  const parser = new EditorJSParser(options);
+  return parser.parseBlock(block, options);
+}
+
+/**
+ * 便捷函数：预览block渲染结果
+ * @param {object} block - block数据
+ * @param {object} options - 选项
+ * @returns {string} HTML字符串
+ */
+export function previewBlock(block, options = {}) {
+  const parser = new EditorJSParser(options);
+  return parser.previewBlock(block, options);
+}
+
+/**
+ * 便捷函数：验证EditorJS数据格式
+ * @param {object} data - 数据
+ * @returns {boolean} 是否有效
+ */
+export function validateEditorData(data) {
+  if (!data || typeof data !== 'object') return false;
+  if (!Array.isArray(data.blocks)) return false;
   
-  // 为有选项的情况创建缓存键
-  const cacheKey = JSON.stringify(options);
-  if (!parserCache.has(cacheKey)) {
-    parserCache.set(cacheKey, new HtmlParser(options));
-  }
-  return parserCache.get(cacheKey);
+  return data.blocks.every(block => validateBlock(block));
 }
 
 /**
- * 清理解析器缓存（用于内存管理）
- * @param {boolean} clearDefault 是否清理默认实例
+ * 便捷函数：获取支持的block类型
+ * @param {object} options - 配置选项
+ * @returns {array} 支持的block类型数组
  */
-export function clearParserCache(clearDefault = false) {
-  parserCache.clear();
-  if (clearDefault) {
-    defaultParserInstance = null;
-  }
-}
-
-/**
- * 获取当前缓存状态信息
- * @returns {Object} 缓存状态
- */
-export function getCacheInfo() {
-  return {
-    cacheSize: parserCache.size,
-    hasDefaultInstance: defaultParserInstance !== null
-  };
-}
-
-/**
- * 创建HTML解析器实例的工厂方法
- * @param {Object} options 解析选项
- * @returns {HtmlParser} HTML解析器实例
- */
-export function createHtmlParser(options = {}) {
-  return new HtmlParser(options);
-}
-
-/**
- * 解析EditorJS数据为HTML
- * @param {Object} editorData - EditorJS数据对象
- * @param {Object} options - 解析选项
- * @returns {string} 生成的HTML字符串
- */
-export function parseToHtml(editorData, options = {}) {
-  console.log('[parseToHtml] 开始解析 - 数据:', editorData, '选项:', options);
-  try {
-    const parser = new HtmlParser();
-    const result = parser.parseDocument(editorData, options);
-    console.log('[parseToHtml] 解析完成 - 结果:', result);
-    return result;
-  } catch (error) {
-    console.error('解析HTML时发生错误:', error);
-    return '';
-  }
-}
-
-/**
- * 安全解析EditorJS数据的便捷方法
- * @param {Object} editorData EditorJS数据
- * @param {Object} options 解析选项
- * @returns {Object} 解析结果（包含错误处理）
- */
-export function safeParse(editorData, options = {}) {
-  const parser = getParserInstance(options);
-  return parser.safeParse(editorData, options);
-}
-
-/**
- * 获取支持的块类型列表
- * @returns {Array<string>} 支持的块类型
- */
-export function getSupportedBlockTypes() {
-  const parser = getParserInstance();
+export function getSupportedBlockTypes(options = {}) {
+  const parser = new EditorJSParser(options);
   return parser.getSupportedBlockTypes();
 }
 
-// 导出所有类和函数
-export {
-  TemplateManager,
-  ProcessorRegistry,
-  HtmlParser,
-  // createConfig 和 mergeConfig 函数已移除
-  BaseBlockProcessor,
-  HeaderBlockProcessor,
-  CodeBlockProcessor,
-  RawBlockProcessor,
-  QuoteBlockProcessor,
-  ListBlockProcessor,
-  DelimiterBlockProcessor,
-  ImageBlockProcessor,
-};
+/**
+ * 便捷函数：检查是否支持指定block类型
+ * @param {string} type - block类型
+ * @param {object} options - 配置选项
+ * @returns {boolean} 是否支持
+ */
+export function supportsBlockType(type, options = {}) {
+  const parser = new EditorJSParser(options);
+  return parser.supportsBlockType(type);
+}
 
-// 默认导出主解析器类
-export default HtmlParser;
+/**
+ * 版本信息
+ */
+export const VERSION = '1.0.0';
+
+/**
+ * 模块信息
+ */
+export const MODULE_INFO = {
+  name: 'EditorJS to HTML Converter',
+  version: VERSION,
+  description: 'Convert EditorJS data to HTML with customizable templates and styles',
+  author: 'FlowEdit Team',
+  features: [
+    'Template-based rendering',
+    'Customizable styles',
+    'Caching support',
+    'Error handling',
+    'Extensible architecture',
+    'Performance monitoring'
+  ]
+};

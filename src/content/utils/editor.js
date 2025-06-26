@@ -1,6 +1,6 @@
 // 编辑器相关工具函数
 import { selectorConfig, editorConfig } from '../config/index.js';
-import { parseToHtml } from './parsers/index.js';
+import { parseEditorJS } from './parsers/index.js';
 import { safeQuerySelector, createElement } from './dom.js';
 
 /**
@@ -24,10 +24,7 @@ export async function saveToOriginalEditor(editorData, options = {}) {
     } = options;
 
     // 使用HTML解析器生成HTML内容
-    const htmlContent = parseToHtml(editorData, {
-      skipEmpty: true,
-      wrapInContainer: false
-    });
+    const htmlContent = parseEditorJS(editorData, {});
 
     console.log("生成的HTML内容:", htmlContent);
     // 插入到目标编辑器

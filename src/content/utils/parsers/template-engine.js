@@ -3,7 +3,7 @@
  * 负责处理HTML模板的渲染和变量替换
  */
 
-import { escapeHTML, validateBlock, stylesToCSS, safeGet, isEmpty } from './utils.js';
+import { escapeHTML, validateBlock } from './utils.js';
 import { StyleCompiler } from './style-compiler.js';
 
 /**
@@ -114,12 +114,8 @@ export class TemplateEngine {
       return `<h${level}>${this.processContent(data.text || '', options)}</h${level}>`;
     }
 
-    // 兼容新的children结构和旧的layers数组
-    if (template.layers) {
-      return this.renderLayers(template.layers, data.text || '', options);
-    } else {
-      return this.renderLayers(template, data.text || '', options);
-    }
+    // 使用新的children结构
+    return this.renderChildren(template, data.text || '', options);
   }
 
   /**
@@ -135,12 +131,8 @@ export class TemplateEngine {
       return `<p>${this.processContent(data.text || '', options)}</p>`;
     }
 
-    // 兼容新的children结构和旧的layers数组
-    if (template.layers) {
-      return this.renderLayers(template.layers, data.text || '', options);
-    } else {
-      return this.renderLayers(template, data.text || '', options);
-    }
+    // 使用新的children结构
+    return this.renderChildren(template, data.text || '', options);
   }
 
   /**
@@ -163,7 +155,7 @@ export class TemplateEngine {
       content += `<cite>${data.caption}</cite>`;
     }
 
-    return this.renderLayers(template.layers, content, options);
+    return this.renderChildren(template, content, options);
   }
 
   /**
@@ -179,7 +171,7 @@ export class TemplateEngine {
       return '<hr>';
     }
 
-    return this.renderLayers(template.layers, '', options);
+    return this.renderChildren(template, '', options);
   }
 
   /**
@@ -195,7 +187,7 @@ export class TemplateEngine {
       return data.html || '';
     }
 
-    return this.renderLayers(template.layers, data.html || '', options);
+    return this.renderChildren(template, data.html || '', options);
   }
 
   /**
@@ -214,7 +206,7 @@ export class TemplateEngine {
 
     // 为图片模板准备特殊内容
     const imgContent = this.buildImageContent(data);
-    return this.renderLayers(template.layers, imgContent, options);
+    return this.renderChildren(template, imgContent, options);
   }
 
   /**
@@ -243,7 +235,7 @@ export class TemplateEngine {
       return `<pre><code>${escapeHTML(data.code || '')}</code></pre>`;
     }
 
-    return this.renderLayers(template.layers, data.code || '', options);
+    return this.renderChildren(template, data.code || '', options);
   }
 
   /**
@@ -265,7 +257,7 @@ export class TemplateEngine {
     }
 
     const items = this.renderListItems(data.items || [], style, options);
-    return this.renderLayers(template.layers, items, options);
+    return this.renderChildren(template, items, options);
   }
 
   /**
@@ -284,14 +276,14 @@ export class TemplateEngine {
         const content = `${checked} ${this.processContent(item.text || '', options)}`;
         
         if (itemTemplate) {
-          return this.renderLayers(itemTemplate.layers, content, options);
+          return this.renderChildren(itemTemplate, content, options);
         }
         return `<li>${content}</li>`;
       } else {
         const content = this.processContent(item, options);
         
         if (itemTemplate) {
-          return this.renderLayers(itemTemplate.layers, content, options);
+          return this.renderChildren(itemTemplate, content, options);
         }
         return `<li>${content}</li>`;
       }
@@ -315,81 +307,8 @@ export class TemplateEngine {
     }
 
     const content = this.extractContent(data);
-    // 兼容新的children结构和旧的layers数组
-    if (template.layers) {
-      return this.renderLayers(template.layers, content, options);
-    } else {
-      return this.renderLayers(template, content, options);
-    }
-  }
-
-  /**
-   * 渲染层级结构（兼容新的children结构和旧的layers数组）
-   * @param {array|object} layersOrRoot - 层级配置数组或根节点对象
-   * @param {string} content - 内容
-   * @param {object} options - 选项
-   * @returns {string} HTML
-   */
-  renderLayers(layersOrRoot, content, options = {}) {
-    // 兼容旧的layers数组格式
-    if (Array.isArray(layersOrRoot)) {
-      return this.renderLayersArray(layersOrRoot, content, options);
-    }
-    
-    // 新的children嵌套结构
-    if (layersOrRoot && typeof layersOrRoot === 'object') {
-      return this.renderChildren(layersOrRoot, content, options);
-    }
-    
-    return this.processContent(content, options);
-  }
-
-  /**
-   * 渲染旧的layers数组结构
-   * @param {array} layers - 层级配置数组
-   * @param {string} content - 内容
-   * @param {object} options - 选项
-   * @returns {string} HTML
-   */
-  renderLayersArray(layers, content, options = {}) {
-    if (!Array.isArray(layers) || layers.length === 0) {
-      return this.processContent(content, options);
-    }
-
-    // 处理内容 - 始终应用内联样式处理
-     const processedContent = this.processContent(content, options);
-    
-    // 找到内容层的索引
-     const contentLayerIndex = layers.findIndex(layer => layer.content === true);
-     
-     if (contentLayerIndex === -1) {
-       // 如果没有内容层，将内容放在最内层
-       let html = processedContent;
-       for (let i = layers.length - 1; i >= 0; i--) {
-         const layer = { ...layers[i] };
-         html = this.renderLayer(layer, html, options);
-       }
-       return html;
-     }
-    
-    // 从内容层开始构建
-    let html = this.renderLayer(layers[contentLayerIndex], processedContent, options);
-    
-    // 向外包装其他层
-    for (let i = contentLayerIndex - 1; i >= 0; i--) {
-      const layer = { ...layers[i] };
-      delete layer.content; // 确保外层不是内容层
-      html = this.renderLayer(layer, html, options);
-    }
-    
-    // 向内包装其他层
-    for (let i = contentLayerIndex + 1; i < layers.length; i++) {
-      const layer = { ...layers[i] };
-      delete layer.content; // 确保内层不是内容层
-      html = this.renderLayer(layer, html, options);
-    }
-
-    return html;
+    // 使用新的children结构
+    return this.renderChildren(template, content, options);
   }
 
   /**

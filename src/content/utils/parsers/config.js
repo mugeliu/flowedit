@@ -67,143 +67,80 @@ export const inlineStyles = {
 // 模板配置
 export const blockTemplates = {
   header: {
-    h1: {
+    h1:{
       tag: "section",
       style: {
-        fontStyle: "normal",
-        fontVariantLigatures: "normal",
-        fontVariantCaps: "normal",
-        letterSpacing: "0.5px",
-        orphans: 2,
-        textIndent: "0px",
-        textTransform: "none",
-        widows: 2,
-        wordSpacing: "0px",
-        WebkitTextStrokeWidth: "0px",
-        whiteSpace: "normal",
-        textDecorationThickness: "initial",
-        textDecorationStyle: "initial",
-        textDecorationColor: "initial",
-        boxSizing: "border-box",
-        borderWidth: "0px",
-        borderStyle: "solid",
-        fontSize: "20px",
-        fontWeight: 600,
-        margin: "1.8em 0px 1.2em",
         textAlign: "center",
-        lineHeight: 1.4,
-        fontFamily:
-          "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
-        display: "flex",
-        justifyContent: "center",
-        padding: "0px",
-        color: "rgb(4, 120, 87)",
+        margin: "1.8em auto 1.2em", 
+        width: "92%",
+        maxWidth: "600px"
       },
       children: [
         {
-          tag: "section",
+          tag: "h1",
           style: {
             display: "inline-block",
-            padding: "1em 2.2em",
-            color: "rgb(255, 255, 255)",
-            background:
-              "linear-gradient(135deg, rgb(16, 185, 129) 0%, rgb(5, 150, 105) 100%)",
+            padding: "0.8em 2.2em",
+            margin: "0",
+            fontSize: "20px",
+            fontWeight: "600",
+            lineHeight: "1.2",
+            color: "#fff",
+            fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+            background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
             borderRadius: "12px",
-            boxShadow:
-              "rgba(16, 185, 129, 0.25) 0px 6px 20px -4px, rgba(0, 0, 0, 0.1) 0px 2px 8px -2px",
+            boxShadow: "0 6px 20px -4px rgba(16, 185, 129, 0.25), 0 2px 8px -2px rgba(0,0,0,0.1)",
+            WebkitTextFillColor: "currentColor"
           },
-          children: [
-            {
-              tag: "h1",
-              style: {
-                margin: 0,
-                padding: 0,
-                fontSize: "inherit",
-                fontWeight: "inherit",
-                color: "inherit",
-              },
-              content: true,
-              inlineStyleHandling: {
-                needWrapper: false,
-              },
-            },
-          ],
-        },
-      ],
+          content: true,
+          inlineStyleHandling: {
+            needWrapper: false,
+          },
+        }
+      ]
     },
     h2: {
       tag: "section",
       style: {
-        fontStyle: "normal",
-        fontVariantLigatures: "normal",
-        fontVariantCaps: "normal",
-        letterSpacing: "0.3px",
-        orphans: 2,
-        textIndent: "0px",
-        textTransform: "none",
-        widows: 2,
-        wordSpacing: "0px",
-        WebkitTextStrokeWidth: "0px",
-        whiteSpace: "normal",
-        textDecorationThickness: "initial",
-        textDecorationStyle: "initial",
-        textDecorationColor: "initial",
-        boxSizing: "border-box",
-        borderWidth: "0px",
-        borderStyle: "solid",
-        fontSize: "18px",
-        fontWeight: 600,
-        margin: "1.5em 0px 1em",
-        textAlign: "left",
-        lineHeight: 1.4,
-        fontFamily:
-          "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
-        display: "block",
-        padding: "0px",
-        color: "rgb(4, 120, 87)",
+        margin: "1.5em 0 1em"
       },
       children: [
         {
-          tag: "section",
+          tag: "h2",
           style: {
             display: "inline-flex",
             alignItems: "center",
             padding: "0.8em 1.8em 0.8em 1.2em",
+            margin: "0",
+            fontSize: "18px",
+            fontWeight: "600",
+            lineHeight: "1.4",
+            fontFamily: "-apple-system, sans-serif",
+            color: "#047857",
             background: "rgba(16, 185, 129, 0.06)",
-            borderLeft: "4px solid rgb(16, 185, 129)",
-            borderRadius: "0px 8px 8px 0px",
-            minWidth: "fit-content",
+            borderLeft: "4px solid #10b981",
+            borderRadius: "0 8px 8px 0"
+          },
+          content: true,
+          inlineStyleHandling: {
+            needWrapper: false,
           },
           children: [
             {
               tag: "span",
               style: {
-                display: "inline-block",
+                display: "block",
                 width: "8px",
                 height: "8px",
-                background: "rgb(16, 185, 129)",
+                background: "#10b981",
                 borderRadius: "50%",
                 marginRight: "0.8em",
-                verticalAlign: "middle",
-              },
+                flexShrink: "0"
+              }
             },
-            {
-              tag: "h2",
-              style: {
-                margin: 0,
-                padding: 0,
-                fontSize: "inherit",
-                fontWeight: "inherit",
-                color: "inherit",
-              },
-              content: true,
-              inlineStyleHandling: {
-                needWrapper: false,
-              },
-            },
-          ],
-        },
-      ],
+          ]
+        }
+      ]
     },
     h3: {
       tag: "section",
@@ -284,56 +221,26 @@ export const blockTemplates = {
 
   paragraph: {
     default: {
-      tag: "section",
+      tag: "p",
       style: {
-        fontStyle: "normal",
-        fontVariantLigatures: "normal",
-        fontVariantCaps: "normal",
-        orphans: 2,
-        textIndent: "0px",
-        textTransform: "none",
-        widows: 2,
-        wordSpacing: "0px",
-        WebkitTextStrokeWidth: "0px",
-        whiteSpace: "normal",
-        textDecorationThickness: "initial",
-        textDecorationStyle: "initial",
-        textDecorationColor: "initial",
-        boxSizing: "border-box",
-        borderWidth: "0px",
-        borderStyle: "solid",
-        margin: "0.8em 0px",
-        textAlign: "left",
-        lineHeight: 1.7,
-        fontFamily:
-          "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
-        display: "block",
-        padding: "0px",
+        // 您指定的新样式
+        fontSize: "16px",
+        color: "rgb(55, 65, 81)",
+        letterSpacing: "0.3px",
+        padding: "0.5em 0.5em",
+        
+        // 保留的必要兼容性样式
+        margin: "0",
+        lineHeight: "1.7",
+        fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
+        WebkitTextFillColor: "currentColor",
+        textAlign: "justify",
+        wordBreak: "break-word"
       },
-      children: [
-        {
-          tag: "section",
-          style: {
-            fontSize: "16px",
-            color: "rgb(55, 65, 81)",
-            letterSpacing: "0.3px",
-            padding: "0.5em 0.5em",
-          },
-          children: [
-            {
-              tag: "p",
-              style: {
-                margin: 0,
-                padding: 0,
-              },
-              content: true,
-              inlineStyleHandling: {
-                needWrapper: false,
-              },
-            },
-          ],
-        },
-      ],
+      content: true,
+      inlineStyleHandling: {
+        needWrapper: false,
+      }
     },
   },
 
@@ -443,7 +350,7 @@ export const blockTemplates = {
 
   raw: {
     default: {
-      tag: "section",
+      //tag: "section",
       style: {},
       content: true,
     },
