@@ -3,8 +3,8 @@
  * 负责处理HTML模板的渲染和变量替换
  */
 
-import { escapeHTML, validateBlock } from './utils.js';
-import { StyleCompiler } from './style-compiler.js';
+import { escapeHTML, validateBlock } from "./utils.js";
+import { StyleCompiler } from "./style-compiler.js";
 
 /**
  * 模板引擎类
@@ -18,7 +18,7 @@ export class TemplateEngine {
     this.options = {
       enableCache: true,
       escapeContent: true,
-      ...options
+      ...options,
     };
   }
 
@@ -28,10 +28,10 @@ export class TemplateEngine {
    * @param {string} variant - 变体名称
    * @returns {object|null} 模板配置
    */
-  getTemplate(type, variant = 'default') {
+  getTemplate(type, variant = "default") {
     const typeTemplates = this.blockTemplates[type];
     if (!typeTemplates) return null;
-    
+
     return typeTemplates[variant] || typeTemplates.default || null;
   }
 
@@ -43,26 +43,27 @@ export class TemplateEngine {
    */
   buildHTML(block, options = {}) {
     if (!validateBlock(block)) {
-      return this.handleError('Invalid block data', block);
+      return this.handleError("Invalid block data", block);
     }
 
-    const cacheKey = this.options.enableCache ? 
-      `${block.type}-${JSON.stringify(block.data)}-${JSON.stringify(options)}` : null;
-    
+    const cacheKey = this.options.enableCache
+      ? `${block.type}-${JSON.stringify(block.data)}-${JSON.stringify(options)}`
+      : null;
+
     if (cacheKey && this.cache.has(cacheKey)) {
       return this.cache.get(cacheKey);
     }
 
     try {
       const html = this.renderBlock(block, options);
-      
+
       if (cacheKey) {
         this.cache.set(cacheKey, html);
       }
-      
+
       return html;
     } catch (error) {
-      return this.handleError('Template rendering failed', block, error);
+      return this.handleError("Template rendering failed", block, error);
     }
   }
 
@@ -74,25 +75,25 @@ export class TemplateEngine {
    */
   renderBlock(block, options = {}) {
     const { type, data } = block;
-    
+
     // 特殊处理不同类型的block
     switch (type) {
-      case 'header':
+      case "header":
         return this.renderHeader(data, options);
-      case 'paragraph':
+      case "paragraph":
         return this.renderParagraph(data, options);
-      case 'quote':
+      case "quote":
         return this.renderQuote(data, options);
-      case 'delimiter':
+      case "delimiter":
         return this.renderDelimiter(data, options);
-      case 'raw':
+      case "raw":
         return this.renderRaw(data, options);
-      case 'image':
+      case "image":
         return this.renderImage(data, options);
-      case 'code':
+      case "code":
         return this.renderCode(data, options);
-      case 'List':
-      case 'list':
+      case "List":
+      case "list":
         return this.renderList(data, options);
       default:
         return this.renderGeneric(type, data, options);
@@ -108,14 +109,17 @@ export class TemplateEngine {
   renderHeader(data, options = {}) {
     const level = data.level || 1;
     const variant = `h${level}`;
-    const template = this.getTemplate('header', variant);
-    
+    const template = this.getTemplate("header", variant);
+
     if (!template) {
-      return `<h${level}>${this.processContent(data.text || '', options)}</h${level}>`;
+      return `<h${level}>${this.processContent(
+        data.text || "",
+        options
+      )}</h${level}>`;
     }
 
     // 使用新的children结构
-    return this.renderChildren(template, data.text || '', options);
+    return this.renderChildren(template, data.text || "", options);
   }
 
   /**
@@ -125,14 +129,14 @@ export class TemplateEngine {
    * @returns {string} HTML
    */
   renderParagraph(data, options = {}) {
-    const template = this.getTemplate('paragraph');
-    
+    const template = this.getTemplate("paragraph");
+
     if (!template) {
-      return `<p>${this.processContent(data.text || '', options)}</p>`;
+      return `<p>${this.processContent(data.text || "", options)}</p>`;
     }
 
     // 使用新的children结构
-    return this.renderChildren(template, data.text || '', options);
+    return this.renderChildren(template, data.text || "", options);
   }
 
   /**
@@ -142,17 +146,19 @@ export class TemplateEngine {
    * @returns {string} HTML
    */
   renderQuote(data, options = {}) {
-    const template = this.getTemplate('quote');
-    
+    const template = this.getTemplate("quote");
+
     if (!template) {
-      const text = this.processContent(data.text || '', options);
-      const caption = data.caption ? `<cite>${this.processContent(data.caption, options)}</cite>` : '';
+      const text = this.processContent(data.text || "", options);
+      const caption = data.caption
+        ? `<cite>${this.processContent(data.caption, options)}</cite>`
+        : "";
       return `<blockquote>${text}${caption}</blockquote>`;
     }
 
-    let content = data.text || '';
+    let content = data.text || "";
     if (data.caption) {
-      content += `<cite>${data.caption}</cite>`;
+      content += `<cite style="display:block;text-align:right;color:#768995;font-size:14px;font-style:normal;">${data.caption}</cite>`;
     }
 
     return this.renderChildren(template, content, options);
@@ -165,13 +171,13 @@ export class TemplateEngine {
    * @returns {string} HTML
    */
   renderDelimiter(data, options = {}) {
-    const template = this.getTemplate('delimiter');
-    
+    const template = this.getTemplate("delimiter");
+
     if (!template) {
-      return '<hr>';
+      return "<hr>";
     }
 
-    return this.renderChildren(template, '', options);
+    return this.renderChildren(template, "", options);
   }
 
   /**
@@ -181,13 +187,13 @@ export class TemplateEngine {
    * @returns {string} HTML
    */
   renderRaw(data, options = {}) {
-    const template = this.getTemplate('raw');
-    
+    const template = this.getTemplate("raw");
+
     if (!template) {
-      return data.html || '';
+      return data.html || "";
     }
 
-    return this.renderChildren(template, data.html || '', options);
+    return this.renderChildren(template, data.html || "", options);
   }
 
   /**
@@ -197,16 +203,30 @@ export class TemplateEngine {
    * @returns {string} HTML
    */
   renderImage(data, options = {}) {
-    const template = this.getTemplate('image');
-    
+    const template = this.getTemplate("image");
+
     if (!template) {
-      const alt = data.caption || '';
-      return `<img src="${data.file?.url || ''}" alt="${escapeHTML(alt)}">`;
+      const alt = data.caption || "";
+      return `<img src="${data.file?.url || ""}" alt="${escapeHTML(alt)}">`;
     }
 
-    // 为图片模板准备特殊内容
-    const imgContent = this.buildImageContent(data);
-    return this.renderChildren(template, imgContent, options);
+    // 构建包含img和figcaption的完整HTML内容
+    const src = data.file?.url || "";
+    const alt = escapeHTML(data.caption || "");
+    const title = data.caption ? ` title="${alt}"` : "";
+
+    // 为img标签添加样式
+    const imgStyle =
+      "width:100%;max-width:600px;height:auto;border-radius:12px;border:2px solid #f0f0f0;box-shadow:0 4px 12px rgba(0, 0, 0, 0.08);display:block;margin:0 auto;";
+
+    let content = `<img src="${src}" alt="${alt}"${title} style="${imgStyle}">`;
+    if (data.caption) {
+      content += `<figcaption style="margin-top:0.8em;color:#768995;font-size:14px;text-align:center;font-style:italic;">${escapeHTML(
+        data.caption
+      )}</figcaption>`;
+    }
+
+    return this.renderChildren(template, content, options);
   }
 
   /**
@@ -215,10 +235,10 @@ export class TemplateEngine {
    * @returns {string} 图片HTML
    */
   buildImageContent(data) {
-    const src = data.file?.url || '';
-    const alt = escapeHTML(data.caption || '');
-    const title = data.caption ? ` title="${alt}"` : '';
-    
+    const src = data.file?.url || "";
+    const alt = escapeHTML(data.caption || "");
+    const title = data.caption ? ` title="${alt}"` : "";
+
     return `<img src="${src}" alt="${alt}"${title}>`;
   }
 
@@ -229,13 +249,13 @@ export class TemplateEngine {
    * @returns {string} HTML
    */
   renderCode(data, options = {}) {
-    const template = this.getTemplate('code');
-    
+    const template = this.getTemplate("code");
+
     if (!template) {
-      return `<pre><code>${escapeHTML(data.code || '')}</code></pre>`;
+      return `<pre><code>${escapeHTML(data.code || "")}</code></pre>`;
     }
 
-    return this.renderChildren(template, data.code || '', options);
+    return this.renderChildren(template, data.code || "", options);
   }
 
   /**
@@ -245,14 +265,14 @@ export class TemplateEngine {
    * @returns {string} HTML
    */
   renderList(data, options = {}) {
-    const style = data.style || 'unordered';
-    const template = this.getTemplate('List', style);
-    
+    const style = data.style || "unordered";
+    const template = this.getTemplate("List", style);
+
     if (!template) {
-      const tag = style === 'ordered' ? 'ol' : 'ul';
-      const items = (data.items || []).map(item => 
-        `<li>${this.processContent(item, options)}</li>`
-      ).join('');
+      const tag = style === "ordered" ? "ol" : "ul";
+      const items = (data.items || [])
+        .map((item) => `<li>${this.processContent(item, options)}</li>`)
+        .join("");
       return `<${tag}>${items}</${tag}>`;
     }
 
@@ -268,26 +288,34 @@ export class TemplateEngine {
    * @returns {string} HTML
    */
   renderListItems(items, style, options = {}) {
-    const itemTemplate = this.getTemplate('listItem', style === 'checklist' ? 'checklist' : 'default');
-    
-    return items.map(item => {
-      if (style === 'checklist') {
-        const checked = item.checked ? '☑' : '☐';
-        const content = `${checked} ${this.processContent(item.text || '', options)}`;
-        
-        if (itemTemplate) {
-          return this.renderChildren(itemTemplate, content, options);
+    const itemTemplate = this.getTemplate(
+      "listItem",
+      style === "checklist" ? "checklist" : "default"
+    );
+
+    return items
+      .map((item) => {
+        if (style === "checklist") {
+          const checked = item.checked ? "☑" : "☐";
+          const content = `${checked} ${this.processContent(
+            item.text || "",
+            options
+          )}`;
+
+          if (itemTemplate) {
+            return this.renderChildren(itemTemplate, content, options);
+          }
+          return `<li>${content}</li>`;
+        } else {
+          const content = this.processContent(item, options);
+
+          if (itemTemplate) {
+            return this.renderChildren(itemTemplate, content, options);
+          }
+          return `<li>${content}</li>`;
         }
-        return `<li>${content}</li>`;
-      } else {
-        const content = this.processContent(item, options);
-        
-        if (itemTemplate) {
-          return this.renderChildren(itemTemplate, content, options);
-        }
-        return `<li>${content}</li>`;
-      }
-    }).join('');
+      })
+      .join("");
   }
 
   /**
@@ -299,11 +327,14 @@ export class TemplateEngine {
    */
   renderGeneric(type, data, options = {}) {
     const template = this.getTemplate(type);
-    
+
     if (!template) {
       // 回退到简单的div包装
       const content = this.extractContent(data);
-      return `<div class="${type}">${this.processContent(content, options)}</div>`;
+      return `<div class="${type}">${this.processContent(
+        content,
+        options
+      )}</div>`;
     }
 
     const content = this.extractContent(data);
@@ -320,33 +351,40 @@ export class TemplateEngine {
    */
   renderChildren(node, content, options = {}) {
     const { tag, style = {}, content: isContentLayer, children } = node;
-    
+
     if (!tag) {
       return this.processContent(content, options);
     }
 
     // 编译样式
     const styleString = this.styleCompiler.compileStyles(style);
-    const styleAttr = styleString ? ` style="${styleString}"` : '';
-    
+    const styleAttr = styleString ? ` style="${styleString}"` : "";
+
     // 自闭合标签
-    if (['img', 'hr', 'br', 'input'].includes(tag)) {
+    if (["hr", "br", "input"].includes(tag)) {
       return `<${tag}${styleAttr}>`;
     }
 
-    let innerContent = '';
-    
+    let innerContent = "";
+
     // 如果是内容层，使用传入的内容
     if (isContentLayer) {
       innerContent = this.processContent(content, options);
     }
     // 如果有children，递归渲染子节点
     else if (children && Array.isArray(children)) {
-      innerContent = children.map(child => {
-        // 只有当子节点或其子树中包含content: true时才传递内容
-        const shouldPassContent = child.content || this.hasContentInChildren(child.children);
-        return this.renderChildren(child, shouldPassContent ? content : null, options);
-      }).join('');
+      innerContent = children
+        .map((child) => {
+          // 只有当子节点或其子树中包含content: true时才传递内容
+          const shouldPassContent =
+            child.content || this.hasContentInChildren(child.children);
+          return this.renderChildren(
+            child,
+            shouldPassContent ? content : null,
+            options
+          );
+        })
+        .join("");
     }
     // 如果既不是内容层也没有children，但有内容传入，使用传入的内容
     else if (content) {
@@ -363,8 +401,8 @@ export class TemplateEngine {
    */
   hasContentInChildren(children) {
     if (!Array.isArray(children)) return false;
-    
-    return children.some(child => {
+
+    return children.some((child) => {
       if (child.content) return true;
       if (child.children) return this.hasContentInChildren(child.children);
       return false;
@@ -380,15 +418,15 @@ export class TemplateEngine {
    */
   renderLayer(layer, content, options = {}) {
     const { tag, style = {}, content: isContentLayer } = layer;
-    
+
     if (!tag) return content;
 
     // 编译样式
     const styleString = this.styleCompiler.compileStyles(style);
-    const styleAttr = styleString ? ` style="${styleString}"` : '';
-    
+    const styleAttr = styleString ? ` style="${styleString}"` : "";
+
     // 自闭合标签
-    if (['img', 'hr', 'br', 'input'].includes(tag)) {
+    if (["img", "hr", "br", "input"].includes(tag)) {
       return `<${tag}${styleAttr}>`;
     }
 
@@ -403,18 +441,21 @@ export class TemplateEngine {
    * @returns {string} 处理后的内容
    */
   processContent(content, options = {}) {
-    if (typeof content !== 'string') return '';
-    
+    if (typeof content !== "string") return "";
+
     let processed = content;
-    
-    // 应用内联样式
-    processed = this.styleCompiler.compileInlineStyles(processed, options.customInlineStyles);
-    
+
+    // 应用内联样式处理（无论是否包含HTML）
+    processed = this.styleCompiler.compileInlineStyles(
+      processed,
+      options.customInlineStyles
+    );
+
     // 转义HTML（如果需要）
     if (this.options.escapeContent && !this.containsHTML(processed)) {
       processed = escapeHTML(processed);
     }
-    
+
     return processed;
   }
 
@@ -433,19 +474,19 @@ export class TemplateEngine {
    * @returns {string} 提取的内容
    */
   extractContent(data) {
-    if (typeof data === 'string') return data;
-    if (!data || typeof data !== 'object') return '';
-    
+    if (typeof data === "string") return data;
+    if (!data || typeof data !== "object") return "";
+
     // 常见的内容字段
-    const contentFields = ['text', 'content', 'html', 'code', 'caption'];
-    
+    const contentFields = ["text", "content", "html", "code", "caption"];
+
     for (const field of contentFields) {
-      if (data[field] && typeof data[field] === 'string') {
+      if (data[field] && typeof data[field] === "string") {
         return data[field];
       }
     }
-    
-    return '';
+
+    return "";
   }
 
   /**
@@ -457,7 +498,7 @@ export class TemplateEngine {
    */
   handleError(message, block, error = null) {
     console.warn(`TemplateEngine Error: ${message}`, { block, error });
-    
+
     const errorContent = `<!-- ${message} -->`;
     return errorContent;
   }
@@ -492,9 +533,9 @@ export class TemplateEngine {
     return {
       templateCache: {
         size: this.cache.size,
-        enabled: this.options.enableCache
+        enabled: this.options.enableCache,
       },
-      styleCache: this.styleCompiler.getCacheStats()
+      styleCache: this.styleCompiler.getCacheStats(),
     };
   }
 }

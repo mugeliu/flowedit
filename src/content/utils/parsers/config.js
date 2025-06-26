@@ -67,13 +67,13 @@ export const inlineStyles = {
 // 模板配置
 export const blockTemplates = {
   header: {
-    h1:{
+    h1: {
       tag: "section",
       style: {
         textAlign: "center",
-        margin: "1.8em auto 1.2em", 
+        margin: "1.8em auto 1.2em",
         width: "92%",
-        maxWidth: "600px"
+        maxWidth: "600px",
       },
       children: [
         {
@@ -86,23 +86,25 @@ export const blockTemplates = {
             fontWeight: "600",
             lineHeight: "1.2",
             color: "#fff",
-            fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+            fontFamily:
+              "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
             background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
             borderRadius: "12px",
-            boxShadow: "0 6px 20px -4px rgba(16, 185, 129, 0.25), 0 2px 8px -2px rgba(0,0,0,0.1)",
-            WebkitTextFillColor: "currentColor"
+            boxShadow:
+              "0 6px 20px -4px rgba(16, 185, 129, 0.25), 0 2px 8px -2px rgba(0,0,0,0.1)",
+            WebkitTextFillColor: "currentColor",
           },
           content: true,
           inlineStyleHandling: {
             needWrapper: false,
           },
-        }
-      ]
+        },
+      ],
     },
     h2: {
       tag: "section",
       style: {
-        margin: "1.5em 0 1em"
+        margin: "1.5em 0 1em",
       },
       children: [
         {
@@ -119,7 +121,7 @@ export const blockTemplates = {
             color: "#047857",
             background: "rgba(16, 185, 129, 0.06)",
             borderLeft: "4px solid #10b981",
-            borderRadius: "0 8px 8px 0"
+            borderRadius: "0 8px 8px 0",
           },
           content: true,
           inlineStyleHandling: {
@@ -135,82 +137,49 @@ export const blockTemplates = {
                 background: "#10b981",
                 borderRadius: "50%",
                 marginRight: "0.8em",
-                flexShrink: "0"
-              }
+                flexShrink: "0",
+              },
             },
-          ]
-        }
-      ]
+          ],
+        },
+      ],
     },
     h3: {
       tag: "section",
       style: {
-        fontStyle: "normal",
-        fontVariantLigatures: "normal",
-        fontVariantCaps: "normal",
-        letterSpacing: "0.2px",
-        orphans: 2,
-        textIndent: "0px",
-        textTransform: "none",
-        widows: 2,
-        wordSpacing: "0px",
-        WebkitTextStrokeWidth: "0px",
-        whiteSpace: "normal",
-        textDecorationThickness: "initial",
-        textDecorationStyle: "initial",
-        textDecorationColor: "initial",
-        boxSizing: "border-box",
-        borderWidth: "0px",
-        borderStyle: "solid",
-        fontSize: "17px",
-        fontWeight: 500,
-        margin: "1.2em 0px 0.8em",
-        textAlign: "left",
-        lineHeight: 1.5,
-        fontFamily:
-          "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
-        display: "block",
-        padding: "0px",
-        color: "rgb(4, 120, 87)",
+        margin: "1.5em 0 1em",
       },
       children: [
         {
-          tag: "section",
+          tag: "h3",
           style: {
             display: "inline-flex",
             alignItems: "center",
-            padding: "0.6em 1.5em 0.6em 1em",
-            background:
-              "linear-gradient(90deg, rgba(16, 185, 129, 0.04) 0%, rgba(16, 185, 129, 0.01) 80%, transparent 100%)",
-            borderLeft: "3px solid rgba(16, 185, 129, 0.6)",
-            borderRadius: "0px 6px 6px 0px",
-            minWidth: "fit-content",
+            padding: "0.8em 1.8em 0.8em 1.2em",
+            margin: "0",
+            fontSize: "18px",
+            fontWeight: "600",
+            lineHeight: "1.4",
+            fontFamily: "-apple-system, sans-serif",
+            color: "#047857",
+            background: "rgba(16, 185, 129, 0.06)",
+            borderLeft: "4px solid #10b981",
+            borderRadius: "0 8px 8px 0",
+          },
+          content: true,
+          inlineStyleHandling: {
+            needWrapper: false,
           },
           children: [
             {
               tag: "span",
               style: {
                 display: "inline-block",
-                width: "6px",
-                height: "6px",
+                width: "8px",
+                height: "8px",
                 background: "rgba(16, 185, 129, 0.8)",
                 borderRadius: "50%",
-                marginRight: "0.6em",
-                verticalAlign: "middle",
-              },
-            },
-            {
-              tag: "h3",
-              style: {
-                margin: 0,
-                padding: 0,
-                fontSize: "inherit",
-                fontWeight: "inherit",
-                color: "inherit",
-              },
-              content: true,
-              inlineStyleHandling: {
-                needWrapper: false,
+                marginRight: "0.8em",
               },
             },
           ],
@@ -227,20 +196,21 @@ export const blockTemplates = {
         fontSize: "16px",
         color: "rgb(55, 65, 81)",
         letterSpacing: "0.3px",
-        padding: "0.5em 0.5em",
-        
+        padding: "0.3em 0.5em",
+
         // 保留的必要兼容性样式
-        margin: "0",
-        lineHeight: "1.7",
-        fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
+        margin: "0 0 0.6em 0",
+        lineHeight: "1.5",
+        fontFamily:
+          "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
         WebkitTextFillColor: "currentColor",
         textAlign: "justify",
-        wordBreak: "break-word"
+        wordBreak: "break-word",
       },
       content: true,
       inlineStyleHandling: {
         needWrapper: false,
-      }
+      },
     },
   },
 
@@ -248,56 +218,28 @@ export const blockTemplates = {
     default: {
       tag: "section",
       style: {
-        fontStyle: "normal",
-        fontVariantLigatures: "normal",
-        fontVariantCaps: "normal",
-        orphans: 2,
-        textIndent: "0px",
-        textTransform: "none",
-        widows: 2,
-        wordSpacing: "0px",
-        WebkitTextStrokeWidth: "0px",
-        whiteSpace: "normal",
-        textDecorationThickness: "initial",
-        textDecorationStyle: "initial",
-        textDecorationColor: "initial",
-        boxSizing: "border-box",
-        borderWidth: "0px",
-        borderStyle: "solid",
-        margin: "1.5em 0px",
-        textAlign: "left",
-        lineHeight: 1.6,
-        fontFamily:
-          "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
-        display: "block",
-        padding: "0px",
+        borderLeft: "4px solid #10b981",
+        background: "rgba(16, 185, 129, 0.06)",
+        padding: "1.2em 1.8em",
+        borderRadius: "0 8px 8px 0",
+        boxShadow: "rgba(16, 185, 129, 0.1) 0 2px 8px -2px",
+        margin: "1em 0",
+        fontFamily: "-apple-system, sans-serif",
       },
       children: [
         {
-          tag: "section",
+          tag: "p",
           style: {
-            background: "rgba(16, 185, 129, 0.06)",
-            borderLeft: "4px solid rgb(16, 185, 129)",
-            padding: "1.2em 1.8em",
-            borderRadius: "0px 8px 8px 0px",
-            boxShadow: "rgba(16, 185, 129, 0.1) 0px 2px 8px -2px",
+            margin: "0 0 12px 0",
+            color: "#516673",
+            fontStyle: "italic",
+            fontSize: "16px",
+            lineHeight: 1.6,
           },
-          children: [
-            {
-              tag: "blockquote",
-              style: {
-                fontSize: "16px",
-                color: "rgb(55, 65, 81)",
-                fontStyle: "italic",
-                margin: "0px 0px 1em 0px",
-                letterSpacing: "0.2px",
-              },
-              content: true,
-              inlineStyleHandling: {
-                needWrapper: false,
-              },
-            },
-          ],
+          content: true,
+          inlineStyleHandling: {
+            needWrapper: false,
+          },
         },
       ],
     },
@@ -307,30 +249,9 @@ export const blockTemplates = {
     default: {
       tag: "section",
       style: {
-        fontStyle: "normal",
-        fontVariantLigatures: "normal",
-        fontVariantCaps: "normal",
-        orphans: 2,
-        textIndent: "0px",
-        textTransform: "none",
-        widows: 2,
-        wordSpacing: "0px",
-        WebkitTextStrokeWidth: "0px",
-        whiteSpace: "normal",
-        textDecorationThickness: "initial",
-        textDecorationStyle: "initial",
-        textDecorationColor: "initial",
-        boxSizing: "border-box",
-        borderWidth: "0px",
-        borderStyle: "solid",
-        margin: "2em 0px",
-        textAlign: "center",
-        lineHeight: 1,
-        fontFamily:
-          "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
         display: "flex",
         justifyContent: "center",
-        padding: "0px",
+        margin: "2em 0",
       },
       children: [
         {
@@ -358,33 +279,16 @@ export const blockTemplates = {
 
   image: {
     default: {
-      tag: "section",
-      style: {},
-      children: [
-        {
-          tag: "figure",
-          style: {
-            margin: "10px 0px",
-            padding: "0px",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            alignItems: "center",
-            visibility: "visible",
-          },
-          children: [
-            {
-              tag: "img",
-              style: {
-                visibility: "visible",
-                maxWidth: "100%",
-                height: "auto",
-              },
-              content: true,
-            },
-          ],
-        },
-      ],
+      tag: "figure",
+      style: {
+        margin: "0.8em 0",
+        padding: "0",
+        maxWidth: "100%", // 防止图片溢出
+        lineHeight: 0, // 消除图片底部间隙
+        display: "block",
+        textAlign: "center",
+      },
+      content: true,
     },
   },
 
