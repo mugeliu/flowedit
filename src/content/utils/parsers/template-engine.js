@@ -255,7 +255,12 @@ export class TemplateEngine {
       return `<pre><code>${escapeHTML(data.code || "")}</code></pre>`;
     }
 
-    return this.renderChildren(template, data.code || "", options);
+    // 处理代码，将换行转换为br标签
+    const processedCode = (data.code || "")
+      .split('\n')
+      .join('<br>');
+
+    return this.renderChildren(template, processedCode, options);
   }
 
   /**
@@ -269,6 +274,13 @@ export class TemplateEngine {
     const template = this.getTemplate("List", style);
 
     if (!template) {
+      // 对于checklist，必须使用renderListItems来处理复选框
+      if (style === "checklist") {
+        const items = this.renderListItems(data.items || [], style, options);
+        return `<ul style="list-style: none; padding-left: 1em;">${items}</ul>`;
+      }
+      
+      // 对于有序和无序列表的默认处理
       const tag = style === "ordered" ? "ol" : "ul";
       const items = (data.items || [])
         .map((item) => `<li>${this.processContent(item, options)}</li>`)
@@ -281,6 +293,67 @@ export class TemplateEngine {
   }
 
   /**
+   * 修改checklist模板，将复选框和文本内容填充到对应位置
+   * @param {object} template - 模板对象
+   * @param {string} checked - 复选框符号
+   * @param {string} textContent - 文本内容
+   * @param {string} nestedList - 嵌套列表HTML
+   * @returns {string} 修改后的HTML
+   */
+  modifyChecklistTemplate(template, checked, textContent, nestedList) {
+    // 克隆模板以避免修改原始模板
+    const clonedTemplate = JSON.parse(JSON.stringify(template));
+    
+    // 现在span在section的children中
+    if (clonedTemplate.children && clonedTemplate.children[0] && 
+        clonedTemplate.children[0].children && clonedTemplate.children[0].children.length >= 2) {
+      const sectionChildren = clonedTemplate.children[0].children;
+      // 第一个span放复选框
+      sectionChildren[0].content = true;
+      sectionChildren[0].textContent = checked;
+      // 第二个span放文本内容
+      sectionChildren[1].content = true;
+      sectionChildren[1].textContent = textContent;
+    }
+    
+    // 渲染模板并添加嵌套列表
+    const renderedTemplate = this.renderTemplate(clonedTemplate);
+    return renderedTemplate + (nestedList || "");
+   }
+
+   /**
+    * 渲染单个模板对象
+    * @param {object} template - 模板对象
+    * @returns {string} HTML
+    */
+   renderTemplate(template) {
+     if (!template) return "";
+     
+     const { tag, style = {}, children, content, textContent } = template;
+     
+     // 构建样式字符串
+     const styleStr = Object.entries(style)
+       .map(([key, value]) => {
+         const cssKey = key.replace(/([A-Z])/g, '-$1').toLowerCase();
+         return `${cssKey}: ${value}`;
+       })
+       .join('; ');
+     
+     const styleAttr = styleStr ? ` style="${styleStr}"` : "";
+     
+     if (children && Array.isArray(children)) {
+       const childrenHTML = children.map(child => this.renderTemplate(child)).join("");
+       return `<${tag}${styleAttr}>${childrenHTML}</${tag}>`;
+     } else if (textContent !== undefined) {
+       return `<${tag}${styleAttr}>${textContent}</${tag}>`;
+     } else if (content) {
+       return `<${tag}${styleAttr}>${content}</${tag}>`;
+     } else {
+       return `<${tag}${styleAttr}></${tag}>`;
+     }
+   }
+ 
+   /**
    * 渲染列表项
    * @param {array} items - 列表项数组
    * @param {string} style - 列表样式
@@ -295,19 +368,40 @@ export class TemplateEngine {
 
     return items
       .map((item) => {
+        let content = "";
+        let nestedList = "";
+        
+        // 处理嵌套列表
+        if (item.items && Array.isArray(item.items) && item.items.length > 0) {
+          const nestedStyle = item.style || style; // 使用子列表的样式或继承父级样式
+          const nestedTag = nestedStyle === "ordered" ? "ol" : "ul";
+          const nestedItems = this.renderListItems(item.items, nestedStyle, options);
+          // 为checklist的ul添加样式
+          const listStyle = nestedStyle === "checklist" ? ' style="list-style: none; padding-left: 1em;"' : '';
+          nestedList = `<${nestedTag}${listStyle}>${nestedItems}</${nestedTag}>`;
+        }
+        
         if (style === "checklist") {
-          const checked = item.checked ? "☑" : "☐";
-          const content = `${checked} ${this.processContent(
-            item.text || "",
+          // 确保item是对象格式，如果是字符串则转换
+          const checklistItem = typeof item === "string" ? { text: item, checked: false } : item;
+          const checked = checklistItem.checked ? "☑" : "☐";
+          const textContent = this.processContent(
+            checklistItem.text || checklistItem.content || "",
             options
-          )}`;
+          );
 
           if (itemTemplate) {
-            return this.renderChildren(itemTemplate, content, options);
+            // 对于checklist模板，需要特殊处理：第一个span放复选框，第二个span放文本内容
+            const modifiedTemplate = this.modifyChecklistTemplate(itemTemplate, checked, textContent, nestedList);
+            return modifiedTemplate;
           }
-          return `<li>${content}</li>`;
+          
+          content = `${checked} ${textContent}`;
+          return `<li>${content}${nestedList}</li>`;
         } else {
-          const content = this.processContent(item, options);
+          // 对于普通列表项，如果item是字符串，直接处理；如果是对象，处理其text属性
+          const itemText = typeof item === "string" ? item : (item.text || item.content || "");
+          content = `${this.processContent(itemText, options)}${nestedList}`;
 
           if (itemTemplate) {
             return this.renderChildren(itemTemplate, content, options);
@@ -350,7 +444,7 @@ export class TemplateEngine {
    * @returns {string} HTML
    */
   renderChildren(node, content, options = {}) {
-    const { tag, style = {}, content: isContentLayer, children } = node;
+    const { tag, style = {}, attrs = {}, content: isContentLayer, children } = node;
 
     if (!tag) {
       return this.processContent(content, options);
@@ -359,10 +453,15 @@ export class TemplateEngine {
     // 编译样式
     const styleString = this.styleCompiler.compileStyles(style);
     const styleAttr = styleString ? ` style="${styleString}"` : "";
+    
+    // 编译其他属性
+    const attrsString = Object.entries(attrs)
+      .map(([key, value]) => ` ${key}="${value}"`)
+      .join("");
 
     // 自闭合标签
     if (["hr", "br", "input"].includes(tag)) {
-      return `<${tag}${styleAttr}>`;
+      return `<${tag}${styleAttr}${attrsString}>`;
     }
 
     let innerContent = "";
@@ -371,9 +470,10 @@ export class TemplateEngine {
     if (isContentLayer) {
       innerContent = this.processContent(content, options);
     }
-    // 如果有children，递归渲染子节点
-    else if (children && Array.isArray(children)) {
-      innerContent = children
+
+    // 如果有children，递归渲染子节点（无论是否为内容层）
+    if (children && Array.isArray(children)) {
+      const childrenContent = children
         .map((child) => {
           // 只有当子节点或其子树中包含content: true时才传递内容
           const shouldPassContent =
@@ -385,13 +485,20 @@ export class TemplateEngine {
           );
         })
         .join("");
+      
+      // 如果是内容层，将children内容追加到现有内容后
+      if (isContentLayer) {
+        innerContent += childrenContent;
+      } else {
+        innerContent = childrenContent;
+      }
     }
     // 如果既不是内容层也没有children，但有内容传入，使用传入的内容
     else if (content) {
       innerContent = this.processContent(content, options);
     }
 
-    return `<${tag}${styleAttr}>${innerContent}</${tag}>`;
+    return `<${tag}${styleAttr}${attrsString}>${innerContent}</${tag}>`;
   }
 
   /**

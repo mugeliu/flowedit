@@ -295,45 +295,95 @@ export const blockTemplates = {
   code: {
     default: {
       tag: "section",
-      style: {},
+      style: {
+      "fontFamily": "Optima, PingFang SC, serif",
+      "fontSize": "16px",
+      "lineHeight": "1.75"
+      },
       children: [
         {
           tag: "pre",
           style: {
-            "--md-primary-color": "rgba(26,104,64,1)",
-            textAlign: "left",
-            lineHeight: 1.5,
-            fontFamily: "Menlo, Monaco, 'Courier New', monospace",
-            fontSize: "90%",
-            overflowX: "auto",
-            borderRadius: "8px",
-            padding: "1em",
-            margin: "10px 8px",
-            backgroundColor: "#2d2d2d",
-            border: "1px solid #1a6840",
+            "background": "#1e1e1e",
+            "border": "1px solid rgba(255, 255, 255, 0.1)",
+            "borderRadius": "8px",
+            "fontFamily": "'Fira Code', monospace",
+            "fontSize": "90%",
+            "lineHeight": "1.5",
+            "margin": "10px 8px 0",
+            "overflowX": "auto",
+            "padding": "1em",
+            "whiteSpace": "pre-wrap",
+            "color": "#eee"
           },
           children: [
             {
+              tag: "section",
+              style: {
+                "marginBottom": "4px"
+              },
+              children: [
+                {
+                  tag: "svg",
+                  attrs: {
+                    "viewBox": "0 0 450 130",
+                    "height": "13",
+                    "width": "45"
+                  },
+                  children: [
+                    {
+                      tag: "ellipse",
+                      attrs: {
+                        "fill": "#ED6C60",
+                        "stroke": "#DC3C36",
+                        "strokeWidth": "2",
+                        "cx": "50",
+                        "cy": "65",
+                        "rx": "50",
+                        "ry": "52"
+                      }
+                    },
+                    {
+                      tag: "ellipse",
+                      attrs: {
+                        "fill": "#F7C151",
+                        "stroke": "#DA9721",
+                        "strokeWidth": "2",
+                        "cx": "225",
+                        "cy": "65",
+                        "rx": "50",
+                        "ry": "52"
+                      }
+                    },
+                    {
+                  tag: "ellipse",
+                  attrs: {
+                    "fill": "#64C856",
+                    "stroke": "#1BA125",
+                    "strokeWidth": "2",
+                    "cx": "400",
+                    "cy": "65",
+                    "rx": "50",
+                    "ry": "52"
+                  }
+                }
+                ]
+                },
+              ]
+            },
+            {
               tag: "code",
               style: {
-                "--md-primary-color": "rgba(26,104,64,1)",
-                textAlign: "left",
-                lineHeight: 1.75,
-                fontFamily:
-                  "'Fira Code', Menlo, 'Operator Mono', Consolas, Monaco, monospace",
-                fontSize: "90%",
-                margin: 0,
-                whiteSpace: "pre",
-                wordWrap: "break-word",
-                overflowWrap: "break-word",
-                color: "#e0e0e0",
+                "display": "block",
+                "margin": "0",
+                "padding": "0.5em 1em 1em",
+                "whiteSpace": "pre",           // 👈 强制保持换行和缩进
+                "overflowX": "auto"            // 👈 添加横向滚动支持
               },
               content: true,
-              inlineStyleHandling: {
-                needWrapper: false,
-              },
-            },
-          ],
+            }
+          ]
+          
         },
       ],
     },
@@ -413,21 +463,27 @@ export const blockTemplates = {
       },
       children: [
         {
-          tag: "span",
-          style: {
-            marginRight: "0.5em",
-            fontFamily: "monospace",
-            fontSize: "1.1em",
-            color: "rgb(16, 185, 129)",
-          },
-        },
-        {
-          tag: "span",
+          tag: "section",
           style: {},
-          content: true,
-          inlineStyleHandling: {
-            needWrapper: false,
-          },
+          children: [
+            {
+              tag: "span",
+              style: {
+                marginRight: "0.5em",
+                fontFamily: "monospace",
+                fontSize: "1.1em",
+                color: "rgb(16, 185, 129)",
+              },
+            },
+            {
+              tag: "span",
+              style: {},
+              content: true,
+              inlineStyleHandling: {
+                needWrapper: false,
+              },
+            },
+          ],
         },
       ],
     },

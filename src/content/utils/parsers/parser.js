@@ -113,7 +113,7 @@ export class EditorJSParser {
 
     const content = htmlBlocks.filter(html => html && html.trim()).join('\n');
 
-    return `<section style="margin-left: auto; margin-right: auto; width: 92%; flex: 0 0 92%; box-sizing: border-box; visibility: visible; margin-bottom: 0px;">${content}</section>`;
+    return `<section style="margin-left: auto; margin-right: auto; width: 95%; flex: auto; box-sizing: border-box; visibility: visible; margin-bottom: 0px;">${content}</section>`;
   }
 
   /**
