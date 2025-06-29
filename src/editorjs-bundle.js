@@ -1,32 +1,57 @@
+/**
+ * EditorJS Bundle - 所有EditorJS模块的统一入口文件
+ * 用于Vite打包成单个文件，减少加载时间
+ */
+
+// 导入EditorJS核心
 import EditorJS from "@editorjs/editorjs";
+
+// 导入所有插件
 import Header from "@editorjs/header";
 import Paragraph from "@editorjs/paragraph";
-import Quote from "@editorjs/quote";
-import ImageTool from "@editorjs/image";
-import RawTool from "@editorjs/raw";
-import DragDrop from "editorjs-drag-drop";
-import Delimiter from "@editorjs/delimiter";
-import EditorjsList from "@editorjs/list";
+import List from "@editorjs/list";
 import Code from "@editorjs/code";
-import Marker from "@editorjs/marker";
+import Delimiter from "@editorjs/delimiter";
+import Image from "@editorjs/image";
 import InlineCode from "@editorjs/inline-code";
+import Marker from "@editorjs/marker";
+import Quote from "@editorjs/quote";
+import Raw from "@editorjs/raw";
 import Underline from "@editorjs/underline";
+import DragDrop from "editorjs-drag-drop";
 
+// 将所有插件挂载到EditorJS上，方便使用
+EditorJS.Header = Header;
+EditorJS.Paragraph = Paragraph;
+EditorJS.List = List;
+EditorJS.Code = Code;
+EditorJS.Delimiter = Delimiter;
+EditorJS.Image = Image;
+EditorJS.InlineCode = InlineCode;
+EditorJS.Marker = Marker;
+EditorJS.Quote = Quote;
+EditorJS.Raw = Raw;
+EditorJS.Underline = Underline;
+EditorJS.DragDrop = DragDrop;
+
+// 导出到全局变量
 if (typeof window !== "undefined") {
-  // 统一使用 EditorJSBundle 命名空间
-  window.EditorJSBundle = {
-    EditorJS,
-    Header,
-    Paragraph,
-    Quote,
-    ImageTool,
-    RawTool,
-    Delimiter,
-    Marker,
-    InlineCode,
-    Underline,
-    EditorjsList,
-    Code,
-    DragDrop,
-  };
+  window.EditorJS = EditorJS;
 }
+
+export default EditorJS;
+export {
+  EditorJS,
+  Header,
+  Paragraph,
+  List,
+  Code,
+  Delimiter,
+  Image,
+  InlineCode,
+  Marker,
+  Quote,
+  Raw,
+  Underline,
+  DragDrop,
+};

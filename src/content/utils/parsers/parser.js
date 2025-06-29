@@ -3,10 +3,10 @@
  * 负责将EditorJS数据转换为HTML
  */
 
-import { TemplateEngine } from './template-engine.js';
-import { StyleCompiler } from './style-compiler.js';
-import { validateBlock, deepMerge, isEmpty } from './utils.js';
-import { blockTemplates, inlineStyles } from './config.js';
+import { TemplateEngine } from "./template-engine.js";
+import { StyleCompiler } from "./style-compiler.js";
+import { validateBlock, deepMerge, isEmpty } from "./utils.js";
+import { blockTemplates, inlineStyles } from "./config.js";
 
 /**
  * EditorJS解析器类
@@ -15,27 +15,30 @@ import { blockTemplates, inlineStyles } from './config.js';
 export class EditorJSParser {
   constructor(options = {}) {
     // 合并默认配置
-    this.config = deepMerge({
-      blockTemplates,
-      inlineStyles,
-      enableCache: true,
-      escapeContent: true,
-      errorHandling: 'warn', // 'warn', 'throw', 'ignore'
-      customBlocks: {},
-      customInlineStyles: {}
-    }, options);
+    this.config = deepMerge(
+      {
+        blockTemplates,
+        inlineStyles,
+        enableCache: true,
+        escapeContent: true,
+        errorHandling: "warn", // 'warn', 'throw', 'ignore'
+        customBlocks: {},
+        customInlineStyles: {},
+      },
+      options
+    );
 
     // 初始化子组件
     this.templateEngine = new TemplateEngine({
       blockTemplates: this.config.blockTemplates,
       inlineStyles: this.config.inlineStyles,
       enableCache: this.config.enableCache,
-      escapeContent: this.config.escapeContent
+      escapeContent: this.config.escapeContent,
     });
 
     this.styleCompiler = new StyleCompiler({
       inlineStyles: this.config.inlineStyles,
-      enableCache: this.config.enableCache
+      enableCache: this.config.enableCache,
     });
 
     // 解析统计
@@ -43,7 +46,7 @@ export class EditorJSParser {
       totalBlocks: 0,
       successfulBlocks: 0,
       failedBlocks: 0,
-      parseTime: 0
+      parseTime: 0,
     };
   }
 
@@ -64,11 +67,11 @@ export class EditorJSParser {
    */
   parse(editorData, options = {}) {
     const startTime = Date.now();
-    
+
     try {
       // 验证输入数据
       if (!this.validateInput(editorData)) {
-        return this.handleError('Invalid EditorJS data format', editorData);
+        return this.handleError("Invalid EditorJS data format", editorData);
       }
 
       // 重置统计
@@ -76,14 +79,14 @@ export class EditorJSParser {
 
       // 解析blocks
       const html = this.parseBlocks(editorData.blocks || [], options);
-      
+
       // 更新统计
       this.stats.parseTime = Date.now() - startTime;
-      
+
       return html;
     } catch (error) {
       this.stats.parseTime = Date.now() - startTime;
-      return this.handleError('Parse failed', editorData, error);
+      return this.handleError("Parse failed", editorData, error);
     }
   }
 
@@ -95,11 +98,11 @@ export class EditorJSParser {
    */
   parseBlocks(blocks, options = {}) {
     if (!Array.isArray(blocks)) {
-      return this.handleError('Blocks must be an array', blocks);
+      return this.handleError("Blocks must be an array", blocks);
     }
 
     this.stats.totalBlocks = blocks.length;
-    
+
     const htmlBlocks = blocks.map((block, index) => {
       try {
         const html = this.parseBlock(block, { ...options, blockIndex: index });
@@ -111,9 +114,9 @@ export class EditorJSParser {
       }
     });
 
-    const content = htmlBlocks.filter(html => html && html.trim()).join('\n');
+    const content = htmlBlocks.filter((html) => html && html.trim()).join("\n");
 
-    return `<section style="margin-left: auto; margin-right: auto; width: 95%; flex: auto; box-sizing: border-box; visibility: visible; margin-bottom: 0px;">${content}</section>`;
+    return `<section id="flowedit" style="margin-left: auto; margin-right: auto; width: 98%; flex: auto; box-sizing: border-box; visibility: visible; margin-bottom: 0px;">${content}</section>`;
   }
 
   /**
@@ -125,11 +128,11 @@ export class EditorJSParser {
   parseBlock(block, options = {}) {
     // 验证block
     if (!validateBlock(block)) {
-      return this.handleError('Invalid block structure', block);
+      return this.handleError("Invalid block structure", block);
     }
 
     const { type, data, id } = block;
-    
+
     // 检查是否有自定义block处理器
     if (this.config.customBlocks[type]) {
       return this.parseCustomBlock(block, options);
@@ -138,11 +141,11 @@ export class EditorJSParser {
     // 使用模板引擎渲染
     const html = this.templateEngine.buildHTML(block, {
       ...options,
-      customInlineStyles: this.config.customInlineStyles
+      customInlineStyles: this.config.customInlineStyles,
     });
 
     // 添加block ID（如果存在）
-    if (id && html && !html.startsWith('<!--')) {
+    if (id && html && !html.startsWith("<!--")) {
       return this.addBlockId(html, id);
     }
 
@@ -158,16 +161,19 @@ export class EditorJSParser {
   parseCustomBlock(block, options = {}) {
     const { type } = block;
     const customHandler = this.config.customBlocks[type];
-    
-    if (typeof customHandler === 'function') {
+
+    if (typeof customHandler === "function") {
       return customHandler(block, options, this);
     }
-    
-    if (typeof customHandler === 'object' && customHandler.render) {
+
+    if (typeof customHandler === "object" && customHandler.render) {
       return customHandler.render(block, options, this);
     }
-    
-    return this.handleError(`Invalid custom block handler for type: ${type}`, block);
+
+    return this.handleError(
+      `Invalid custom block handler for type: ${type}`,
+      block
+    );
   }
 
   /**
@@ -181,9 +187,12 @@ export class EditorJSParser {
     const tagMatch = html.match(/^(<[^>\s]+)([^>]*>)/);
     if (tagMatch) {
       const [, openTag, rest] = tagMatch;
-      return html.replace(tagMatch[0], `${openTag} data-block-id="${id}"${rest}`);
+      return html.replace(
+        tagMatch[0],
+        `${openTag} data-block-id="${id}"${rest}`
+      );
     }
-    
+
     // 如果没有找到标签，包装在div中
     return `<div data-block-id="${id}">${html}</div>`;
   }
@@ -194,15 +203,15 @@ export class EditorJSParser {
    * @returns {boolean} 是否有效
    */
   validateInput(data) {
-    if (!data || typeof data !== 'object') {
+    if (!data || typeof data !== "object") {
       return false;
     }
-    
+
     // EditorJS数据必须有blocks数组
     if (!Array.isArray(data.blocks)) {
       return false;
     }
-    
+
     return true;
   }
 
@@ -218,22 +227,22 @@ export class EditorJSParser {
       message,
       data,
       error: error?.message || error,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
 
     switch (this.config.errorHandling) {
-      case 'throw':
+      case "throw":
         throw new Error(`EditorJSParser: ${message}`);
-      
-      case 'warn':
-        console.warn('EditorJSParser Error:', errorInfo);
+
+      case "warn":
+        console.warn("EditorJSParser Error:", errorInfo);
         return `<!-- Error: ${message} -->`;
-      
-      case 'ignore':
-        return '';
-      
+
+      case "ignore":
+        return "";
+
       default:
-        console.warn('EditorJSParser Error:', errorInfo);
+        console.warn("EditorJSParser Error:", errorInfo);
         return `<!-- Error: ${message} -->`;
     }
   }
@@ -246,7 +255,7 @@ export class EditorJSParser {
       totalBlocks: 0,
       successfulBlocks: 0,
       failedBlocks: 0,
-      parseTime: 0
+      parseTime: 0,
     };
   }
 
@@ -257,9 +266,14 @@ export class EditorJSParser {
   getStats() {
     return {
       ...this.stats,
-      successRate: this.stats.totalBlocks > 0 ? 
-        (this.stats.successfulBlocks / this.stats.totalBlocks * 100).toFixed(2) + '%' : '0%',
-      cacheStats: this.templateEngine.getCacheStats()
+      successRate:
+        this.stats.totalBlocks > 0
+          ? (
+              (this.stats.successfulBlocks / this.stats.totalBlocks) *
+              100
+            ).toFixed(2) + "%"
+          : "0%",
+      cacheStats: this.templateEngine.getCacheStats(),
     };
   }
 
@@ -269,18 +283,18 @@ export class EditorJSParser {
    */
   updateConfig(newConfig) {
     this.config = deepMerge(this.config, newConfig);
-    
+
     // 更新子组件配置
     this.templateEngine = new TemplateEngine({
       blockTemplates: this.config.blockTemplates,
       inlineStyles: this.config.inlineStyles,
       enableCache: this.config.enableCache,
-      escapeContent: this.config.escapeContent
+      escapeContent: this.config.escapeContent,
     });
 
     this.styleCompiler = new StyleCompiler({
       inlineStyles: this.config.inlineStyles,
-      enableCache: this.config.enableCache
+      enableCache: this.config.enableCache,
     });
   }
 
@@ -305,7 +319,7 @@ export class EditorJSParser {
    */
   addInlineStyle(tag, styles) {
     this.config.inlineStyles[tag] = deepMerge(
-      this.config.inlineStyles[tag] || {}, 
+      this.config.inlineStyles[tag] || {},
       styles
     );
     this.styleCompiler.addInlineStyle(tag, styles);
@@ -344,7 +358,9 @@ export class EditorJSParser {
    * @returns {boolean} 是否支持
    */
   supportsBlockType(type) {
-    return type in this.config.blockTemplates || type in this.config.customBlocks;
+    return (
+      type in this.config.blockTemplates || type in this.config.customBlocks
+    );
   }
 
   /**
@@ -371,12 +387,12 @@ export class EditorJSParser {
    */
   previewBlock(block, options = {}) {
     const originalCacheConfig = this.config.enableCache;
-    
+
     // 临时禁用缓存
     this.config.enableCache = false;
     this.templateEngine.options.enableCache = false;
     this.styleCompiler.options.enableCache = false;
-    
+
     try {
       const html = this.parseBlock(block, options);
       return html;

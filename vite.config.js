@@ -34,6 +34,7 @@ const mainConfig = defineConfig({
       input: {
         content: resolve(__dirname, "src/content/main.js"),
         popup: resolve(__dirname, "src/popup/popup.js"),
+        'editorjs-bundle': resolve(__dirname, "src/editorjs-bundle.js"),
       },
       output: {
         entryFileNames: (chunkInfo) => {
@@ -42,6 +43,8 @@ const mainConfig = defineConfig({
             return 'popup/popup.js';
           } else if (chunkInfo.name === 'content') {
             return 'content/content.js';
+          } else if (chunkInfo.name === 'editorjs-bundle') {
+            return 'assets/editorjs-bundle.js';
           }
           return '[name].js';
         },
@@ -68,13 +71,7 @@ const mainConfig = defineConfig({
         sourcemap: false,
       },
     },
-    minify: "terser",
-    terserOptions: {
-      compress: {
-        drop_console: false,
-        drop_debugger: true,
-      },
-    },
+    minify: false,
   },
   plugins: [
     {
@@ -86,29 +83,4 @@ const mainConfig = defineConfig({
   ],
 });
 
-// Editor.js bundle 独立 build 配置
-const editorjsBundleConfig = defineConfig({
-  build: {
-    lib: {
-      entry: resolve(__dirname, "src/editorjs-bundle.js"),
-      name: "EditorJSBundle",
-      formats: ["iife"],
-      fileName: () => "editorjs-bundle.js",
-    },
-    outDir: "assets/editorjs",
-    emptyOutDir: false, // 不要清空 assets/editorjs 目录
-    rollupOptions: {
-      output: {
-        name: "EditorJSBundle",
-        extend: true,
-      },
-    },
-    minify: "terser",
-  },
-});
-
-
-
-export default defineConfig(({ mode }) => {
-  return mode === 'editorjs' ? editorjsBundleConfig : mainConfig;
-});
+export default mainConfig;

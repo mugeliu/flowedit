@@ -24,14 +24,16 @@
     {
       "matches": ["https://mp.weixin.qq.com/cgi-bin/appmsg?*"],
       "js": ["content.js"],
-      "run_at": "document_end"
+      "run_at": "document_idle"
     }
   ],
   "permissions": ["scripting", "storage"],
   "host_permissions": ["https://mp.weixin.qq.com/cgi-bin/appmsg?*"],
   "web_accessible_resources": [
     {
-      "resources": ["assets/editorjs/editorjs-bundle.js"],
+      "resources": [
+        "assets/editorjs-bundle.js"
+      ],
       "matches": ["<all_urls>"]
     }
   ],

@@ -5,8 +5,6 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
-    "build:editor": "vite build --mode editorjs",
-    "build:all": "npm run build:editor && npm run build",
     "test": "node",
     "test:unit": "node test/unit/",
     "test:all": "node test/run-all-tests.js"
