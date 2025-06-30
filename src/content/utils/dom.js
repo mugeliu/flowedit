@@ -1,8 +1,3 @@
-// DOM操作工具函数
-// 移除对 selectorConfig 的依赖
-
-
-
 /**
  * 创建带样式的DOM元素
  * @param {string} tag 标签名
@@ -34,20 +29,20 @@ export function createElement(tag, options = {}) {
  */
 export function setElementDisplay(elementOrId, display) {
   let element;
-  
-  if (typeof elementOrId === 'string') {
+
+  if (typeof elementOrId === "string") {
     // 如果是字符串，尝试通过ID获取元素
     element = document.getElementById(elementOrId);
   } else if (elementOrId && elementOrId.nodeType === Node.ELEMENT_NODE) {
     // 如果是元素对象
     element = elementOrId;
   }
-  
+
   if (element) {
     element.style.display = display;
     return true;
   }
-  
+
   return false;
 }
 
@@ -57,7 +52,7 @@ export function setElementDisplay(elementOrId, display) {
  * @returns {boolean} 操作是否成功
  */
 export function hideElement(elementOrId) {
-  return setElementDisplay(elementOrId, 'none');
+  return setElementDisplay(elementOrId, "none");
 }
 
 /**
@@ -66,7 +61,7 @@ export function hideElement(elementOrId) {
  * @returns {boolean} 操作是否成功
  */
 export function showElement(elementOrId) {
-  return setElementDisplay(elementOrId, '');
+  return setElementDisplay(elementOrId, "");
 }
 
 /**

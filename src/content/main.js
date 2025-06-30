@@ -1,9 +1,5 @@
 // 内容脚本入口文件 - 专注于插件UI初始化
-import {
-  buttonStyles,
-  switchStyles,
-  editorStyles,
-} from "./styles/components.js";
+// 样式已迁移到 /assets/css/flowedit.css，通过 manifest.json 自动加载
 import { pluginRegistry } from "./services/plugin-registry.js";
 import smartEditorPlugin from "./features/smart-editor/index.js";
 import sidebarPlugin from "./features/sidebar/index.js";
@@ -17,7 +13,6 @@ import {
 pluginRegistry.register("smart-editor", smartEditorPlugin);
 pluginRegistry.register("sidebar", sidebarPlugin);
 
-
 /**
  * 注入插件UI样式（仅限插件界面相关样式，不包含内容样式）
  * 插件UI样式包括：按钮、开关、工具栏等插件界面元素
@@ -28,48 +23,51 @@ function injectPluginUIStyles() {
     const link = document.createElement("link");
     link.id = linkId;
     link.rel = "stylesheet";
-    link.href = "https://res.wx.qq.com/t/wx_fed/weui-source/res/2.6.22/weui.css";
+    link.href =
+      "https://res.wx.qq.com/t/wx_fed/weui-source/res/2.6.22/weui.css";
     link.setAttribute("data-flowedit-external", "true");
     document.head.appendChild(link);
+    console.log("WeUI stylesheet injected:", link);
   }
 
-  const styleId = "flow-editor-plugin-styles";
-  if (!document.getElementById(styleId)) {
-    const style = document.createElement("style");
-    style.id = styleId;
-    style.setAttribute("data-flowedit-plugin-ui", "true");
-    style.textContent = `
-      /* FlowEdit 插件UI样式 */
-      ${buttonStyles}
-      ${switchStyles}
-      ${editorStyles}
-    `;
-    document.head.appendChild(style);
-  }
+  // 由于样式已迁移到 flowedit.css，这里不再注入空的插件样式
+  // flowedit.css 通过 manifest.json 自动加载
+  console.log("Plugin UI styles injection completed");
 }
 
 /**
  * 初始化插件功能模块
  */
 async function initializePluginFeatures() {
-  // 1. 检查工具栏是否存在（用于判断页面是否已登录）
-  if (!document.querySelector("#js_toolbar_0")) {
-    return;
-  }
+  // 检查微信编辑器是否就绪
+  chrome.runtime.sendMessage(
+    {
+      action: "invokeMPEditorAPI",
+      apiName: "mp_editor_get_isready",
+    },
+    async (response) => {
+      if (response.success && response.data && response.data.isReady === true) {
+        console.log("编辑器已就绪，开始初始化插件:", response.data);
 
-  // 2. 注入插件UI样式（与内容样式完全分离）
-  injectPluginUIStyles();
+        // 2. 注入插件UI样式（与内容样式完全分离）
+        injectPluginUIStyles();
 
+        // 3. 初始化所有功能模块
+        const initResults = await pluginRegistry.initializeAll();
 
-  // 3. 初始化所有功能模块
-  const initResults = await pluginRegistry.initializeAll();
+        if (initResults.failed.length > 0) {
+          console.warn(
+            `初始化失败的功能模块: ${initResults.failed.join(", ")}`
+          );
+        }
 
-  if (initResults.failed.length > 0) {
-    console.warn(`初始化失败的功能模块: ${initResults.failed.join(", ")}`);
-  }
-
-  // 4. 启动DOM监听服务（监听插件组件是否被页面更新移除）
-  initializeDOMWatcher();
+        // 4. 启动DOM监听服务（监听插件组件是否被页面更新移除）
+        initializeDOMWatcher();
+      } else {
+        console.log("编辑器未就绪，跳过插件初始化:", response);
+      }
+    }
+  );
 }
 
 /**

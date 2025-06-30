@@ -58,18 +58,24 @@ function validateImageFile(file) {
 }
 
 /**
- * 从 background script 获取微信数据
- * @returns {Promise} Promise对象，成功时resolve微信数据，失败时reject错误信息
+ * 获取微信数据
  */
-async function getWeChatDataFromBackground() {
-  return new Promise((resolve, reject) => {
-    chrome.runtime.sendMessage({ type: "get_wechat_data" }, (response) => {
-      if (response && response.success) {
-        resolve(response.data);
-      } else {
-        reject(new Error(response?.error || "background script 加载失败"));
+function getWxData() {
+  return new Promise((resolve) => {
+    // 创建外部脚本文件来避免CSP限制
+    const script = document.createElement("script");
+    script.src = chrome.runtime.getURL("scripts/page-injector.js");
+
+    const listener = (event) => {
+      if (event.type === "pageDataReady") {
+        window.removeEventListener("pageDataReady", listener);
+        document.head.removeChild(script);
+        resolve(event.detail.wxData);
       }
-    });
+    };
+
+    window.addEventListener("pageDataReady", listener);
+    document.head.appendChild(script);
   });
 }
 
@@ -84,7 +90,7 @@ export async function performWeChatUpload(file) {
   console.log("开始执行微信图片上传");
 
   try {
-    wechatData = await getWeChatDataFromBackground();
+    wechatData = await getWxData();
   } catch (error) {
     throw new Error("无法获取wx数据，请确保在微信公众号后台中使用");
   }
@@ -112,7 +118,6 @@ export async function performWeChatUpload(file) {
     scene: "8",
     writetype: "doublewrite",
     groupid: "1",
-    // 使用从 background script 获取的动态参数
     ticket_id: wechatData.userName,
     ticket: wechatData.ticket,
     svr_time: wechatData.time,

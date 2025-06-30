@@ -11,7 +11,7 @@
     "128": "assets/icons/icon128.png"
   },
   "action": {
-    "default_popup": "popup.html",
+    "default_popup": "popup/popup.html",
     "default_title": "FlowEdit",
     "default_icon": {
       "16": "assets/icons/icon16.png",
@@ -23,7 +23,8 @@
   "content_scripts": [
     {
       "matches": ["https://mp.weixin.qq.com/cgi-bin/appmsg?*"],
-      "js": ["assets/editorjs-bundle.js","content.js"],
+      "js": ["scripts/editorjs-bundle.js", "content/content.js"],
+      "css": ["assets/css/weui.css", "assets/css/flowedit.css"],
       "run_at": "document_end"
     }
   ],
@@ -31,9 +32,7 @@
   "host_permissions": ["https://mp.weixin.qq.com/cgi-bin/appmsg?*"],
   "web_accessible_resources": [
     {
-      "resources": [
-        "assets/editorjs-bundle.js"
-      ],
+      "resources": ["scripts/*.js", "assets/css/*.css"],
       "matches": ["<all_urls>"]
     }
   ],
