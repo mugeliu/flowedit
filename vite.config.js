@@ -11,7 +11,7 @@ async function copyManifestAndAssets() {
   const manifest = await fs.readJson("manifest.json");
   // 更新路径引用
   manifest.action.default_popup = "popup/popup.html";
-  manifest.content_scripts[0].js = ["content/content.js"];
+  manifest.content_scripts[0].js = ["content/content.js", "assets/editorjs-bundle.js"];
   await fs.writeJson("dist/manifest.json", manifest, { spaces: 2 });
   
   // 复制 background.js

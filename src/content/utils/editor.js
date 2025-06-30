@@ -114,35 +114,6 @@ function getInitialContent() {
   };
 }
 
-/**
- * 检查EditorJS是否已加载
- * @returns {boolean}
- */
-export function isEditorJSLoaded() {
-  console.log("[FlowEdit] 检查EditorJS是否已加载:", !!window.EditorJS);
-
-  // 详细调试信息
-  if (window.EditorJS) {
-    console.log("[FlowEdit] EditorJS核心已加载:", typeof window.EditorJS);
-    console.log("[FlowEdit] 可用插件:");
-    console.log("- Header:", typeof window.Header);
-    console.log("- Paragraph:", typeof window.Paragraph);
-    console.log("- Quote:", typeof window.Quote);
-    console.log("- ImageTool:", typeof window.ImageTool);
-    console.log("- RawTool:", typeof window.RawTool);
-    console.log("- Delimiter:", typeof window.Delimiter);
-    console.log("- Marker:", typeof window.Marker);
-    console.log("- InlineCode:", typeof window.InlineCode);
-    console.log("- Underline:", typeof window.Underline);
-    console.log("- EditorjsList:", typeof window.EditorjsList);
-    console.log("- Code:", typeof window.Code);
-    console.log("- DragDrop:", typeof window.DragDrop);
-  } else {
-    console.log("[FlowEdit] EditorJS未定义，检查脚本是否正确加载");
-  }
-
-  return !!window.EditorJS;
-}
 
 /**
  * 解析工具配置，将字符串类名转换为实际类引用
@@ -229,118 +200,29 @@ export function createEditorInstance(holderId) {
  * @returns {Promise<Object>} EditorJS实例
  */
 export async function loadAndInitializeEditor(container, config = {}) {
-  try {
-    // 发送消息给background script注入EditorJS Bundle
-    const response = await chrome.runtime.sendMessage("inject_editorjs_bundle");
-    console.log("[FlowEdit] EditorJS Bundle注入响应:", response);
 
-    if (!response.success) {
-      throw new Error(`EditorJS Bundle加载失败: ${response.error}`);
-    }
-
-    // 简单等待EditorJS加载
-    let attempts = 0;
-    const maxAttempts = 30; // 30次 * 100ms = 3秒
-
-    while (!window.EditorJS && attempts < maxAttempts) {
-      console.log(
-        `[FlowEdit] 等待EditorJS加载... (${attempts + 1}/${maxAttempts})`
-      );
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      attempts++;
-    }
-
-    if (!window.EditorJS) {
-      throw new Error("EditorJS Bundle加载超时");
-    }
-
-    console.log("[FlowEdit] EditorJS Bundle加载成功，开始初始化编辑器");
-
-    console.log("[FlowEdit] 检查EditorJS是否已加载:", isEditorJSLoaded());
-    // 解析工具配置
-    const tools = parseToolsConfig(config.tools || {});
-
-    // 创建编辑器配置
-    const editorConfig = {
-      holder: container,
-      tools: tools,
-      data: config.data || { blocks: [] },
-      placeholder: config.placeholder || "开始编写...",
-      ...config,
-    };
-
-    // 初始化编辑器
-    const editor = await initializeEditor(editorConfig);
-
-    return editor;
-  } catch (error) {
-    console.error("[FlowEdit] 编辑器初始化失败:", error);
-    throw error;
+  const holderElement = document.getElementById(holderId);
+  if (!holderElement) {
+    throw new Error(`${holderId}元素不存在，请检查DOM结构`);
   }
-}
 
-/**
- * 使用微信官方API设置全文内容
- * @param {string} content - 需要设置的富文本内容
- * @returns {Promise<boolean>} 设置是否成功
- */
-export async function setContentByWechatAPI(content) {
-  console.log("[FlowEdit] 开始调用微信官方API设置全文内容");
-  console.log("[FlowEdit] 设置的内容:", content);
-
-  try {
-    // 检查微信编辑器API是否可用
-    if (!window.__MP_Editor_JSAPI__) {
-      console.error(
-        "[FlowEdit] 微信编辑器API不可用: window.__MP_Editor_JSAPI__ 未定义"
-      );
-      return false;
+  const editorInstance = new EditorJS({
+    holder: holderElement,
+    placeholder: '开始编写内容...',
+    tools: {
+      // 这里可以添加EditorJS工具
+      // 例如：header: Header, list: List 等
+      // 目前使用基础功能，只支持段落编辑
+      header: EditorJS.Header,
+      list: EditorJS.List,
+      code: EditorJS.Code,
+    },
+    onChange: (api, event) => {
+      console.log('编辑器内容已更改', event);
     }
+  });
 
-    if (typeof window.__MP_Editor_JSAPI__.invoke !== "function") {
-      console.error("[FlowEdit] 微信编辑器API不可用: invoke方法不存在");
-      return false;
-    }
-
-    // 首先检查编辑器是否准备就绪
-    console.log("[FlowEdit] 检查编辑器状态...");
-    const readyResult = window.__MP_Editor_JSAPI__.invoke(
-      "mp_editor_get_isready"
-    );
-    console.log("[FlowEdit] 编辑器状态检查结果:", readyResult);
-
-    // 根据官方文档，只有当isNew=true时才可调用mp_editor_set_content
-    if (!readyResult || !readyResult.isNew) {
-      console.error("[FlowEdit] 编辑器未准备就绪或不支持设置内容操作", {
-        isReady: readyResult?.isReady,
-        isNew: readyResult?.isNew,
-      });
-      return false;
-    }
-
-    // 调用官方API设置全文内容
-    console.log("[FlowEdit] 调用mp_editor_set_content接口...");
-    const setResult = window.__MP_Editor_JSAPI__.invoke(
-      "mp_editor_set_content",
-      {
-        content: content,
-      }
-    );
-
-    console.log("[FlowEdit] mp_editor_set_content调用结果:", setResult);
-
-    // 检查设置结果
-    if (setResult && setResult.errCode === 0) {
-      console.log("[FlowEdit] 全文内容设置成功");
-      return true;
-    } else {
-      console.error("[FlowEdit] 全文内容设置失败:", setResult);
-      return false;
-    }
-  } catch (error) {
-    console.error("[FlowEdit] 调用微信官方API设置全文内容时发生错误:", error);
-    return false;
-  }
+  return editorInstance;
 }
 
 /**

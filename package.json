@@ -30,6 +30,7 @@
     "@editorjs/raw": "^2.5.1",
     "@editorjs/underline": "^1.2.1",
     "@floating-ui/dom": "^1.7.1",
-    "editorjs-drag-drop": "^1.1.16"
+    "editorjs-drag-drop": "^1.1.16",
+    "weui": "^2.6.22"
   }
 }

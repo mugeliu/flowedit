@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "EditorJS Test Extension",
+  "version": "1.0",
+  "description": "测试EditorJS和获取页面window对象",
+  
+  "content_scripts": [{
+    "matches": ["https://mp.weixin.qq.com/*"],
+    "js": ["libs/editorjs.umd.js", "content.js"],
+    "css": ["libs/weui.css"],
+    "run_at": "document_end"
+  }],
+  
+  "web_accessible_resources": [{
+    "resources": ["libs/editorjs.umd.js", "page-script.js"],
+    "matches": ["<all_urls>"]
+  }],
+  
+  "permissions": [
+    "activeTab"
+  ]
+}

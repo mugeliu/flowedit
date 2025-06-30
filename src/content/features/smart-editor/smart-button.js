@@ -1,6 +1,6 @@
 import { createElement, safeQuerySelector } from "../../utils/dom.js";
 import { selectorConfig } from "../../config/index.js";
-// import { activateSmartEditor } from "./manager.js"; // 注释掉原函数
+import { activateSmartEditor } from "./manager.js"; 
 
 /**
  * 创建智能插入按钮并定位到目标元素
@@ -43,126 +43,283 @@ export function createSmartButton() {
   };
 }
 
-/**
- * 测试函数：检查EditorJS模块和微信数据是否加载
- */
-async function testEditorJSAndWxData() {
-  console.log('[FlowEdit Test] 开始测试EditorJS和微信数据加载状态...');
+
+
+// 2. 获取页面window对象数据 (修复CSP问题)
+function getPageWindowData() {
+  return new Promise((resolve) => {
+    // 方法1: 直接从Content Script环境获取基本数据
+    const basicData = {
+      title: document.title,
+      url: window.location.href,
+      userAgent: navigator.userAgent,
+      timestamp: new Date().toISOString(),
+      domain: window.location.hostname,
+      protocol: window.location.protocol
+    };
+    
+    // 方法2: 如果需要页面特定的window对象，使用外部脚本文件
+    // 这里先返回基本数据作为演示
+    resolve(basicData);
+  });
+}
+
+
+
+// 6. 创建编辑器容器
+function createEditorContainer() {
+  // 移除已存在的编辑器
+  const existing = document.getElementById('editor-popup');
+  if (existing) {
+    existing.remove();
+  }
+  
+  const popup = document.createElement('div');
+  popup.id = 'editor-popup';
+  popup.style.cssText = `
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 900px;
+    height: 700px;
+    background: white;
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    z-index: 10001;
+    display: flex;
+    flex-direction: column;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  `;
+  
+  const header = document.createElement('div');
+  header.style.cssText = `
+    padding: 15px 20px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 6px 6px 0 0;
+  `;
+  
+  const title = document.createElement('h3');
+  title.textContent = '📝 EditorJS 测试编辑器';
+  title.style.cssText = 'margin: 0; font-size: 18px; font-weight: 600;';
+  
+  const closeBtn = document.createElement('button');
+  closeBtn.textContent = '×';
+  closeBtn.style.cssText = `
+    background: rgba(255,255,255,0.2);
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+  `;
+  closeBtn.onmouseover = () => closeBtn.style.background = 'rgba(255,255,255,0.3)';
+  closeBtn.onmouseout = () => closeBtn.style.background = 'rgba(255,255,255,0.2)';
+  closeBtn.onclick = () => popup.remove();
+  
+  const editorContainer = document.createElement('div');
+  editorContainer.id = 'editor-container';
+  editorContainer.style.cssText = `
+    flex: 1;
+    padding: 20px;
+    overflow: auto;
+    background: #fafafa;
+  `;
+  
+  header.appendChild(title);
+  header.appendChild(closeBtn);
+  popup.appendChild(header);
+  popup.appendChild(editorContainer);
+  document.body.appendChild(popup);
+  
+  return editorContainer;
+}
+
+// 7. 添加保存按钮
+function addSaveButton(popup) {
+  const saveBtn = document.createElement('button');
+  saveBtn.textContent = '💾 保存内容';
+  saveBtn.style.cssText = `
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    padding: 10px 20px;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    transition: background 0.2s;
+  `;
+  
+  saveBtn.onmouseover = () => saveBtn.style.background = '#45a049';
+  saveBtn.onmouseout = () => saveBtn.style.background = '#4CAF50';
+  
+  saveBtn.onclick = async () => {
+    if (editorInstance) {
+      try {
+        const outputData = await editorInstance.save();
+        console.log('编辑器内容:', outputData);
+        alert('内容已保存到控制台，请按F12查看Console');
+      } catch (error) {
+        console.error('保存失败:', error);
+        alert('保存失败: ' + error.message);
+      }
+    }
+  };
+  
+  popup.appendChild(saveBtn);
+}
+
+// 3. 检查EditorJS是否已加载
+function checkEditorJS() {
+  return typeof EditorJS !== 'undefined';
+}
+
+// 4. 如果需要额外的EditorJS工具，可以动态加载
+function loadAdditionalTools() {
+  return new Promise((resolve) => {
+    // 如果有其他EditorJS工具需要加载，在这里添加
+    // 例如：Header, List, Code 等工具
+    // 现在先直接resolve，使用基本功能
+    // 假设需要加载 Header 工具
+    resolve();
+  });
+}
+
+async function initEditor(pageData) {
+  const container = createEditorContainer();
   
   try {
-    // 1. 发送消息给background脚本加载EditorJS Bundle
-    console.log('[FlowEdit Test] 正在加载EditorJS Bundle...');
-    const response = await new Promise((resolve) => {
-      chrome.runtime.sendMessage({ action: 'inject_editorjs_bundle' }, resolve);
+    // 检查EditorJS是否已加载
+    if (!checkEditorJS()) {
+      throw new Error('EditorJS未正确加载，请检查libs/editor.min.js文件');
+    }
+    
+    // 加载额外工具（如果需要）
+    await loadAdditionalTools();
+    
+    editorInstance = new EditorJS({
+      holder: container.id,
+      placeholder: '开始编写内容...',
+      data: {
+        blocks: [
+          {
+            type: 'paragraph',
+            data: {
+              text: `🎉 EditorJS 测试成功！`
+            }
+          },
+          {
+            type: 'paragraph',
+            data: {
+              text: `📄 页面标题: ${pageData.title}`
+            }
+          },
+          {
+            type: 'paragraph', 
+            data: {
+              text: `🌐 页面URL: ${pageData.url}`
+            }
+          },
+          {
+            type: 'paragraph',
+            data: {
+              text: `🕒 获取时间: ${pageData.timestamp}`
+            }
+          },
+          {
+            type: 'paragraph',
+            data: {
+              text: `💻 用户代理: ${pageData.userAgent.substring(0, 50)}...`
+            }
+          }
+        ]
+      },
+      tools: {
+        // 这里可以添加EditorJS工具
+        // 例如：header: Header, list: List 等
+        // 目前使用基础功能，只支持段落编辑
+        header: EditorJS.Header,
+        list: EditorJS.List,
+        code: EditorJS.Code,
+      },
+      onChange: (api, event) => {
+        console.log('编辑器内容已更改', event);
+      }
     });
-    console.log('[FlowEdit Test] EditorJS Bundle加载响应:', response);
     
-    // 2. 检查background响应是否成功
-    if (!response || !response.success) {
-      throw new Error(`EditorJS Bundle加载失败: ${response?.error || '未知错误'}`);
-    }
+    console.log('EditorJS初始化成功');
     
-    // 3. 等待EditorJS加载到window对象
-    console.log('[FlowEdit Test] 等待EditorJS变量加载...');
-    await waitForVariable('EditorJS', 10000); // 增加超时时间到10秒
-    
-    // 4. 检查window.EditorJS是否存在
-    if (window.EditorJS) {
-      console.log('[FlowEdit Test] ✅ window.EditorJS 已成功加载');
-      console.log('[FlowEdit Test] EditorJS版本:', window.EditorJS.version || '未知');
-      
-      // 检查可用的插件
-      const availableTools = [];
-      if (window.EditorJS.Header) availableTools.push('Header');
-      if (window.EditorJS.Paragraph) availableTools.push('Paragraph');
-      if (window.EditorJS.List) availableTools.push('List');
-      if (window.EditorJS.Code) availableTools.push('Code');
-      if (window.EditorJS.Image) availableTools.push('Image');
-      
-      console.log('[FlowEdit Test] 可用插件:', availableTools.join(', '));
-    } else {
-      console.log('[FlowEdit Test] ❌ window.EditorJS 未加载');
-    }
-    
-    // 5. 检查window.wx.data是否存在
-    if (window.wx && window.wx.data) {
-      console.log('[FlowEdit Test] ✅ window.wx.data 已存在');
-      console.log('[FlowEdit Test] 微信数据类型:', typeof window.wx.data);
-      console.log('[FlowEdit Test] 微信数据内容预览:', JSON.stringify(window.wx.data).substring(0, 200) + '...');
-    } else {
-      console.log('[FlowEdit Test] ❌ window.wx.data 不存在');
-      
-      // 尝试获取微信数据
-      console.log('[FlowEdit Test] 尝试获取微信数据...');
-      chrome.runtime.sendMessage({ action: 'get_wechat_data' }, (response) => {
-        if (response && response.success) {
-          console.log('[FlowEdit Test] ✅ 微信数据获取成功');
-          console.log('[FlowEdit Test] 微信数据:', response.data);
-        } else {
-          console.log('[FlowEdit Test] ❌ 微信数据获取失败:', response?.error || '未知错误');
-        }
-      });
-    }
-    
-    // 6. 输出测试总结
-    console.log('[FlowEdit Test] 测试完成！');
-    console.log('[FlowEdit Test] EditorJS状态:', window.EditorJS ? '✅ 已加载' : '❌ 未加载');
-    console.log('[FlowEdit Test] 微信数据状态:', (window.wx && window.wx.data) ? '✅ 已存在' : '❌ 不存在');
+    // 添加保存按钮
+    addSaveButton(container.parentElement);
     
   } catch (error) {
-    console.error('[FlowEdit Test] 测试过程中发生错误:', error);
+    console.error('EditorJS初始化失败:', error);
+    container.innerHTML = `
+      <div style="padding: 20px; color: red; background: #ffeaea; border: 1px solid #ffcccc; border-radius: 4px;">
+        <h3>编辑器加载失败</h3>
+        <p><strong>错误信息:</strong> ${error.message}</p>
+        <p><strong>解决方案:</strong></p>
+        <ul>
+          <li>确保 <code>libs/editor.min.js</code> 文件存在</li>
+          <li>检查文件路径是否正确</li>
+          <li>查看浏览器控制台的详细错误信息</li>
+        </ul>
+      </div>
+    `;
   }
 }
 
-/**
- * 等待指定变量在window对象上可用
- * @param {string} variableName - 变量名
- * @param {number} timeout - 超时时间（毫秒）
- * @returns {Promise} 
- */
-function waitForVariable(variableName, timeout = 5000) {
-  return new Promise((resolve, reject) => {
-    const startTime = Date.now();
-    let checkCount = 0;
+
+
+
+async function handleButtonClick() {
+  try {
+    console.log('🚀 开始获取页面数据...');
     
-    const checkVariable = () => {
-      checkCount++;
-      const elapsed = Date.now() - startTime;
-      
-      console.log(`[FlowEdit Test] 检查 ${variableName} (第${checkCount}次, 已等待${elapsed}ms)`);
-      
-      if (window[variableName]) {
-        console.log(`[FlowEdit Test] ✅ ${variableName} 已加载，耗时: ${elapsed}ms`);
-        resolve(window[variableName]);
-        return;
-      }
-      
-      // 输出当前window对象上的相关属性用于调试
-      if (checkCount % 10 === 0) { // 每10次检查输出一次调试信息
-        const windowKeys = Object.keys(window).filter(key => key.toLowerCase().includes('editor'));
-        console.log(`[FlowEdit Test] 当前window上包含'editor'的属性:`, windowKeys);
-      }
-      
-      if (elapsed > timeout) {
-        console.error(`[FlowEdit Test] ❌ 等待 ${variableName} 超时 (${timeout}ms)，共检查${checkCount}次`);
-        reject(new Error(`等待 ${variableName} 超时 (${timeout}ms)`));
-        return;
-      }
-      
-      setTimeout(checkVariable, 100);
-    };
+    // 现在有两种方式获取数据：
+    // 方式1: 获取基本数据（不需要页面window对象）
+    const pageData = await getPageWindowData();
+    console.log('📊 基本页面数据:', pageData);
     
-    checkVariable();
-  });
+    // 方式2: 如果需要获取页面特定的window对象，使用这个
+    // const pageData = await getPageSpecificData();
+    // console.log('📊 详细页面数据:', pageData);
+    
+    console.log('⚙️ 初始化编辑器...');
+    await initEditor(pageData);
+  } catch (error) {
+    console.error('❌ 操作失败:', error);
+    alert('操作失败: ' + error.message);
+  }
 }
+
+
+
 
 /**
  * 处理智能插入按钮点击事件
  */
 async function handleSmartButtonClick() {
   try {
-    // await activateSmartEditor(); // 注释掉原函数调用
-    await testEditorJSAndWxData(); // 使用新的测试函数
+    await activateSmartEditor(); // 注释掉原函数调用
+    //await handleButtonClick(); // 使用新的测试函数
   } catch (error) {
     console.error("智能插入按钮点击处理失败:", error);
   }
