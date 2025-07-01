@@ -1,17 +1,36 @@
 // 配置管理
 
-import { IconH1, IconH2, IconH3 } from "@codexteam/icons";
 import { createWeChatImageUploader } from "../tools/custom-wechat-image-tool.js";
+
+/**
+ * 标题工具图标常量
+ */
+const IconH1 = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+  <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M6 7L6 12M6 17L6 12M6 12L12 12M12 7V12M12 17L12 12"/>
+  <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M19 17V10.2135C19 10.1287 18.9011 10.0824 18.836 10.1367L16 12.5"/>
+</svg>`;
+
+const IconH2 = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+  <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M6 7L6 12M6 17L6 12M6 12L12 12M12 7V12M12 17L12 12"/>
+  <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M16 11C16 10 19 9.5 19 12C19 13.9771 16.0684 13.9997 16.0012 16.8981C15.9999 16.9533 16.0448 17 16.1 17L19.3 17"/>
+</svg>`;
+
+const IconH3 = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+  <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M6 7L6 12M6 17L6 12M6 12L12 12M12 7V12M12 17L12 12"/>
+  <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M16 11C16 10.5 16.8323 10 17.6 10C18.3677 10 19.5 10.311 19.5 11.5C19.5 12.5315 18.7474 12.9022 18.548 12.9823C18.5378 12.9864 18.5395 13.0047 18.5503 13.0063C18.8115 13.0456 20 13.3065 20 14.8C20 16 19.5 17 17.8 17C17.8 17 16 17 16 16.3"/>
+</svg>`;
 
 /**
  * Editor.js 编辑器配置
  */
 export const editorConfig = {
   // Editor.js 基础配置
-  placeholder: "开始输入内容...",
+  placeholder: "开始编写内容...",
   autofocus: true,
+  minHeight: 500,
+  logLevel: "WARN", // 'VERBOSE', 'INFO', 'WARN', 'ERROR'
 
-  // 工具配置
+  // 工具配置 - 使用实际的类引用而非字符串
   tools: {
     paragraph: {
       class: "Paragraph", // 将在editor.js中解析为实际的类引用
@@ -51,7 +70,7 @@ export const editorConfig = {
       },
     },
     image: {
-      class: "ImageTool", // 将在editor.js中解析为实际的类引用
+      class: "Image", // 将在editor.js中解析为实际的类引用
       config: {
         types: "image/*",
         captionPlaceholder: "图片描述",
@@ -69,10 +88,10 @@ export const editorConfig = {
       class: "Delimiter", // 将在editor.js中解析为实际的类引用
     },
     raw: {
-      class: "RawTool", // 将在editor.js中解析为实际的类引用
+      class: "Raw", // 将在editor.js中解析为实际的类引用
     },
-    List: {
-      class: "EditorjsList", // 将在editor.js中解析为实际的类引用
+    list: {
+      class: "List", // 将在editor.js中解析为实际的类引用
       inlineToolbar: true,
       config: {
         defaultStyle: "unordered",
@@ -92,10 +111,6 @@ export const editorConfig = {
       class: "Underline", // 将在editor.js中解析为实际的类引用
     },
   },
-
-  // 其他 Editor.js 配置选项
-  minHeight: 400,
-  logLevel: "WARN", // 'VERBOSE', 'INFO', 'WARN', 'ERROR'
 
   // 初始内容配置
 };

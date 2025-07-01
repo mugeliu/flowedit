@@ -6,12 +6,11 @@ import {
   destroyEditor,
 } from "../../utils/editor.js";
 import { safeQuerySelector } from "../../utils/dom.js";
-import { createEditorInterface, removeEditorInterface } from "./interface.js";
-import { createEditorControls, removeEditorControls } from "./controls.js";
+import { initializeEditorUI, cleanupEditorUI } from "./editor-ui.js";
 import { createSmartButton } from "./smart-button.js";
 
 let editor = null;
-let controlBar = null;
+let uiElements = null;
 let smartButton = null;
 
 /**
@@ -48,33 +47,31 @@ export async function activateSmartEditor() {
   }
 
   try {
-    createEditorInterface();
-
-    // 创建控制栏
-    controlBar = createEditorControls({
-      onSave: saveContent,
-      onCancel: deactivateSmartEditor,
-      onPreview: deactivateSmartEditor
+    // 初始化编辑器UI（包括页面和工具栏）
+    uiElements = initializeEditorUI({
+      callbacks: {
+        onSave: saveContent,
+        onCancel: deactivateSmartEditor,
+        onPreview: deactivateSmartEditor,
+      },
     });
 
-    // 等待DOM元素渲染完成
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    if (!uiElements) {
+      throw new Error("编辑器UI初始化失败");
+    }
 
     // 加载并初始化编辑器
-    editor = await loadAndInitializeEditor("editor-holder");
+    editor = await loadAndInitializeEditor("flow-editorjs-container");
 
     // 滚动到编辑器容器位置
     const editorContainer = safeQuerySelector("#header");
     if (editorContainer) {
-      // 等待编辑器完全渲染
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      
       editorContainer.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-        inline: 'nearest'
+        behavior: "smooth",
+        block: "start",
+        inline: "nearest",
       });
-      console.log('已滚动到智能编辑器位置');
+      console.log("已滚动到智能编辑器位置");
     }
 
     console.log("智能编辑器激活成功");
@@ -90,13 +87,10 @@ export async function activateSmartEditor() {
  * 恢复到原始状态
  */
 export function deactivateSmartEditor() {
-  // 移除编辑器界面
-  removeEditorInterface();
-
-  // 移除控制栏
-  if (controlBar) {
-    removeEditorControls(controlBar);
-    controlBar = null;
+  // 清理编辑器UI
+  if (uiElements) {
+    cleanupEditorUI(uiElements);
+    uiElements = null;
   }
 
   // 销毁编辑器

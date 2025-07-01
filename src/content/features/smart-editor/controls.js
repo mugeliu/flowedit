@@ -17,46 +17,45 @@ import { selectorConfig } from "../../config/index.js";
 export function createEditorControls(callbacks = {}) {
   const { onSave, onCancel, onPreview } = callbacks;
 
-  const controlBar = createElement('div', {
-    id: 'control-panel',
-    className: 'tool_area weui-flex'
+  const controlBar = createElement("div", {
+    id: "control-panel",
+    className: "tool_area weui-flex",
   });
 
-  const toolbarContainer = createElement('div', {
-    id: 'control-panel-toolbar',
-    className: 'weui-bottom-fixed-opr weui-btn-area_inline tool_bar'
+  const toolbarContainer = createElement("div", {
+    id: "control-panel-toolbar",
+    className: "weui-bottom-fixed-opr weui-btn-area_inline tool_bar",
   });
 
   // 创建空div占位元素
-  const placeholderDiv = createElement('div', {
-    id: 'placeholder-div',
-    //cssText: 'width: 30%; margin: 0 auto; height: auto;',
-    className: 'weui-flex__item'
+  const placeholderDiv = createElement("div", {
+    id: "placeholder-div",
+    className: "weui-flex__item",
   });
 
   // 创建保存按钮，使用WeUI主要按钮样式
-  const saveButton = createElement('button', {
-    role: 'button',
-    className: 'weui-btn weui-btn_primary weui-btn_medium',
-    textContent: '保存'
+  const saveButton = createElement("button", {
+    role: "button",
+    className: "weui-btn weui-btn_primary weui-btn_medium",
+    textContent: "保存",
   });
-  saveButton.addEventListener('click', onSave);
+  saveButton.addEventListener("click", onSave);
 
   // 创建取消按钮，使用WeUI默认按钮样式
-  const cancelButton = createElement('button', {
-    role: 'button',
-    className: 'weui-btn weui-btn_default weui-btn_medium',
-    textContent: '取消'
+  const cancelButton = createElement("button", {
+    role: "button",
+    className: "weui-btn weui-btn_default weui-btn_medium",
+    textContent: "取消",
   });
-  cancelButton.addEventListener('click', onCancel);
+  cancelButton.addEventListener("click", onCancel);
 
   // 创建预览按钮，使用WeUI默认按钮样式
-  const previewButton = createElement('button', {
-    role: 'button',
-    className: 'weui-btn weui-btn_default weui-btn_medium',
-    textContent: '预览'
+  const previewButton = createElement("button", {
+    role: "button",
+    className: "weui-btn weui-btn_default weui-btn_medium",
+    textContent: "预览",
   });
-  previewButton.addEventListener('click', onPreview);
+  previewButton.addEventListener("click", onPreview);
 
   // 将按钮添加到面板
   controlBar.appendChild(placeholderDiv);

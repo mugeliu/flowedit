@@ -1,6 +1,6 @@
 import { createElement } from "../../utils/dom.js";
 import { selectorConfig } from "../../config/index.js";
-import { activateSmartEditor } from "./manager.js"; 
+import { activateSmartEditor } from "./manager.js";
 
 /**
  * 创建智能插入按钮并定位到目标元素
@@ -9,19 +9,21 @@ import { activateSmartEditor } from "./manager.js";
 export function createSmartButton() {
   // 创建最外层包裹div
   const buttonContainer = createElement("div", {
+    id: "flow-editor-smart-button-container",
     className: "edui-box edui-button edui-default",
-    cssText: "display: inline-block; transform: scale(0.8); transform-origin: left center;",
+    cssText:
+      "display: inline-block; transform: scale(0.8); transform-origin: left center;",
     dataset: {
       floweditPlugin: "smart-button",
-      flowedit: "true"
-    }
+      flowedit: "true",
+    },
   });
 
   // 创建WeUI按钮
   const btn = createElement("button", {
     role: "button",
     className: "weui-btn weui-btn_mini weui-btn_primary weui-wa-hotarea",
-    textContent: "编辑Plus+"
+    textContent: "编辑Plus+",
   });
 
   // 组装DOM结构
@@ -31,10 +33,10 @@ export function createSmartButton() {
 
   // 查找工具栏容器作为插入目标
   const toolbarContainer = document.getElementById(selectorConfig.toolbar);
-  
+
   if (!toolbarContainer) {
     const error = `工具栏容器未找到: ${selectorConfig.toolbar}`;
-    console.error('[SmartButton]', error);
+    console.error("[SmartButton]", error);
     throw new Error(error);
   }
 
@@ -59,7 +61,7 @@ export function createSmartButton() {
  */
 async function handleSmartButtonClick() {
   try {
-    await activateSmartEditor(); // 注释掉原函数调用
+    await activateSmartEditor();
   } catch (error) {
     console.error("智能插入按钮点击处理失败:", error);
   }

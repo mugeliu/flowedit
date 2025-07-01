@@ -14,23 +14,25 @@ import {
 export function createSidebarToggle() {
   // 创建最外层包裹div
   const switchContainer = createElement("div", {
+    id: "flow-editor-sidebar-toggle-container",
     className: "edui-box edui-button edui-default",
     dataset: {
       floweditPlugin: "sidebar-toggle",
-      flowedit: "true"
-    }
+      flowedit: "true",
+    },
   });
 
   // 创建label容器（作为开关的主体）
   const switchLabel = createElement("label", {
     className: "weui-cell weui-cell_switch",
-    cssText: "padding: 0; transform: scale(0.7); transform-origin: left center;",
-    role: "switch"
+    cssText:
+      "padding: 0; transform: scale(0.7); transform-origin: left center;",
+    role: "switch",
   });
 
   // 创建开关区域
   const cellFt = createElement("div", {
-    className: "weui-cell__ft"
+    className: "weui-cell__ft",
   });
 
   // 创建checkbox input元素
@@ -39,7 +41,7 @@ export function createSidebarToggle() {
     type: "checkbox",
     id: "switch-1",
     role: "switch",
-    "aria-checked": "false"
+    "aria-checked": "false",
   });
 
   // 组装DOM结构

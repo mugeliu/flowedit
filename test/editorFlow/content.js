@@ -1,110 +1,160 @@
-// content.js - 简化版功能实现
+// content.js - EditorJS集成实现
 
 /**
- * 创建控制面板
+ * 动态加载EditorJS CDN
+ * @returns {Promise} 返回加载完成的Promise
+ */
+function loadEditorJS() {
+  return new Promise((resolve, reject) => {
+    // 检查是否已经加载
+    if (window.EditorJS) {
+      resolve();
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://cdn.jsdelivr.net/npm/@editorjs/editorjs@latest";
+    script.onload = () => {
+      console.log("EditorJS CDN 加载成功");
+      resolve();
+    };
+    script.onerror = () => {
+      console.error("EditorJS CDN 加载失败");
+      reject(new Error("EditorJS CDN 加载失败"));
+    };
+    document.head.appendChild(script);
+  });
+}
+
+/**
+ * 创建WeUI样式的编辑器面板
  * @returns {HTMLElement} 返回创建的面板元素
  */
-function createControlPanel() {
-  // 创建面板容器，使用WeUI按钮区域样式
-  const panel = document.createElement('div');
-  panel.id = 'control-panel';
-  panel.className = 'tool_area';
+function createEditorPanel() {
+  // 创建主面板容器
+  const panel = document.createElement("div");
+  panel.id = "editor-panel";
+  panel.className = "weui-panel weui-panel_access";
+  panel.style.cssText = `
+    position: relative;
+    z-index: 1;
+    width: calc(100% + 8px);
+    box-sizing: content-box;
+    margin-left: -95px;
+    padding: 0 91px;
+  `;
 
-  const toolbarContainer = document.createElement('div');
-  toolbarContainer.id = 'control-panel-toolbar';
-  toolbarContainer.className = 'weui-bottom-fixed-opr weui-btn-area_inline tool_bar';
+  // 创建面板内容区域
+  const panelBody = document.createElement("div");
+  panelBody.className = "weui-panel__bd";
+  panelBody.id = "editorjs-container";
+  panelBody.style.cssText = `
+      width: calc(100% + 65px); /* 超出父容器 */
+  `;
 
-  // 创建空div占位元素
-  const placeholderDiv = document.createElement('div');
-  placeholderDiv.id = 'placeholder-div';
-  placeholderDiv.style.cssText = 'width: 30%; margin: 0 auto; height: auto;';
-  toolbarContainer.appendChild(placeholderDiv);
-
-  // 创建保存按钮，使用WeUI主要按钮样式
-  const saveButton = document.createElement('button');
-  saveButton.role = 'button'
-  saveButton.className = 'weui-btn weui-btn_primary weui-btn_medium';
-  saveButton.textContent = '保存';
-  saveButton.addEventListener('click', handleSave);
-
-  // 创建取消按钮，使用WeUI默认按钮样式
-  const cancelButton = document.createElement('button');
-  cancelButton.role = 'button'
-  cancelButton.className = 'weui-btn weui-btn_default weui-btn_medium';
-  cancelButton.textContent = '取消';
-  cancelButton.addEventListener('click', handleCancel);
-
-  // 创建预览按钮，使用WeUI默认按钮样式
-  const previewButton = document.createElement('button');
-  previewButton.role = 'button'
-  previewButton.className = 'weui-btn weui-btn_default weui-btn_medium';
-  previewButton.textContent = '预览';
-  previewButton.addEventListener('click', handleCancel);
-
-  // 将按钮添加到面板
-  panel.appendChild(toolbarContainer);
-  toolbarContainer.appendChild(previewButton);
-  toolbarContainer.appendChild(saveButton);
-  toolbarContainer.appendChild(cancelButton);
+  // 组装面板
+  panel.appendChild(panelBody);
 
   return panel;
 }
 
 /**
- * 保存按钮点击处理
+ * 初始化EditorJS编辑器
+ * @param {string} containerId 编辑器容器ID
  */
-function handleSave() {
-  console.log('保存按钮被点击');
-  alert('保存操作已执行');
+function initializeEditor(containerId) {
+  try {
+    const editor = new EditorJS({
+      holder: containerId,
+      placeholder: "开始编写内容...",
+      data: {
+        blocks: [
+          {
+            type: "paragraph",
+            data: {
+              text: "欢迎使用 EditorJS！这是一个基础的编辑器实例。",
+            },
+          },
+        ],
+      },
+      onChange: (api, event) => {
+        console.log("编辑器内容已更改", event);
+      },
+    });
+
+    console.log("EditorJS 编辑器初始化成功");
+    return editor;
+  } catch (error) {
+    console.error("EditorJS 编辑器初始化失败:", error);
+    throw error;
+  }
 }
 
 /**
- * 取消按钮点击处理
+ * 隐藏目标元素并插入编辑器面板
  */
-function handleCancel() {
-  console.log('取消按钮被点击');
-  alert('取消操作已执行');
-}
+function setupEditorPanel() {
+  // 查找插入位置的目标元素
+  const insertTargetElement = document.getElementById("js_author_area");
 
-/**
- * 隐藏指定元素并插入面板
- */
-function setupPanel() {
-  // 查找目标元素
-  const buttonArea = document.getElementById('js_button_area');
-  
-  if (!buttonArea) {
-    console.error('未找到 id="js_button_area" 的元素');
+  if (!insertTargetElement) {
+    console.error('未找到 id="js_author_area" 的元素');
     return;
   }
 
-  // 隐藏目标元素
-  buttonArea.style.display = 'none';
-  console.log('已隐藏 js_button_area 元素');
+  // 查找需要隐藏的元素
+  const hideTargetElement = document.getElementById("edui1_iframeholder");
+  
+  if (hideTargetElement) {
+    hideTargetElement.style.display = "none";
+    console.log("已隐藏 #edui1_iframeholder 元素");
+  } else {
+    console.warn('未找到 id="edui1_iframeholder" 的元素，跳过隐藏操作');
+  }
 
-  // 创建控制面板
-  const panel = createControlPanel();
+  // 创建编辑器面板
+  const panel = createEditorPanel();
 
   // 将面板插入到目标元素的兄弟节点位置
-  if (buttonArea.parentNode) {
-    buttonArea.parentNode.insertBefore(panel, buttonArea.nextSibling);
-    console.log('控制面板已插入到 js_button_area 的兄弟节点位置');
+  if (insertTargetElement.parentNode) {
+    insertTargetElement.parentNode.insertBefore(panel, insertTargetElement.nextSibling);
+    console.log("编辑器面板已插入到 #js_author_area 的兄弟节点位置");
   } else {
-    console.error('js_button_area 元素没有父节点');
+    console.error("#js_author_area 元素没有父节点");
+    return;
   }
+
+  // 异步加载并初始化EditorJS
+  loadEditorJS()
+    .then(() => {
+      return initializeEditor("editorjs-container");
+    })
+    .catch((error) => {
+      console.error("编辑器设置失败:", error);
+      const container = document.getElementById("editorjs-container");
+      if (container) {
+        container.innerHTML = `
+          <div style="color: red; text-align: center; padding: 40px;">
+            <h3>编辑器加载失败</h3>
+            <p>错误信息: ${error.message}</p>
+            <p>请检查网络连接或刷新页面重试</p>
+          </div>
+        `;
+      }
+    });
 }
 
 /**
  * 初始化函数
  */
 function init() {
-  console.log('开始初始化控制面板...');
-  
+  console.log("开始初始化 EditorJS 编辑器面板...");
+
   // 等待DOM加载完成
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', setupPanel);
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", setupEditorPanel);
   } else {
-    setupPanel();
+    setupEditorPanel();
   }
 }
 
