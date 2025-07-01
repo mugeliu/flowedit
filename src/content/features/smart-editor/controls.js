@@ -15,26 +15,55 @@ import { selectorConfig } from "../../config/index.js";
  * @returns {Element} 控制栏元素
  */
 export function createEditorControls(callbacks = {}) {
-  const { onSave, onCancel } = callbacks;
+  const { onSave, onCancel, onPreview } = callbacks;
 
-  const controlBar = createElement("div", {
-    className: "flowedit-editor-action-bar",
+  const controlBar = createElement('div', {
+    id: 'control-panel',
+    className: 'tool_area weui-flex'
   });
 
-  // 创建保存按钮
-  const saveBtn = createElement("button", {
-    textContent: "💾 保存",
-    className: "flowedit-editor-save-btn",
+  const toolbarContainer = createElement('div', {
+    id: 'control-panel-toolbar',
+    className: 'weui-bottom-fixed-opr weui-btn-area_inline tool_bar'
   });
 
-  // 创建取消按钮
-  const cancelBtn = createElement("button", {
-    textContent: "↩️ 取消",
-    className: "flowedit-editor-cancel-btn",
+  // 创建空div占位元素
+  const placeholderDiv = createElement('div', {
+    id: 'placeholder-div',
+    //cssText: 'width: 30%; margin: 0 auto; height: auto;',
+    className: 'weui-flex__item'
   });
 
-  controlBar.appendChild(saveBtn);
-  controlBar.appendChild(cancelBtn);
+  // 创建保存按钮，使用WeUI主要按钮样式
+  const saveButton = createElement('button', {
+    role: 'button',
+    className: 'weui-btn weui-btn_primary weui-btn_medium',
+    textContent: '保存'
+  });
+  saveButton.addEventListener('click', onSave);
+
+  // 创建取消按钮，使用WeUI默认按钮样式
+  const cancelButton = createElement('button', {
+    role: 'button',
+    className: 'weui-btn weui-btn_default weui-btn_medium',
+    textContent: '取消'
+  });
+  cancelButton.addEventListener('click', onCancel);
+
+  // 创建预览按钮，使用WeUI默认按钮样式
+  const previewButton = createElement('button', {
+    role: 'button',
+    className: 'weui-btn weui-btn_default weui-btn_medium',
+    textContent: '预览'
+  });
+  previewButton.addEventListener('click', onPreview);
+
+  // 将按钮添加到面板
+  controlBar.appendChild(placeholderDiv);
+  controlBar.appendChild(toolbarContainer);
+  toolbarContainer.appendChild(saveButton);
+  toolbarContainer.appendChild(previewButton);
+  toolbarContainer.appendChild(cancelButton);
 
   // 查找底部工具栏元素
   const footerToolbar = document.getElementById(selectorConfig.footerToolbar);
@@ -52,17 +81,6 @@ export function createEditorControls(callbacks = {}) {
       footerToolbar.nextSibling
     );
   }
-
-  // 绑定事件
-  if (onSave && typeof onSave === "function") {
-    saveBtn.addEventListener("click", onSave);
-  }
-
-  if (onCancel && typeof onCancel === "function") {
-    cancelBtn.addEventListener("click", onCancel);
-  }
-
-  console.log("智能编辑器控制栏创建完成，已插入到DOM中");
 
   return controlBar;
 }

@@ -11,12 +11,21 @@
  */
 export function createElement(tag, options = {}) {
   const element = document.createElement(tag);
-
-  if (options.className) element.className = options.className;
-  if (options.id) element.id = options.id;
-  if (options.innerHTML) element.innerHTML = options.innerHTML;
-  if (options.textContent) element.textContent = options.textContent;
-  if (options.cssText) element.style.cssText = options.cssText;
+  
+  // 批量属性赋值
+  Object.entries(options).forEach(([key, value]) => {
+    if (key === 'className') {
+      element.className = value;
+    } else if (key === 'cssText') {
+      element.style.cssText = value;
+    } else if (key === 'dataset') {
+      Object.entries(value).forEach(([dataKey, dataValue]) => {
+        element.dataset[dataKey] = dataValue;
+      });
+    } else if (key in element) {
+      element[key] = value;
+    }
+  });
 
   return element;
 }

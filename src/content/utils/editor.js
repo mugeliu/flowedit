@@ -201,7 +201,7 @@ export function createEditorInstance(holderId) {
  */
 export async function loadAndInitializeEditor(container, config = {}) {
 
-  const holderElement = document.getElementById(holderId);
+  const holderElement = document.getElementById(container);
   if (!holderElement) {
     throw new Error(`${holderId}元素不存在，请检查DOM结构`);
   }

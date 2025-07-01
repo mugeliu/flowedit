@@ -12,52 +12,40 @@ import {
  * @returns {Object} 包含开关元素和清理函数
  */
 export function createSidebarToggle() {
-  // 创建WeUI风格的switch容器（参考content.js成功实现）
+  // 创建最外层包裹div
   const switchContainer = createElement("div", {
+    className: "edui-box edui-button edui-default",
+    dataset: {
+      floweditPlugin: "sidebar-toggle",
+      flowedit: "true"
+    }
+  });
+
+  // 创建label容器（作为开关的主体）
+  const switchLabel = createElement("label", {
     className: "weui-cell weui-cell_switch",
+    cssText: "padding: 0; transform: scale(0.7); transform-origin: left center;",
+    role: "switch"
   });
 
-  // 添加内联样式确保正确显示（参考content.js）
-  switchContainer.style.cssText = `
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    padding: 8px 12px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin: 4px;
-  `;
-
-  // 创建标题区域
-  const cellHd = createElement("div", {
-    className: "weui-cell__hd",
+  // 创建开关区域
+  const cellFt = createElement("div", {
+    className: "weui-cell__ft"
   });
 
-  const label = createElement("label", {
-    className: "weui-label",
-    textContent: "侧边栏",
-  });
-  label.setAttribute("for", "flowedit-sidebar-toggle");
-  cellHd.appendChild(label);
-
-  // 创建checkbox input元素（直接添加到容器，不使用cellFt）
+  // 创建checkbox input元素
   const switchInput = createElement("input", {
     className: "weui-switch",
     type: "checkbox",
-    id: "flowedit-sidebar-toggle",
+    id: "switch-1",
+    role: "switch",
+    "aria-checked": "false"
   });
 
-  // 添加无障碍属性
-  switchInput.setAttribute("aria-label", "侧边栏开关控制");
-
-  // 组装DOM结构（参考content.js的成功结构）
-  switchContainer.appendChild(cellHd);
-  switchContainer.appendChild(switchInput);
-
-  // 添加数据属性用于DOM监听器识别
-  switchContainer.setAttribute("data-flowedit-plugin", "sidebar-toggle");
-  switchContainer.setAttribute("data-flowedit", "true");
+  // 组装DOM结构
+  cellFt.appendChild(switchInput);
+  switchLabel.appendChild(cellFt);
+  switchContainer.appendChild(switchLabel);
 
   switchInput.addEventListener("change", handleSidebarToggle);
 

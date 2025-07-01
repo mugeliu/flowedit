@@ -54,6 +54,7 @@ export async function activateSmartEditor() {
     controlBar = createEditorControls({
       onSave: saveContent,
       onCancel: deactivateSmartEditor,
+      onPreview: deactivateSmartEditor
     });
 
     // 等待DOM元素渲染完成
