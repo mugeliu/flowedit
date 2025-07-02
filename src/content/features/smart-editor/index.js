@@ -1,9 +1,6 @@
 // 智能编辑器功能模块 - 标准化插件接口
-import {
-  initializeSmartEditor,
-  cleanupSmartEditor,
-  isSmartEditorActive,
-} from "./manager.js";
+import { initializeSmartEditor, cleanupSmartEditor } from "./manager.js";
+import { isSmartEditorActive } from "../../utils/editor.js";
 
 /**
  * 智能编辑器插件定义

@@ -91,11 +91,12 @@ export async function performWeChatUpload(file) {
 
   try {
     wechatData = await getWxData();
+    console.log("获取到的wx数据:", wechatData);
   } catch (error) {
     throw new Error("无法获取wx数据，请确保在微信公众号后台中使用");
   }
 
-  if (!wechatData.token) {
+  if (!wechatData.ticket) {
     throw new Error("wx数据中未找到微信token，请确保在微信公众号后台中使用");
   }
 
@@ -121,7 +122,7 @@ export async function performWeChatUpload(file) {
     ticket_id: wechatData.userName,
     ticket: wechatData.ticket,
     svr_time: wechatData.time,
-    token: wechatData.token,
+    token: wechatData.t,
     lang: "zh_CN",
     seq: Date.now().toString(),
     t: Math.random().toString(),

@@ -5,40 +5,32 @@
  */
 function createAppMsgContainer() {
   // 创建主容器
-  const mainContainer = document.createElement('div');
-  mainContainer.className = 'weui-desktop-layout__main__hd main_hd appmsg_edit_mod default appmsg_preview_area scrollbar-macosx';
-
+  const mainContainer = document.createElement("div");
+  mainContainer.className =
+    "weui-desktop-layout__main__hd main_hd appmsg_edit_mod default appmsg_preview_area scrollbar-macosx";
 
   // 创建内容区域
-  const contentSection = document.createElement('div');
-  contentSection.className = 'appmsg_preview_container appmsg-side__wrapper';
-  mainContainer.appendChild(contentSection)
-
-  
-  // const contentBd = document.createElement('div');
-  // contentBd.className = 'weui-panel weui-panel_access';
-  // contentSection.appendChild(contentBd);
-  
+  const contentSection = document.createElement("div");
+  contentSection.className = "appmsg_preview_container appmsg-side__wrapper";
+  mainContainer.appendChild(contentSection);
 
   // 创建WeUI面板容器
-  const weuiPanel = document.createElement('div');
-  weuiPanel.className = 'weui-panel weui-panel_access';
+  const weuiPanel = document.createElement("div");
+  weuiPanel.className = "weui-panel weui-panel_access";
   contentSection.appendChild(weuiPanel);
 
   // 创建面板头部
-  const panelHeader = document.createElement('div');
-  panelHeader.className = 'weui-panel__hd';
-  panelHeader.textContent = '文章预览';
+  const panelHeader = document.createElement("div");
+  panelHeader.className = "weui-panel__hd";
+  panelHeader.textContent = "文章预览";
   weuiPanel.appendChild(panelHeader);
-  
+
   // 创建面板主体内容
-  const panelBody = document.createElement('div');
-  panelBody.className = 'weui-panel__bd';
-  panelBody.style.cssText = 'padding: 15px;'; // 移除max-height限制，让内容完整显示
+  const panelBody = document.createElement("div");
+  panelBody.className = "weui-panel__bd";
+  panelBody.style.cssText = "padding: 15px;"; // 移除max-height限制，让内容完整显示
   weuiPanel.appendChild(panelBody);
 
-
-  
   // 生成测试HTML内容
   const testHtmlContent = `
     <article style="line-height: 1.6; color: #333;">
@@ -77,15 +69,13 @@ function createAppMsgContainer() {
       </div>
     </article>
   `;
-  
+
   // 将HTML内容渲染到面板主体
   panelBody.innerHTML = testHtmlContent;
-  
 
   // 组装多级结构
   mainContainer.appendChild(contentSection);
 
-  
   return mainContainer;
 }
 
@@ -93,9 +83,9 @@ function createAppMsgContainer() {
  * 创建切换按钮
  */
 function createToggleButton() {
-  const toggleButton = document.createElement('button');
-  toggleButton.id = 'toggle-view-button';
-  toggleButton.textContent = '切换到编辑器视图';
+  const toggleButton = document.createElement("button");
+  toggleButton.id = "toggle-view-button";
+  toggleButton.textContent = "切换到编辑器视图";
   toggleButton.style.cssText = `
     position: fixed;
     top: 20px;
@@ -111,16 +101,16 @@ function createToggleButton() {
     box-shadow: 0 2px 8px rgba(0,0,0,0.2);
     transition: background-color 0.3s;
   `;
-  
+
   // 添加悬停效果
-  toggleButton.addEventListener('mouseenter', () => {
-    toggleButton.style.backgroundColor = '#005a87';
+  toggleButton.addEventListener("mouseenter", () => {
+    toggleButton.style.backgroundColor = "#005a87";
   });
-  
-  toggleButton.addEventListener('mouseleave', () => {
-    toggleButton.style.backgroundColor = '#007cba';
+
+  toggleButton.addEventListener("mouseleave", () => {
+    toggleButton.style.backgroundColor = "#007cba";
   });
-  
+
   return toggleButton;
 }
 
@@ -128,29 +118,29 @@ function createToggleButton() {
  * 切换视图显示状态
  */
 function toggleView() {
-  const sideMenuElement = document.getElementById('js_mp_sidemenu');
-  const customContainer = document.getElementById('custom-appmsg-container');
-  const toggleButton = document.getElementById('toggle-view-button');
-  
+  const sideMenuElement = document.getElementById("js_mp_sidemenu");
+  const customContainer = document.getElementById("custom-appmsg-container");
+  const toggleButton = document.getElementById("toggle-view-button");
+
   if (!sideMenuElement || !customContainer || !toggleButton) {
-    console.error('切换所需的元素未找到');
+    console.error("切换所需的元素未找到");
     return;
   }
-  
-  const isCustomVisible = customContainer.style.display !== 'none';
-  
+
+  const isCustomVisible = customContainer.style.display !== "none";
+
   if (isCustomVisible) {
     // 当前显示自定义容器，切换到原始侧边菜单
-    customContainer.style.display = 'none';
-    sideMenuElement.style.display = '';
-    toggleButton.textContent = '切换到编辑器视图';
-    console.log('已切换到原始侧边菜单视图');
+    customContainer.style.display = "none";
+    sideMenuElement.style.display = "";
+    toggleButton.textContent = "切换到编辑器视图";
+    console.log("已切换到原始侧边菜单视图");
   } else {
     // 当前显示原始侧边菜单，切换到自定义容器
-    sideMenuElement.style.display = 'none';
-    customContainer.style.display = '';
-    toggleButton.textContent = '切换到原始视图';
-    console.log('已切换到编辑器视图');
+    sideMenuElement.style.display = "none";
+    customContainer.style.display = "";
+    toggleButton.textContent = "切换到原始视图";
+    console.log("已切换到编辑器视图");
   }
 }
 
@@ -159,46 +149,49 @@ function toggleView() {
  */
 function setupPageElements() {
   // 查找目标元素
-  const sideMenuElement = document.getElementById('js_mp_sidemenu');
-  
+  const sideMenuElement = document.getElementById("js_mp_sidemenu");
+
   if (!sideMenuElement) {
     console.error('未找到 id="js_mp_sidemenu" 的元素');
     return;
   }
-  
+
   // 创建新容器
   const container = createAppMsgContainer();
-  container.id = 'custom-appmsg-container';
-  
+  container.id = "custom-appmsg-container";
+
   // 初始状态：隐藏原有元素，显示新容器
-  sideMenuElement.style.display = 'none';
-  console.log('已隐藏 #js_mp_sidemenu 元素');
-  
+  sideMenuElement.style.display = "none";
+  console.log("已隐藏 #js_mp_sidemenu 元素");
+
   // 将容器插入为兄弟节点
   if (sideMenuElement.parentNode) {
-    sideMenuElement.parentNode.insertBefore(container, sideMenuElement.nextSibling);
-    console.log('appmsg_container_bd 容器已插入为 #js_mp_sidemenu 的兄弟节点');
+    sideMenuElement.parentNode.insertBefore(
+      container,
+      sideMenuElement.nextSibling
+    );
+    console.log("appmsg_container_bd 容器已插入为 #js_mp_sidemenu 的兄弟节点");
   } else {
-    console.error('#js_mp_sidemenu 元素没有父节点');
+    console.error("#js_mp_sidemenu 元素没有父节点");
     return;
   }
-  
+
   // 创建并添加切换按钮
   const toggleButton = createToggleButton();
-  toggleButton.addEventListener('click', toggleView);
+  toggleButton.addEventListener("click", toggleView);
   document.body.appendChild(toggleButton);
-  console.log('切换按钮已添加到页面');
+  console.log("切换按钮已添加到页面");
 }
 
 /**
  * 初始化函数
  */
 function init() {
-  console.log('开始初始化新功能...');
-  
+  console.log("开始初始化新功能...");
+
   // 等待DOM加载完成
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', setupPageElements);
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", setupPageElements);
   } else {
     setupPageElements();
   }

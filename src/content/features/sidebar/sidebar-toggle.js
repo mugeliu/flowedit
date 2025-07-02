@@ -1,11 +1,11 @@
 // 侧边栏切换开关组件
 import { selectorConfig } from "../../config/index.js";
+import { createElement, hideElement, showElement } from "../../utils/dom.js";
 import {
-  createElement,
-  safeQuerySelector,
-  hideElement,
-  showElement,
-} from "../../utils/dom.js";
+  showPreviewContainer,
+  hidePreviewContainer,
+  cleanupPreviewContainer,
+} from "./preview.js";
 
 /**
  * 创建侧边栏切换开关并定位到目标元素
@@ -68,11 +68,17 @@ export function createSidebarToggle() {
     if (switchContainer.parentNode) {
       switchContainer.parentNode.removeChild(switchContainer);
     }
+    // 清理预览容器
+    cleanupPreviewContainer();
+    // 恢复侧边栏显示状态，确保重新初始化时处于默认状态
+    const sidebarElement = document.getElementById(selectorConfig.sidebar);
+    if (sidebarElement) {
+      showElement(sidebarElement);
+    }
   };
 
   return {
     element: switchContainer,
-    input: switchInput,
     cleanup,
   };
 }
@@ -91,11 +97,13 @@ export function handleSidebarToggle(event) {
 
     // 根据checkbox状态切换元素显示
     if (isChecked) {
-      // checkbox选中状态，隐藏侧边栏
+      // checkbox选中状态，隐藏侧边栏，显示预览容器
       hideElement(sidebar);
+      showPreviewContainer();
     } else {
-      // checkbox未选中状态，显示侧边栏
+      // checkbox未选中状态，显示侧边栏，隐藏预览容器
       showElement(sidebar);
+      hidePreviewContainer();
     }
   }
 }

@@ -14,28 +14,6 @@ pluginRegistry.register("smart-editor", smartEditorPlugin);
 pluginRegistry.register("sidebar", sidebarPlugin);
 
 /**
- * 注入插件UI样式（仅限插件界面相关样式，不包含内容样式）
- * 插件UI样式包括：按钮、开关、工具栏等插件界面元素
- */
-// function injectPluginUIStyles() {
-//   const linkId = "weui-styles";
-//   if (!document.getElementById(linkId)) {
-//     const link = document.createElement("link");
-//     link.id = linkId;
-//     link.rel = "stylesheet";
-//     link.href =
-//       "https://res.wx.qq.com/t/wx_fed/weui-source/res/2.6.22/weui.css";
-//     link.setAttribute("data-flowedit-external", "true");
-//     document.head.appendChild(link);
-//     console.log("WeUI stylesheet injected:", link);
-//   }
-
-//   // 由于样式已迁移到 flowedit.css，这里不再注入空的插件样式
-//   // flowedit.css 通过 manifest.json 自动加载
-//   console.log("Plugin UI styles injection completed");
-// }
-
-/**
  * 初始化插件功能模块
  */
 async function initializePluginFeatures() {
@@ -49,10 +27,7 @@ async function initializePluginFeatures() {
       if (response.success && response.data && response.data.isReady === true) {
         console.log("编辑器已就绪，开始初始化插件:", response.data);
 
-        // 2. 注入插件UI样式（与内容样式完全分离）
-        //injectPluginUIStyles();
-
-        // 3. 初始化所有功能模块
+        // 初始化所有功能模块
         const initResults = await pluginRegistry.initializeAll();
 
         if (initResults.failed.length > 0) {
@@ -61,7 +36,7 @@ async function initializePluginFeatures() {
           );
         }
 
-        // 4. 启动DOM监听服务（监听插件组件是否被页面更新移除）
+        // 启动DOM监听服务（监听插件组件是否被页面更新移除）
         initializeDOMWatcher();
       } else {
         console.log("编辑器未就绪，跳过插件初始化:", response);

@@ -4,6 +4,7 @@ import {
   saveToOriginalEditor,
   loadAndInitializeEditor,
   destroyEditor,
+  setEditorActiveState,
 } from "../../utils/editor.js";
 import { safeQuerySelector } from "../../utils/dom.js";
 import { initializeEditorUI, cleanupEditorUI } from "./editor-ui.js";
@@ -62,16 +63,8 @@ export async function activateSmartEditor() {
     // 加载并初始化编辑器
     editor = await loadAndInitializeEditor("flow-editorjs-container");
 
-    // 滚动到编辑器容器位置
-    // const editorContainer = safeQuerySelector("#header");
-    // if (editorContainer) {
-    //   editorContainer.scrollIntoView({
-    //     behavior: "smooth",
-    //     block: "start",
-    //     inline: "nearest",
-    //   });
-    //   console.log("已滚动到智能编辑器位置");
-    // }
+    // 设置编辑器激活状态
+    setEditorActiveState(true);
 
     console.log("智能编辑器激活成功");
   } catch (error) {
@@ -97,6 +90,9 @@ export function deactivateSmartEditor() {
     destroyEditor(editor);
     editor = null;
   }
+
+  // 重置编辑器激活状态
+  setEditorActiveState(false);
 
   console.log("智能编辑器已停用");
 }
@@ -131,6 +127,7 @@ async function saveContent(options = {}) {
     console.log("保存的数据:", outputData);
 
     // 直接保存内容，使用解析器生成HTML
+
     const success = await saveToOriginalEditor(outputData, {
       ...options,
     });
@@ -153,20 +150,4 @@ async function saveContent(options = {}) {
  */
 export function getCurrentEditor() {
   return editor;
-}
-
-/**
- * 检查智能编辑器是否处于激活状态
- * @returns {boolean} 是否激活
- */
-export function isSmartEditorActive() {
-  return editor !== null;
-}
-
-/**
- * 获取智能按钮实例
- * @returns {Object|null} 智能按钮实例
- */
-export function getSmartButton() {
-  return smartButton;
 }

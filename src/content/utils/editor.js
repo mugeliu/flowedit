@@ -1,7 +1,10 @@
 // 编辑器相关工具函数
-import { selectorConfig, editorConfig } from "../config/index.js";
+import { editorConfig } from "../config/index.js";
 import { parseEditorJS } from "./parsers/index.js";
-import { safeQuerySelector, createElement } from "./dom.js";
+import { renderPreviewContent } from "../features/sidebar/preview.js";
+
+// 全局编辑器状态管理
+let isEditorActive = false;
 
 /**
  * 将EditorJS数据保存到原编辑器
@@ -44,22 +47,11 @@ export async function saveToOriginalEditor(editorData, options = {}) {
 }
 
 /**
- * 获取初始内容
- * @returns {Object} EditorJS初始数据
- */
-function getInitialContent() {
-  return {
-    blocks: [],
-  };
-}
-
-/**
  * 加载并初始化编辑器
  * @param {string} container 编辑器容器ID或元素
- * @param {Object} config 编辑器配置
  * @returns {Promise<Object>} EditorJS实例
  */
-export async function loadAndInitializeEditor(container, config = {}) {
+export async function loadAndInitializeEditor(container) {
   const holderElement = document.getElementById(container);
   if (!holderElement) {
     throw new Error(`${holderId}元素不存在，请检查DOM结构`);
@@ -85,53 +77,60 @@ export async function loadAndInitializeEditor(container, config = {}) {
     autofocus: editorConfig.autofocus,
     minHeight: editorConfig.minHeight,
     logLevel: editorConfig.logLevel,
-    data: getInitialContent(),
     tools: resolvedTools,
-    onChange: (api, event) => {},
+    onChange: (api, event) => {
+      api.saver.save().then((output) => {
+        const htmlContent = parseEditorJS(output, {});
+        renderPreviewContent(htmlContent);
+      });
+    },
     onReady: () => {
       if (window.EditorJS.DragDrop) {
         new window.EditorJS.DragDrop(editorInstance);
-      };
-      // 1. 初始化时滚动到顶部
-    window.scrollTo({ top: 0, behavior: 'auto' });
-    
-    // 2. 自动滚动逻辑
-    const autoScroll = () => {
-      // 获取当前活跃的编辑器区块
-      const currentBlockIndex = editorInstance.blocks.getCurrentBlockIndex();
-      const currentBlock = editorInstance.blocks.getBlockByIndex(currentBlockIndex);
-      
-      if (currentBlock) {
-        // 获取区块底部位置
-        const blockRect = currentBlock.holder.getBoundingClientRect();
-        const blockBottom = blockRect.bottom;
-        const viewportHeight = window.innerHeight;
-        
-        // 当区块接近视窗底部时（留50px缓冲）
-        if (blockBottom > viewportHeight - 50) {
-          // 计算需要滚动的距离（一行高度约为30px）
-          const scrollAmount = Math.max(30, blockBottom - viewportHeight + 50);
-          
-          // 平滑滚动
-          window.scrollBy({
-            top: scrollAmount,
-            behavior: 'smooth'
-          });
-        }
       }
-    };
+      // 1. 初始化时滚动到顶部
+      window.scrollTo({ top: 0, behavior: "auto" });
 
-    // 3. 监听关键事件
-    const events = ['input', 'keydown', 'blockAdded'];
-    events.forEach(event => {
-      editorInstance.ui.nodes.redactor.addEventListener(event, () => {
-        // 仅在回车键或新增区块时触发
-        if (event === 'keydown' || event === 'blockAdded') {
-          setTimeout(autoScroll, 10); // 稍延迟确保DOM更新
+      // 2. 自动滚动逻辑
+      const autoScroll = () => {
+        // 获取当前活跃的编辑器区块
+        const currentBlockIndex = editorInstance.blocks.getCurrentBlockIndex();
+        const currentBlock =
+          editorInstance.blocks.getBlockByIndex(currentBlockIndex);
+
+        if (currentBlock) {
+          // 获取区块底部位置
+          const blockRect = currentBlock.holder.getBoundingClientRect();
+          const blockBottom = blockRect.bottom;
+          const viewportHeight = window.innerHeight;
+
+          // 当区块接近视窗底部时（留50px缓冲）
+          if (blockBottom > viewportHeight - 50) {
+            // 计算需要滚动的距离（一行高度约为30px）
+            const scrollAmount = Math.max(
+              30,
+              blockBottom - viewportHeight + 50
+            );
+
+            // 平滑滚动
+            window.scrollBy({
+              top: scrollAmount,
+              behavior: "smooth",
+            });
+          }
         }
+      };
+
+      // 3. 监听关键事件
+      const events = ["input", "keydown", "blockAdded"];
+      events.forEach((event) => {
+        editorInstance.ui.nodes.redactor.addEventListener(event, () => {
+          // 仅在回车键或新增区块时触发
+          if (event === "keydown" || event === "blockAdded") {
+            setTimeout(autoScroll, 10); // 稍延迟确保DOM更新
+          }
+        });
       });
-    });
-      
     },
   });
 
@@ -150,4 +149,20 @@ export function destroyEditor(editor) {
       console.warn("编辑器销毁错误:", error);
     }
   }
+}
+
+/**
+ * 设置编辑器激活状态
+ * @param {boolean} active 是否激活
+ */
+export function setEditorActiveState(active) {
+  isEditorActive = active;
+}
+
+/**
+ * 检查智能编辑器是否处于激活状态
+ * @returns {boolean} 是否激活
+ */
+export function isSmartEditorActive() {
+  return isEditorActive;
 }
