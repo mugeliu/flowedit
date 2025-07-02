@@ -52,7 +52,6 @@ export async function activateSmartEditor() {
       callbacks: {
         onSave: saveContent,
         onCancel: deactivateSmartEditor,
-        onPreview: deactivateSmartEditor,
       },
     });
 
@@ -64,15 +63,15 @@ export async function activateSmartEditor() {
     editor = await loadAndInitializeEditor("flow-editorjs-container");
 
     // 滚动到编辑器容器位置
-    const editorContainer = safeQuerySelector("#header");
-    if (editorContainer) {
-      editorContainer.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-        inline: "nearest",
-      });
-      console.log("已滚动到智能编辑器位置");
-    }
+    // const editorContainer = safeQuerySelector("#header");
+    // if (editorContainer) {
+    //   editorContainer.scrollIntoView({
+    //     behavior: "smooth",
+    //     block: "start",
+    //     inline: "nearest",
+    //   });
+    //   console.log("已滚动到智能编辑器位置");
+    // }
 
     console.log("智能编辑器激活成功");
   } catch (error) {

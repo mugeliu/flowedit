@@ -18,7 +18,6 @@ export function createEditorPage() {
   // 创建主面板容器
   const panel = createElement("div", {
     id: "flow-editor-panel",
-    className: "weui-panel weui-panel_access",
     cssText: `
       position: relative;
       z-index: 1;
@@ -32,7 +31,6 @@ export function createEditorPage() {
   // 创建面板内容区域
   const panelBody = createElement("div", {
     id: "flow-editorjs-container",
-    className: "weui-panel__bd",
     cssText: `
       width: calc(100% + 65px); /* 超出父容器 */
     `,
@@ -93,21 +91,11 @@ export function createEditorToolbar(callbacks = {}) {
     cancelButton.addEventListener("click", onCancel);
   }
 
-  // 创建预览按钮，使用WeUI默认按钮样式
-  const previewButton = createElement("button", {
-    role: "button",
-    className: "weui-btn weui-btn_default weui-btn_medium",
-    textContent: "预览",
-  });
-  if (onPreview) {
-    previewButton.addEventListener("click", onPreview);
-  }
 
   // 将按钮添加到面板
   controlBar.appendChild(placeholderDiv);
   controlBar.appendChild(toolbarContainer);
   toolbarContainer.appendChild(saveButton);
-  toolbarContainer.appendChild(previewButton);
   toolbarContainer.appendChild(cancelButton);
 
   return controlBar;
@@ -159,8 +147,8 @@ export function removeEditorToolbar(toolbar) {
  */
 export function initializeEditorUI(options = {}) {
   try {
-    const { callbacks = {} } = options;
 
+    const { callbacks = {} } = options;
     // 1. 创建编辑器页面和工具栏
     const editorPage = createEditorPage();
     const editorToolbar = createEditorToolbar(callbacks);

@@ -89,9 +89,49 @@ export async function loadAndInitializeEditor(container, config = {}) {
     tools: resolvedTools,
     onChange: (api, event) => {},
     onReady: () => {
-      if (window.DragDrop) {
-        new window.DragDrop(editorInstance);
+      if (window.EditorJS.DragDrop) {
+        new window.EditorJS.DragDrop(editorInstance);
+      };
+      // 1. 初始化时滚动到顶部
+    window.scrollTo({ top: 0, behavior: 'auto' });
+    
+    // 2. 自动滚动逻辑
+    const autoScroll = () => {
+      // 获取当前活跃的编辑器区块
+      const currentBlockIndex = editorInstance.blocks.getCurrentBlockIndex();
+      const currentBlock = editorInstance.blocks.getBlockByIndex(currentBlockIndex);
+      
+      if (currentBlock) {
+        // 获取区块底部位置
+        const blockRect = currentBlock.holder.getBoundingClientRect();
+        const blockBottom = blockRect.bottom;
+        const viewportHeight = window.innerHeight;
+        
+        // 当区块接近视窗底部时（留50px缓冲）
+        if (blockBottom > viewportHeight - 50) {
+          // 计算需要滚动的距离（一行高度约为30px）
+          const scrollAmount = Math.max(30, blockBottom - viewportHeight + 50);
+          
+          // 平滑滚动
+          window.scrollBy({
+            top: scrollAmount,
+            behavior: 'smooth'
+          });
+        }
       }
+    };
+
+    // 3. 监听关键事件
+    const events = ['input', 'keydown', 'blockAdded'];
+    events.forEach(event => {
+      editorInstance.ui.nodes.redactor.addEventListener(event, () => {
+        // 仅在回车键或新增区块时触发
+        if (event === 'keydown' || event === 'blockAdded') {
+          setTimeout(autoScroll, 10); // 稍延迟确保DOM更新
+        }
+      });
+    });
+      
     },
   });
 

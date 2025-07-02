@@ -5,7 +5,7 @@
   "description": "测试EditorJS和获取页面window对象",
   
   "content_scripts": [{
-    "matches": ["https://mp.weixin.qq.com/*"],
+    "matches": ["https://mp.weixin.qq.com/cgi-bin/appmsg?*"],
     "js": ["libs/editorjs.umd.js", "content.js"],
     "css": ["libs/weui.css"],
     "run_at": "document_end"
