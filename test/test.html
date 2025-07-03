@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Block to HTML 转换器测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .status p {
+            margin: 5px 0;
+            font-family: monospace;
+        }
+        .output {
+            border: 1px solid #ddd;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+            min-height: 200px;
+        }
+        button {
+            background-color: #007cba;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 5px 10px 0;
+        }
+        button:hover {
+            background-color: #005a87;
+        }
+        .result {
+            margin: 10px 0;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Block to HTML 转换器测试</h1>
+        
+        <h2>模块加载状态</h2>
+        <div id="status" class="status"></div>
+        
+        <button onclick="checkModules()">检查模块状态</button>
+        <button onclick="testConversion()">测试转换</button>
+        
+        <div id="result" class="result"></div>
+        
+        <h2>转换结果</h2>
+        <div id="output" class="output"></div>
+    </div>
+
+    <!-- ES6 模块加载 -->
+    <script type="module">
+        import BlockToHtmlConverter, { convertToHtml, validateEditorData } from './block-to-html/index.js';
+        import TemplateLoader from './block-to-html/TemplateLoader.js';
+        import InlineStyleProcessor from './block-to-html/InlineStyleProcessor.js';
+        import Renderer from './block-to-html/Renderer.js';
+        import testData from './block-to-html/test-data.js';
+
+        // 将模块暴露到全局作用域以便在HTML中使用
+        window.BlockToHtmlConverter = BlockToHtmlConverter;
+        window.TemplateLoader = TemplateLoader;
+        window.InlineStyleProcessor = InlineStyleProcessor;
+        window.Renderer = Renderer;
+        window.testData = testData;
+        window.convertToHtml = convertToHtml;
+
+        window.validateEditorData = validateEditorData;
+        // 检查模块状态
+        function checkModules() {
+            const modules = {
+                'TemplateLoader': typeof TemplateLoader !== 'undefined',
+                'InlineStyleProcessor': typeof InlineStyleProcessor !== 'undefined',
+                'Renderer': typeof Renderer !== 'undefined',
+                'BlockToHtmlConverter': typeof BlockToHtmlConverter !== 'undefined',
+                'testData': typeof testData !== 'undefined'
+            };
+
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = '';
+
+            for (const [name, loaded] of Object.entries(modules)) {
+                const status = loaded ? '✅ 已加载' : '❌ 未加载';
+                statusDiv.innerHTML += `<p>${name}: ${status}</p>`;
+            }
+        }
+        
+        // 将函数暴露到全局作用域
+        window.checkModules = checkModules;
+
+        // 加载模板数据
+        async function loadTemplate() {
+            try {
+                const response = await fetch('./block-to-html/style-template.json');
+                const templateData = await response.json();
+                return templateData;
+            } catch (error) {
+                console.error('加载模板失败:', error);
+                return null;
+            }
+        }
+        
+        // 将函数暴露到全局作用域
+        window.loadTemplate = loadTemplate;
+
+        // 测试转换功能
+        async function testConversion() {
+            try {
+                const templateData = await loadTemplate();
+                if (!templateData) {
+                    throw new Error('模板加载失败');
+                }
+
+                const converter = new BlockToHtmlConverter();
+                
+                // 加载模板
+                const templateLoader = new TemplateLoader();
+                const loadSuccess = templateLoader.loadTemplate(templateData);
+                if (!loadSuccess) {
+                    throw new Error('模板初始化失败');
+                }
+
+                // 设置模板加载器
+                converter.templateLoader = templateLoader;
+                converter.renderer = new Renderer(templateLoader, new InlineStyleProcessor(templateLoader));
+                
+                const html = converter.convert(testData);
+                
+                document.getElementById('output').innerHTML = html;
+                document.getElementById('result').textContent = '转换成功！';
+            } catch (error) {
+                document.getElementById('result').textContent = '转换失败: ' + error.message;
+                console.error('转换错误:', error);
+            }
+        }
+        
+        // 将函数暴露到全局作用域
+        window.testConversion = testConversion;
+
+        // 页面加载完成后检查模块
+        window.addEventListener('load', function() {
+            checkModules();
+        });
+    </script>
+</body>
+</html>
