@@ -1,144 +1,71 @@
 /**
- * 导出入口
- * 统一导出converter模块的所有功能
+ * Block-to-HTML 转换器主入口
+ * 专为Chrome插件设计的模块化转换器
  */
-
-// 导入主要类
-import { EditorJSParser } from './parser.js';
-import { TemplateEngine } from './template-engine.js';
-import { StyleCompiler } from './style-compiler.js';
-
-// 导出主要类
-export { EditorJSParser, TemplateEngine, StyleCompiler };
-
-// 导入工具函数
-import {
-  camelToKebab,
-  escapeHTML,
-  deepMerge,
-  validateBlock,
-  stylesToCSS,
-  generateId,
-  isEmpty,
-  safeGet,
-  stripHTML,
-  formatFileSize
-} from './utils.js';
-
-// 导出工具函数
-export {
-  camelToKebab,
-  escapeHTML,
-  deepMerge,
-  validateBlock,
-  stylesToCSS,
-  generateId,
-  isEmpty,
-  safeGet,
-  stripHTML,
-  formatFileSize
-};
-
-// 导出配置
-export { blockTemplates, inlineStyles } from './config.js';
-
-// 默认导出解析器
-export { EditorJSParser as default } from './parser.js';
+import TemplateLoader from './TemplateLoader.js';
+import InlineStyleProcessor from './InlineStyleProcessor.js';
+import Renderer from './Renderer.js';
 
 /**
- * 便捷函数：快速解析EditorJS数据
- * @param {object} editorData - EditorJS数据
- * @param {object} options - 解析选项
- * @returns {string} HTML字符串
+ * Block-to-HTML 转换器主类
  */
-export function parseEditorJS(editorData, options = {}) {
-  const parser = new EditorJSParser(options);
-  return parser.parse(editorData, options);
+class BlockToHtmlConverter {
+  constructor() {
+    this.templateLoader = new TemplateLoader();
+    this.inlineStyleProcessor = new InlineStyleProcessor(this.templateLoader);
+    this.renderer = new Renderer(this.templateLoader, this.inlineStyleProcessor);
+  }
+
+  /**
+   * 转换EditorJS数据为HTML
+   * @param {Object} editorData - EditorJS数据对象
+   * @param {Object} template - 模板对象
+   * @returns {string} HTML字符串
+   */
+  convert(editorData, template) {
+    // 数据格式验证
+    if (!validateEditorData(editorData)) {
+      console.error('无效的EditorJS数据格式');
+      return '';
+    }
+
+    if (template) {
+      this.templateLoader.loadTemplate(template);
+    }
+
+    // 模板加载验证
+    if (!this.templateLoader.isTemplateLoaded()) {
+      console.error('模板未加载');
+      return '';
+    }
+
+    return this.renderer.render(editorData);
+  }
 }
 
 /**
- * 便捷函数：创建解析器实例
- * @param {object} options - 配置选项
- * @returns {EditorJSParser} 解析器实例
+ * 转换EditorJS数据为HTML
+ * @param {Object} editorData - EditorJS数据对象
+ * @param {Object} template - 模板对象
+ * @returns {string} 转换后的HTML字符串
  */
-export function createParser(options = {}) {
-  return new EditorJSParser(options);
+function convertToHtml(editorData, template) {
+  const converter = new BlockToHtmlConverter();
+  return converter.convert(editorData, template);
 }
 
 /**
- * 便捷函数：解析单个block
- * @param {object} block - block数据
- * @param {object} options - 解析选项
- * @returns {string} HTML字符串
- */
-export function parseBlock(block, options = {}) {
-  const parser = new EditorJSParser(options);
-  return parser.parseBlock(block, options);
-}
-
-/**
- * 便捷函数：预览block渲染结果
- * @param {object} block - block数据
- * @param {object} options - 选项
- * @returns {string} HTML字符串
- */
-export function previewBlock(block, options = {}) {
-  const parser = new EditorJSParser(options);
-  return parser.previewBlock(block, options);
-}
-
-/**
- * 便捷函数：验证EditorJS数据格式
- * @param {object} data - 数据
+ * 验证EditorJS数据格式
+ * @param {Object} editorData - EditorJS数据对象
  * @returns {boolean} 是否有效
  */
-export function validateEditorData(data) {
-  if (!data || typeof data !== 'object') return false;
-  if (!Array.isArray(data.blocks)) return false;
-  
-  return data.blocks.every(block => validateBlock(block));
+function validateEditorData(editorData) {
+  return editorData && 
+         editorData.blocks && 
+         Array.isArray(editorData.blocks) &&
+         editorData.blocks.every(block => block && block.type);
 }
 
-/**
- * 便捷函数：获取支持的block类型
- * @param {object} options - 配置选项
- * @returns {array} 支持的block类型数组
- */
-export function getSupportedBlockTypes(options = {}) {
-  const parser = new EditorJSParser(options);
-  return parser.getSupportedBlockTypes();
-}
-
-/**
- * 便捷函数：检查是否支持指定block类型
- * @param {string} type - block类型
- * @param {object} options - 配置选项
- * @returns {boolean} 是否支持
- */
-export function supportsBlockType(type, options = {}) {
-  const parser = new EditorJSParser(options);
-  return parser.supportsBlockType(type);
-}
-
-/**
- * 版本信息
- */
-export const VERSION = '1.0.0';
-
-/**
- * 模块信息
- */
-export const MODULE_INFO = {
-  name: 'EditorJS to HTML Converter',
-  version: VERSION,
-  description: 'Convert EditorJS data to HTML with customizable templates and styles',
-  author: 'FlowEdit Team',
-  features: [
-    'Template-based rendering',
-    'Customizable styles',
-    'Caching support',
-    'Error handling',
-    'Extensible architecture',
-    'Performance monitoring'
-  ]
-};
+// ES6 模块导出
+export { BlockToHtmlConverter, convertToHtml, validateEditorData };
+export default BlockToHtmlConverter;

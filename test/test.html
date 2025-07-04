@@ -56,6 +56,7 @@
         <div id="status" class="status"></div>
         
         <button onclick="checkModules()">检查模块状态</button>
+        <button onclick="testValidation()">测试数据验证</button>
         <button onclick="testConversion()">测试转换</button>
         
         <div id="result" class="result"></div>
@@ -118,6 +119,54 @@
         // 将函数暴露到全局作用域
         window.loadTemplate = loadTemplate;
 
+        // 测试数据验证功能
+        function testValidation() {
+            const resultDiv = document.getElementById('result');
+            const outputDiv = document.getElementById('output');
+            
+            // 测试用例
+            const testCases = [
+                {
+                    name: '有效数据',
+                    data: testData,
+                    expected: true
+                },
+                {
+                    name: '空数据',
+                    data: null,
+                    expected: false
+                },
+                {
+                    name: '缺少blocks字段',
+                    data: { version: '2.0' },
+                    expected: false
+                },
+                {
+                    name: 'blocks不是数组',
+                    data: { blocks: 'not an array' },
+                    expected: false
+                },
+                {
+                    name: '包含无效block',
+                    data: { blocks: [{ type: 'paragraph', data: {} }, { data: {} }] },
+                    expected: false
+                }
+            ];
+            
+            let results = [];
+            testCases.forEach(testCase => {
+                const result = validateEditorData(testCase.data);
+                const passed = result === testCase.expected;
+                results.push(`${testCase.name}: ${passed ? '✅ 通过' : '❌ 失败'} (期望: ${testCase.expected}, 实际: ${result})`);
+            });
+            
+            resultDiv.textContent = '数据验证测试完成';
+            outputDiv.innerHTML = '<h3>验证测试结果:</h3><pre>' + results.join('\n') + '</pre>';
+        }
+        
+        // 将函数暴露到全局作用域
+        window.testValidation = testValidation;
+
         // 测试转换功能
         async function testConversion() {
             try {
@@ -126,23 +175,16 @@
                     throw new Error('模板加载失败');
                 }
 
+                // 使用更新后的转换器，现在convert方法内部已包含所有验证逻辑
                 const converter = new BlockToHtmlConverter();
+                const html = converter.convert(testData, templateData);
                 
-                // 加载模板
-                const templateLoader = new TemplateLoader();
-                const loadSuccess = templateLoader.loadTemplate(templateData);
-                if (!loadSuccess) {
-                    throw new Error('模板初始化失败');
+                if (html) {
+                    document.getElementById('output').innerHTML = html;
+                    document.getElementById('result').textContent = '转换成功！';
+                } else {
+                    document.getElementById('result').textContent = '转换失败: 返回空结果';
                 }
-
-                // 设置模板加载器
-                converter.templateLoader = templateLoader;
-                converter.renderer = new Renderer(templateLoader, new InlineStyleProcessor(templateLoader));
-                
-                const html = converter.convert(testData);
-                
-                document.getElementById('output').innerHTML = html;
-                document.getElementById('result').textContent = '转换成功！';
             } catch (error) {
                 document.getElementById('result').textContent = '转换失败: ' + error.message;
                 console.error('转换错误:', error);

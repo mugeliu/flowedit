@@ -6,6 +6,7 @@ class Renderer {
   constructor(templateLoader, inlineStyleProcessor) {
     this.templateLoader = templateLoader;
     this.inlineStyleProcessor = inlineStyleProcessor;
+    this.allExtractedLinks = []; // 维护所有提取的链接数组
   }
 
   /**
@@ -14,6 +15,9 @@ class Renderer {
    * @returns {string} 渲染后的HTML字符串
    */
   render(editorData) {
+    // 重置链接数组
+    this.allExtractedLinks = [];
+    
     const htmlBlocks = editorData.blocks.map(block => this.renderBlock(block));
     return htmlBlocks.filter(html => html).join('\n');
   }
@@ -31,32 +35,105 @@ class Renderer {
 
     const { type, data } = block;
 
+    // 统一处理内联样式
+    const processedData = this.processBlockInlineStyles(data);
+
     try {
       switch (type) {
         case 'paragraph':
-          return this.renderParagraph(data);
+          return this.renderParagraph(processedData);
         case 'header':
-          return this.renderHeader(data);
+          return this.renderHeader(processedData);
         case 'list':
-          return this.renderList(data);
+          return this.renderList(processedData);
         case 'quote':
-          return this.renderQuote(data);
+          return this.renderQuote(processedData);
         case 'code':
-          return this.renderCode(data);
+          return this.renderCode(processedData);
         case 'delimiter':
-          return this.renderDelimiter(data);
+          return this.renderDelimiter(processedData);
         case 'image':
-          return this.renderImage(data);
+          return this.renderImage(processedData);
         case 'raw':
-          return this.renderRaw(data);
+          return this.renderRaw(processedData);
         default:
           console.warn(`未支持的块类型: ${type}`);
-          return this.renderGeneric(type, data);
+          return this.renderGeneric(type, processedData);
       }
     } catch (error) {
       console.error(`渲染块失败 (${type}):`, error);
       return '';
     }
+  }
+
+  /**
+   * 统一处理块数据中的内联样式
+   * @param {Object} data - 块数据
+   * @returns {Object} 处理后的块数据和提取的链接信息
+   */
+  processBlockInlineStyles(data) {
+    if (!data || typeof data !== 'object') {
+      return { processedData: data, extractedLinks: [] };
+    }
+
+    const processedData = { ...data };
+    let allExtractedLinks = [];
+
+    // 处理常见的文本字段
+    const textFields = ['text', 'caption', 'content'];
+    
+    textFields.forEach(field => {
+       if (processedData[field] && typeof processedData[field] === 'string') {
+         processedData[field] = this.inlineStyleProcessor.processInlineStyles(processedData[field], this.allExtractedLinks);
+         
+         // 收集提取的链接（现在链接已经直接添加到全局数组中）
+         const links = this.inlineStyleProcessor.getExtractedLinks();
+         if (links && links.length > 0) {
+           allExtractedLinks = allExtractedLinks.concat(links);
+         }
+       }
+     });
+
+    // 处理列表项中的嵌套文本
+    if (processedData.items && Array.isArray(processedData.items)) {
+      processedData.items = processedData.items.map(item => {
+         if (typeof item === 'string') {
+           const processedText = this.inlineStyleProcessor.processInlineStyles(item, this.allExtractedLinks);
+           const links = this.inlineStyleProcessor.getExtractedLinks();
+           if (links && links.length > 0) {
+             allExtractedLinks = allExtractedLinks.concat(links);
+           }
+           return processedText;
+         } else if (item && typeof item === 'object') {
+           const processedItem = { ...item };
+           if (processedItem.content) {
+             processedItem.content = this.inlineStyleProcessor.processInlineStyles(processedItem.content, this.allExtractedLinks);
+             const links = this.inlineStyleProcessor.getExtractedLinks();
+             if (links && links.length > 0) {
+               allExtractedLinks = allExtractedLinks.concat(links);
+             }
+           }
+           if (processedItem.text) {
+             processedItem.text = this.inlineStyleProcessor.processInlineStyles(processedItem.text, this.allExtractedLinks);
+             const links = this.inlineStyleProcessor.getExtractedLinks();
+             if (links && links.length > 0) {
+               allExtractedLinks = allExtractedLinks.concat(links);
+             }
+           }
+           return processedItem;
+         }
+         return item;
+       });
+    }
+
+    // 将提取的链接信息附加到处理后的数据中
+      if (allExtractedLinks.length > 0) {
+        processedData._extractedLinks = allExtractedLinks;
+        // 注意：链接已经在processInlineStyles中直接添加到this.allExtractedLinks了
+        // 这里不需要再次添加，避免重复
+      }
+
+      return processedData;
   }
 
   /**
@@ -66,7 +143,7 @@ class Renderer {
    */
   renderParagraph(data) {
     return this.renderWithTemplate('paragraph', {
-      text: this.inlineStyleProcessor.processInlineStyles(data.text || '')
+      text: data.text || ''
     });
   }
 
@@ -79,7 +156,7 @@ class Renderer {
     const level = data.level || 1;
     const subType = `h${Math.min(Math.max(level, 1), 6)}`;
     return this.renderWithTemplate('header', {
-      text: this.inlineStyleProcessor.processInlineStyles(data.text || ''),
+      text: data.text || '',
       level
     }, subType);
   }
@@ -136,7 +213,7 @@ class Renderer {
    */
   renderListItem(item, style, listTemplate) {
     const itemData = typeof item === 'string' ? { content: item } : item;
-    const content = this.inlineStyleProcessor.processInlineStyles(itemData.content || itemData.text || '');
+    const content = itemData.content || itemData.text || '';
     
     let itemHtml = content;
     
@@ -180,8 +257,8 @@ class Renderer {
    * @returns {string} HTML字符串
    */
   renderQuote(data) {
-    const text = this.inlineStyleProcessor.processInlineStyles(data.text || '');
-    const caption = data.caption ? this.inlineStyleProcessor.processInlineStyles(data.caption) : '';
+    const text = data.text || '';
+    const caption = data.caption || '';
     
     return this.renderWithConditionalTemplate('quote', { text, caption }, 'caption');
   }
@@ -236,13 +313,7 @@ class Renderer {
    * @returns {string} HTML字符串
    */
   renderGeneric(type, data) {
-    // 处理文本字段
-    const processedData = { ...data };
-    if (data.text) {
-      processedData.text = this.inlineStyleProcessor.processInlineStyles(data.text);
-    }
-
-    return this.renderWithTemplate(type, processedData);
+    return this.renderWithTemplate(type, data);
   }
 
   /**
@@ -328,6 +399,21 @@ class Renderer {
     };
 
     return text.replace(/[&<>"']/g, char => htmlEscapes[char]);
+  }
+
+  /**
+   * 获取所有提取的链接
+   * @returns {Array} 所有提取的链接数组
+   */
+  getAllExtractedLinks() {
+    return this.allExtractedLinks || [];
+  }
+
+  /**
+   * 清空所有提取的链接
+   */
+  clearAllExtractedLinks() {
+    this.allExtractedLinks = [];
   }
 
 

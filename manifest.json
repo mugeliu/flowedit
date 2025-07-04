@@ -32,7 +32,7 @@
   "host_permissions": ["https://mp.weixin.qq.com/cgi-bin/appmsg?*"],
   "web_accessible_resources": [
     {
-      "resources": ["scripts/*.js", "assets/css/*.css"],
+      "resources": ["scripts/*.js", "assets/css/*.css", "assets/style-template.json"],
       "matches": ["<all_urls>"]
     }
   ],

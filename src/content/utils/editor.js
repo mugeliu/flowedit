@@ -1,10 +1,25 @@
 // 编辑器相关工具函数
 import { editorConfig } from "../config/index.js";
-import { parseEditorJS } from "./parsers/index.js";
-import { renderPreviewContent } from "../features/sidebar/preview.js";
+import { convertToHtml } from "./parsers/index.js";
+import { renderPreviewContent } from "../features/sidebar/preview.js"; 
 
 // 全局编辑器状态管理
 let isEditorActive = false;
+
+/**
+ * 加载样式模板
+ * @returns {Promise<Object>} 样式模板对象
+ */
+export async function loadStyleTemplate() {
+  try {
+    const templateResponse = await fetch(chrome.runtime.getURL('assets/style-template.json'));
+    const styleTemplate = await templateResponse.json();
+    return styleTemplate;
+  } catch (error) {
+    console.error('加载样式模板失败:', error);
+    throw error;
+  }
+}
 
 /**
  * 将EditorJS数据保存到原编辑器
@@ -19,8 +34,11 @@ let isEditorActive = false;
  */
 export async function saveToOriginalEditor(editorData, options = {}) {
   try {
+    // 加载样式模板
+    const styleTemplate = await loadStyleTemplate();
+    
     // 使用HTML解析器生成HTML内容
-    const htmlContent = parseEditorJS(editorData, {});
+    const htmlContent = convertToHtml(editorData, styleTemplate);
 
     console.log("生成的HTML内容:", htmlContent);
 
@@ -80,7 +98,8 @@ export async function loadAndInitializeEditor(container) {
     tools: resolvedTools,
     onChange: (api, event) => {
       api.saver.save().then((output) => {
-        const htmlContent = parseEditorJS(output, {});
+        // todo html预览
+        htmlContent = ""
         renderPreviewContent(htmlContent);
       });
     },

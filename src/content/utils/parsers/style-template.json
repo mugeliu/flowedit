@@ -1,0 +1,66 @@
+{
+  "theme": "green-gradient-theme",
+  "description": "基于 FlowEdit 配置的绿色渐变主题样式模板",
+  "inlineStyles": {
+    "strong": "font-weight: 700; color: rgb(34, 197, 94);",
+    "b": "font-weight: 700; color: rgb(34, 197, 94);",
+    "em": "font-style: italic; color: rgb(22, 163, 74); font-weight: 500; letter-spacing: 0.5px;",
+    "i": "font-style: italic; color: rgb(22, 163, 74); font-weight: 500; letter-spacing: 0.5px;",
+    "u": "text-decoration: underline; text-decoration-color: rgb(16, 185, 129); text-underline-offset: 3px; text-decoration-thickness: 2px;",
+    "code": "font-family: 'Consolas', 'Monaco', 'Courier New', monospace; font-size: 0.85em; background: rgba(16, 185, 129, 0.1); color: rgb(6, 78, 59); padding: 0.25em 0.6em; border-radius: 5px; border: 1px solid rgba(16, 185, 129, 0.25); font-weight: 500; letter-spacing: 0.3px;",
+    "mark": "background: rgba(16, 185, 129, 0.2); padding: 0.1em 0.4em; border-radius: 3px;",
+    "a": "color: rgb(16, 185, 129); text-decoration: underline; text-decoration-color: rgba(16, 185, 129, 0.6); text-underline-offset: 2px;",
+    "sup": "color: rgba(16, 185, 129, 0.8); font-size: 0.7em; margin-left: 0.2em;"
+  },
+  "blocks": {
+    "paragraph": "<p style='font-size: 16px; color: rgb(55, 65, 81); letter-spacing: 0.3px; padding: 0.3em 0.5em; margin: 0 0 0.6em 0; line-height: 1.5; font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif; text-align: justify; word-break: break-word;'>{{text}}</p>",
+    "header": {
+      "h1": "<section style='text-align: center; margin: 1.8em auto 1.2em; width: 92%; max-width: 600px;'><h1 style='display: inline-block; padding: 0.8em 2.2em; margin: 0; font-size: 20px; font-weight: 600; line-height: 1.2; color: #fff; font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 12px; box-shadow: 0 6px 20px -4px rgba(16, 185, 129, 0.25), 0 2px 8px -2px rgba(0,0,0,0.1);'>{{text}}</h1></section>",
+      "h2": "<section style='margin: 1.5em 0 1em;'><h2 style='display: inline-flex; align-items: center; padding: 0.8em 1.8em 0.8em 1.2em; margin: 0; font-size: 18px; font-weight: 600; line-height: 1.4; font-family: -apple-system, sans-serif; color: #047857; background: rgba(16, 185, 129, 0.06); border-left: 4px solid #10b981; border-radius: 0 8px 8px 0;'><span style='display: block; width: 8px; height: 8px; background: #10b981; border-radius: 50%; margin-right: 0.8em; flex-shrink: 0;'></span>{{text}}</h2></section>",
+      "h3": "<section style='margin: 1.5em 0 1em;'><h3 style='display: inline-flex; align-items: center; padding: 0.8em 1.8em 0.8em 1.2em; margin: 0; font-size: 18px; font-weight: 600; line-height: 1.4; font-family: -apple-system, sans-serif; color: #047857; background: rgba(16, 185, 129, 0.06); border-left: 4px solid #10b981; border-radius: 0 8px 8px 0;'><span style='display: inline-block; width: 8px; height: 8px; background: rgba(16, 185, 129, 0.8); border-radius: 50%; margin-right: 0.8em;'></span>{{text}}</h3></section>"
+    },
+    "quote": "<section style='border-left: 4px solid #10b981; background: rgba(16, 185, 129, 0.06); padding: 1.2em 1.8em; border-radius: 0 8px 8px 0; box-shadow: rgba(16, 185, 129, 0.1) 0 2px 8px -2px; margin: 1em 0; font-family: -apple-system, sans-serif;'><p style='margin: 0 0 12px 0; color: #516673; font-style: italic; font-size: 16px; line-height: 1.6;'>{{text}}</p>{{#caption}}<footer style='text-align: right; font-size: 14px; color: #6b7280; font-style: italic; margin-top: 8px;'>— {{caption}}</footer>{{/caption}}</section>",
+    "delimiter": "<section style='display: flex; justify-content: center; margin: 2em 0;'><hr style='width: 80%; height: 2px; background: linear-gradient(90deg, transparent 0%, rgba(16, 185, 129, 0.2) 20%, rgba(16, 185, 129, 0.6) 50%, rgba(16, 185, 129, 0.2) 80%, transparent 100%); border-radius: 1px; border: none;' /></section>",
+    "image": "<figure style='margin: 0.8em 0; padding: 0; max-width: 100%; line-height: 0; display: block; text-align: center;'><img src='{{url}}' alt='{{alt}}' style='max-width: 100%; border-radius: 8px;' />{{#caption}}<figcaption style='margin-top: 0.5em; font-size: 14px; color: #6b7280; font-style: italic; line-height: 1.4;'>{{caption}}</figcaption>{{/caption}}</figure>",
+    "code": "<section style='font-family: Optima, PingFang SC, serif; font-size: 16px; line-height: 1.75;'><pre style='background: #1e1e1e; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; font-family: Fira Code, monospace; font-size: 90%; line-height: 1.5; margin: 10px 8px 0; overflow-x: auto; padding: 1em; white-space: pre-wrap; color: #eee;'><code style='display: block; margin: 0; padding: 0.5em 1em 1em; white-space: pre; overflow-x: auto;'>{{code}}</code></pre></section>",
+    "List": {
+      "ordered": {
+        "wrapper": "<div class='list-container'><ol style='list-style: decimal; margin: 0.5em 0; padding-left: 1.5em;'>{{items}}</ol></div>",
+        "item": "<li style='padding: 4px 0; line-height: 1.6;'>{{content}}</li>",
+        "nested": "<ol style='list-style: decimal; margin: 0.3em 0 0.3em 1em; padding-left: 1.2em;'>{{items}}</ol>"
+      },
+      "unordered": {
+        "wrapper": "<div class='list-container'><ul style='list-style: disc; margin: 0.5em 0; padding-left: 1.5em;'>{{items}}</ul></div>",
+        "item": "<li style='padding: 4px 0; line-height: 1.6;'>{{content}}</li>",
+        "nested": "<ul style='list-style: circle; margin: 0.3em 0 0.3em 1em; padding-left: 1.2em;'>{{items}}</ul>"
+      },
+      "checklist": {
+        "wrapper": "<div class='list-container'><ul style='list-style: none; margin: 0.5em 0; padding-left: 0.5em;'>{{items}}</ul></div>",
+        "item": "<li style='padding: 4px 0; line-height: 1.6; display: flex; align-items: flex-start;'><span style='margin-right: 0.5em; margin-top: 0.1em; font-size: 14px;'>{{checkbox}}</span><span>{{content}}</span></li>",
+        "nested": "<ul style='list-style: none; margin: 0.3em 0 0.3em 1.5em; padding-left: 0;'>{{items}}</ul>",
+        "checked_icon": "✅",
+        "unchecked_icon": "☐"
+      }
+    },
+    "raw": "{{html}}"
+  },
+  "usage": {
+    "description": "此模板文件包含了从 FlowEdit config.js 提取的样式配置",
+    "variables": {
+      "{{text}}": "文本内容",
+      "{{level}}": "标题级别 (1-6)",
+      "{{url}}": "图片链接",
+      "{{caption}}": "图片说明",
+      "{{code}}": "代码内容",
+      "{{items}}": "列表项内容",
+      "{{content}}": "列表项文本",
+      "{{html}}": "原始HTML内容"
+    },
+    "notes": [
+      "所有样式都基于 FlowEdit 的绿色主题配色方案",
+      "内联样式支持 strong, b, em, i, u, code, mark, a, sup 标签",
+      "标题支持 h1, h2, h3 三个级别，每个级别都有独特的视觉设计",
+      "列表支持有序、无序和检查列表三种类型"
+    ]
+  }
+}

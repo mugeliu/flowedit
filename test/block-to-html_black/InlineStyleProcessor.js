@@ -10,15 +10,16 @@ class InlineStyleProcessor {
   /**
    * 处理文本中的内联样式
    * @param {string} text - 包含HTML标签的文本
+   * @param {Array} globalLinksArray - 全局链接数组引用（可选）
    * @returns {string} 处理后的HTML文本
    */
-  processInlineStyles(text) {
+  processInlineStyles(text, globalLinksArray = null) {
     if (!text || typeof text !== 'string') {
       return text || '';
     }
 
-    // 处理a标签的特殊逻辑
-    text = this.processAnchorTags(text);
+    // 处理a标签的特殊逻辑，传递全局链接数组
+    text = this.processAnchorTags(text, globalLinksArray);
     
     // 处理其他标签
     return text.replace(/<(code|u|mark|i|em|strong|b|sup)(?:\s[^>]*)?>/g, (match, tag) => {
@@ -30,10 +31,15 @@ class InlineStyleProcessor {
   /**
    * 特殊处理a标签，提取href链接，转换为span标签并添加sup上标
    * @param {string} text - 包含HTML标签的文本
+   * @param {Array} globalLinksArray - 全局链接数组引用（可选）
    * @returns {string} 处理后的HTML文本
    */
-  processAnchorTags(text) {
-    let linkCounter = 1;
+  processAnchorTags(text, globalLinksArray = null) {
+    if (!text || typeof text !== 'string') {
+      return text;
+    }
+
+    let linkCounter = globalLinksArray ? globalLinksArray.length + 1 : 1;
     const extractedLinks = [];
     
     // 处理完整的a标签（包括开始和结束标签）
@@ -43,7 +49,13 @@ class InlineStyleProcessor {
       const href = hrefMatch ? hrefMatch[1] : '';
       
       if (href) {
-        extractedLinks.push(`[${linkCounter}]: ${href}`);
+        const linkEntry = `[${linkCounter}]: ${href}`;
+        extractedLinks.push(linkEntry);
+        
+        // 如果提供了全局链接数组，直接添加到其中
+        if (globalLinksArray) {
+          globalLinksArray.push(linkEntry);
+        }
       }
       
       // 获取a标签和sup标签的样式
