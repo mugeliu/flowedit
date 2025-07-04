@@ -87,7 +87,7 @@ export function createSidebarToggle() {
  * 处理侧边栏切换事件
  * @param {Event} event change事件
  */
-export function handleSidebarToggle(event) {
+export async function handleSidebarToggle(event) {
   // 获取侧边栏元素
   const sidebar = document.getElementById(selectorConfig.sidebar);
 
@@ -99,7 +99,7 @@ export function handleSidebarToggle(event) {
     if (isChecked) {
       // checkbox选中状态，隐藏侧边栏，显示预览容器
       hideElement(sidebar);
-      showPreviewContainer();
+      await showPreviewContainer();
     } else {
       // checkbox未选中状态，显示侧边栏，隐藏预览容器
       showElement(sidebar);

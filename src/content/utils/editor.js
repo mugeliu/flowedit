@@ -96,12 +96,17 @@ export async function loadAndInitializeEditor(container) {
     minHeight: editorConfig.minHeight,
     logLevel: editorConfig.logLevel,
     tools: resolvedTools,
-    onChange: (api, event) => {
-      api.saver.save().then((output) => {
-        // todo html预览
-        htmlContent = ""
-        renderPreviewContent(htmlContent);
-      });
+    onChange: async (api, event) => {
+      try {
+        const output = await api.saver.save();
+        // 加载样式模板并生成HTML预览
+        const styleTemplate = await loadStyleTemplate();
+        const htmlContent = convertToHtml(output, styleTemplate);
+        await renderPreviewContent(htmlContent);
+      } catch (error) {
+        console.error('预览内容生成失败:', error);
+        await renderPreviewContent('');
+      }
     },
     onReady: () => {
       if (window.EditorJS.DragDrop) {

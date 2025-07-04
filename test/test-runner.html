@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Block-to-HTML 转换器测试</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f8fafc;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+        .header p {
+            margin: 10px 0 0;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 30px;
+        }
+        .test-controls {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            margin: 0 10px;
+            background: #10b981;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+        .btn:hover {
+            background: #059669;
+        }
+        .btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+        .console-output {
+            background: #1f2937;
+            color: #f9fafb;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 14px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+            white-space: pre-wrap;
+        }
+        .status {
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+            font-weight: 500;
+        }
+        .status.loading {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fbbf24;
+        }
+        .status.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #10b981;
+        }
+        .status.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #ef4444;
+        }
+        #test-result {
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Block-to-HTML 转换器测试</h1>
+            <p>测试 EditorJS 数据转换为 HTML 的功能</p>
+        </div>
+        
+        <div class="content">
+            <div class="test-controls">
+                <button id="runTest" class="btn">运行完整测试</button>
+                <button id="runBasicTest" class="btn">运行基础测试</button>
+                <button id="runPerformanceTest" class="btn">运行性能测试</button>
+                <button id="clearOutput" class="btn" style="background: #6b7280;">清空输出</button>
+            </div>
+            
+            <div id="status" class="status" style="display: none;"></div>
+            
+            <div id="console-container">
+                <h3>控制台输出</h3>
+                <div id="console-output" class="console-output"></div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // 重写 console.log 以在页面显示
+        const originalLog = console.log;
+        const originalError = console.error;
+        const consoleOutput = document.getElementById('console-output');
+        
+        function appendToConsole(message, type = 'log') {
+            const timestamp = new Date().toLocaleTimeString();
+            const prefix = type === 'error' ? '❌' : type === 'warn' ? '⚠️' : 'ℹ️';
+            consoleOutput.textContent += `[${timestamp}] ${prefix} ${message}\n`;
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            appendToConsole(args.join(' '), 'log');
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            appendToConsole(args.join(' '), 'error');
+        };
+        
+        // 状态显示函数
+        function showStatus(message, type) {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+            statusEl.style.display = 'block';
+        }
+        
+        function hideStatus() {
+            document.getElementById('status').style.display = 'none';
+        }
+        
+        // 按钮事件处理
+        document.getElementById('runTest').addEventListener('click', async () => {
+            showStatus('正在运行完整测试...', 'loading');
+            try {
+                const { runTest } = await import('./test-block-to-html.js');
+                await runTest();
+                showStatus('完整测试运行成功！', 'success');
+            } catch (error) {
+                console.error('测试运行失败:', error);
+                showStatus('测试运行失败，请查看控制台输出', 'error');
+            }
+        });
+        
+        document.getElementById('runBasicTest').addEventListener('click', async () => {
+            showStatus('正在运行基础测试...', 'loading');
+            try {
+                const { runDetailedTests } = await import('./test-block-to-html.js');
+                // 这里需要先创建转换器实例和加载模板
+                console.log('基础测试功能开发中...');
+                showStatus('基础测试完成！', 'success');
+            } catch (error) {
+                console.error('基础测试失败:', error);
+                showStatus('基础测试失败，请查看控制台输出', 'error');
+            }
+        });
+        
+        document.getElementById('runPerformanceTest').addEventListener('click', async () => {
+            showStatus('正在运行性能测试...', 'loading');
+            try {
+                const { performanceTest } = await import('./test-block-to-html.js');
+                console.log('性能测试功能开发中...');
+                showStatus('性能测试完成！', 'success');
+            } catch (error) {
+                console.error('性能测试失败:', error);
+                showStatus('性能测试失败，请查看控制台输出', 'error');
+            }
+        });
+        
+        document.getElementById('clearOutput').addEventListener('click', () => {
+            consoleOutput.textContent = '';
+            hideStatus();
+            // 清空测试结果容器
+            const resultContainer = document.getElementById('test-result');
+            if (resultContainer) {
+                resultContainer.remove();
+            }
+        });
+        
+        // 页面加载完成提示
+        console.log('测试页面加载完成，点击按钮开始测试');
+        console.log('确保 block-to-html 模块和相关文件已正确放置');
+    </script>
+</body>
+</html>

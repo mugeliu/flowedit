@@ -1,0 +1,194 @@
+{
+  "time": 1751613291081,
+  "blocks": [
+    {
+      "id": "intro_paragraph",
+      "type": "paragraph",
+      "data": {
+        "text": "这是一个测试文件，请启用编辑plus+以启用预览。"
+      }
+    },
+    {
+      "id": "intro_delimiter",
+      "type": "delimiter",
+      "data": {}
+    },
+    {
+      "id": "jRGMdmMIPo",
+      "type": "header",
+      "data": {
+        "text": "这是一个测试",
+        "level": 1
+      }
+    },
+    {
+      "id": "SODhv0cXXd",
+      "type": "paragraph",
+      "data": {
+        "text": "开始打架发了上课"
+      }
+    },
+    {
+      "id": "GoBbVXjtaI",
+      "type": "paragraph",
+      "data": {
+        "text": "首付款垃圾分类凯撒奖地方；发生口角发；啊开始了发家史；发烧快递费开了撒；flash减肥；&nbsp;"
+      }
+    },
+    {
+      "id": "Wz1mHqOMy9",
+      "type": "paragraph",
+      "data": {
+        "text": "撒旦法"
+      }
+    },
+    {
+      "id": "OnWCB_4fi0",
+      "type": "delimiter",
+      "data": {}
+    },
+    {
+      "id": "kRNe__cMwt",
+      "type": "paragraph",
+      "data": {
+        "text": "WeUI 是一套同微信<code class=\"inline-code\">原生视觉</code>体验一致的基础样式库，由微信官方设计团队为微信 Web 开发量身设计，可以令用户的使用感知更加统一。包含 button、cell、<i>dialog</i>、 progress、<u class=\"cdx-underline\"> toast</u>、article、<mark class=\"cdx-marker\">actionshe</mark>et、icon 等<mark class=\"cdx-marker\">各式元素</mark>。"
+      }
+    },
+    {
+      "id": "mamE2aKDoP",
+      "type": "quote",
+      "data": {
+        "text": "WeUI 是一套同微信原生视觉体验一致的基础样式库，由微信官方设计团队为微信 Web 开发量身设计，可以令用户的使用感知更加统一。包含 button、cell、dialog、 progress、 toast、article、actionsheet、icon 等各式元素。",
+        "caption": "Weui",
+        "alignment": "left"
+      }
+    },
+    {
+      "id": "4JyEW5f58V",
+      "type": "raw",
+      "data": {
+        "html": "<section style='display: flex; justify-content: center; margin: 2em 0;'>\n\t<section style='height: 4px; width: 120px; background: linear-gradient(to right, #0ea5e9, #38bdf8); border-radius: 4px;'></section>\n</section>"
+      }
+    },
+    {
+      "id": "dYk2bxDUBS",
+      "type": "code",
+      "data": {
+        "code": "var editor = EditorJS({\n  ...\n  \n  tools: {\n    ...\n    inlineCode: {\n      class: InlineCode,\n      shortcut: 'CMD+SHIFT+M',\n    },\n  },\n  \n  ...\n});"
+      }
+    },
+    {
+      "id": "YInKb2Fo39",
+      "type": "list",
+      "data": {
+        "style": "checklist",
+        "meta": {},
+        "items": [
+          {
+            "content": "sdfafs",
+            "meta": {
+              "checked": false
+            },
+            "items": [
+              {
+                "content": "sadfadf",
+                "meta": {
+                  "checked": false
+                },
+                "items": []
+              },
+              {
+                "content": "sfdafasfd",
+                "meta": {
+                  "checked": true
+                },
+                "items": [
+                  {
+                    "content": "sdfasfda",
+                    "meta": {
+                      "checked": false
+                    },
+                    "items": [
+                      {
+                        "content": "sdafasfda",
+                        "meta": {
+                          "checked": false
+                        },
+                        "items": []
+                      },
+                      {
+                        "content": "sdfasdfa",
+                        "meta": {
+                          "checked": true
+                        },
+                        "items": []
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "fzY3X4XSdV",
+      "type": "header",
+      "data": {
+        "text": "sdfasfafdsdaf",
+        "level": 3
+      }
+    },
+    {
+      "id": "yhVHjYW2ww",
+      "type": "image",
+      "data": {
+        "caption": "测试图片",
+        "withBorder": false,
+        "withBackground": false,
+        "stretched": false,
+        "file": {
+          "url": "https://mmbiz.qpic.cn/sz_mmbiz_jpg/mYicm6icXgkIPJYzBHsfqQ5DkQWJNaVsnynsfckIPt5FOqL6qqIV7icDGnG38PXzYd77jmKCZs4ekiab7x1j7fUs1w/0?wx_fmt=jpeg&from=appmsg",
+          "fileName": "IMG_0153"
+        }
+      }
+    },
+    {
+      "id": "krfY_fcppk",
+      "type": "paragraph",
+      "data": {
+        "text": "WeUI 是一套同微信原生视觉体验一致的基础样式库，由微信官方设计团队为微信 Web 开发量身设计，可以令用户的使用感知更加统一。包含 <code class=\"inline-code\">button、cell、dialog、 progress、 toast、article、actionsheet、icon </code>等各式元素。"
+      }
+    },
+    {
+      "id": "linkTest_1",
+      "type": "paragraph",
+      "data": {
+        "text": "这里有一些测试链接：访问 <a href=\"https://github.com/codex-team/editor.js\">EditorJS 官方仓库</a> 了解更多信息，或者查看 <a href=\"https://editorjs.io/\">官方文档</a> 获取详细指南。"
+      }
+    },
+    {
+      "id": "linkTest_2",
+      "type": "paragraph",
+      "data": {
+        "text": "联系我们：发送邮件到 <a href=\"mailto:support@example.com\">support@example.com</a> 或拨打电话 <a href=\"tel:+86-138-0013-8000\">+86-138-0013-8000</a>。"
+      }
+    },
+    {
+      "id": "linkTest_3",
+      "type": "paragraph",
+      "data": {
+        "text": "更多资源：<a href=\"https://www.npmjs.com/package/@editorjs/editorjs\" target=\"_blank\">NPM 包</a>、<a href=\"#section1\" class=\"nav-link\">页面锚点</a>、<a href=\"https://developer.mozilla.org/zh-CN/docs/Web/HTML/Element/a\" title=\"MDN 文档\">HTML a 标签参考</a>。"
+      }
+    },
+    {
+      "id": "linkTest_4",
+      "type": "paragraph",
+      "data": {
+        "text": "混合内容测试：这段文字包含 <strong>粗体</strong>、<em>斜体</em>、<code class=\"inline-code\">代码</code> 和 <a href=\"https://example.com\">链接</a>，还有 <u class=\"cdx-underline\">下划线</u> 和 <mark class=\"cdx-marker\">高亮标记</mark>。"
+      }
+    }
+  ],
+  "version": "2.31.0-rc.7"
+}
