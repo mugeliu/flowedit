@@ -43,8 +43,6 @@ export async function saveToOriginalEditor(editorData, options = {}) {
     // 使用HTML解析器生成HTML内容
     const htmlContent = convertToHtml(editorData, styleTemplate);
 
-    console.log("生成的HTML内容:", htmlContent);
-
     // 从options中获取API配置
     const apiName = options.apiName || "mp_editor_set_content";
     const contentField = options.contentField || "content";

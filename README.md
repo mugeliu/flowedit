@@ -66,18 +66,17 @@ src/
 │   │   ├── style-sync-service.js # 样式同步服务
 │   │   ├── system-initializer.js # 系统初始化
 │   │   └── user-config-manager.js # 用户配置管理
-│   ├── styles/                # 样式文件
-│   │   └── components.js     # 组件样式定义
 │   ├── tools/                 # 自定义工具
 │   │   └── custom-wechat-image-tool.js # 微信图片上传工具
 │   ├── utils/                 # 工具函数
 │   │   ├── dom.js            # DOM 操作工具
 │   │   ├── editor.js         # 编辑器工具
-│   │   ├── parser-html.js    # HTML 解析器
-│   │   ├── parsers/          # 解析器模块
+│   │   ├── parsers/          # HTML 解析器模块
 │   │   └── style-manager.js  # 样式管理器
 │   └── main.js               # 内容脚本入口文件
-└── editorjs-bundle.js         # Editor.js 依赖包
+├── editorjs-bundle.js         # Editor.js 依赖包
+└── popup/                     # 扩展弹窗
+    └── popup.html            # 弹窗页面
 ```
 
 ### 技术栈
@@ -109,7 +108,7 @@ src/
   - 设置管理
 
 #### 3. HTML 解析器 (Parser)
-- **位置**: `src/content/tools/parser-html.js`
+- **位置**: `src/content/utils/parsers/`
 - **功能**: Editor.js 内容与 HTML 的双向转换
 - **特性**:
   - 高效的内容解析
@@ -137,10 +136,11 @@ flowedit/
 │   │   │   ├── smart-editor/   # 智能编辑器
 │   │   │   └── sidebar/        # 侧边栏
 │   │   ├── services/           # 服务层
-│   │   ├── styles/             # 样式文件
 │   │   ├── tools/              # 工具模块
 │   │   └── utils/              # 工具函数
-│   └── editorjs-bundle.js      # Editor.js 工具包
+│   ├── editorjs-bundle.js      # Editor.js 工具包
+│   └── popup/                  # 扩展弹窗
+│       └── popup.html          # 弹窗页面
 ├── manifest.json               # 扩展清单
 ├── package.json               # 项目配置
 ├── vite.config.js             # 构建配置
@@ -183,8 +183,8 @@ flowedit/
 
 ### 自定义样式
 
-1. 在 `src/content/styles/` 中添加样式文件
-2. 使用动态样式注入系统加载样式
+1. 使用 `src/content/utils/style-manager.js` 管理样式
+2. 通过动态样式注入系统加载样式
 3. 确保样式隔离，避免与宿主页面冲突
 
 ### 代码规范
@@ -209,13 +209,13 @@ flowedit/
 ### 功能模块
 - `src/content/features/smart-editor/`: 智能编辑器功能模块
 - `src/content/features/sidebar/`: 侧边栏管理模块
-- `src/content/tools/parser-html.js`: HTML 解析器
+- `src/content/utils/parsers/`: HTML 解析器模块
 - `src/content/tools/custom-wechat-image-tool.js`: 微信图片工具
 
 ### 支持文件
 - `src/content/services/`: 服务层模块
 - `src/content/utils/`: 工具函数库
-- `src/content/styles/`: 样式文件
+- `src/popup/`: 扩展弹窗界面
 
 ## 贡献指南
 

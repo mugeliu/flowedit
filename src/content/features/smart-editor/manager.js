@@ -124,8 +124,7 @@ async function saveContent(options = {}) {
 
   try {
     const outputData = await editor.save();
-    console.log("保存的数据:", outputData);
-
+  
     // 使用mp_editor_set_content API保存内容
     const success = await saveToOriginalEditor(outputData, {
       ...options,
