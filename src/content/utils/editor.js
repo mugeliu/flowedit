@@ -30,6 +30,9 @@ export async function loadStyleTemplate() {
  * @param {string} options.insertPosition - 插入位置 ('start', 'end', 'cursor')
  * @param {Object} options.styleOptions - 样式选项
  * @param {boolean} options.usePreloadedStyles - 是否使用预加载的样式
+ * @param {string} options.apiName - API名称
+ * @param {Object} options.apiParam - API参数对象，会将htmlContent注入到指定字段
+ * @param {string} options.contentField - HTML内容在apiParam中的字段名，默认为 'content'
  * @returns {Promise<boolean>} 保存是否成功
  */
 export async function saveToOriginalEditor(editorData, options = {}) {
@@ -42,20 +45,28 @@ export async function saveToOriginalEditor(editorData, options = {}) {
 
     console.log("生成的HTML内容:", htmlContent);
 
+    // 从options中获取API配置
+    const apiName = options.apiName || "mp_editor_set_content";
+    const contentField = options.contentField || "content";
+    
+    // 构建API参数，将HTML内容注入到指定字段
+    const apiParam = {
+      ...options.apiParam,
+      [contentField]: htmlContent
+    };
+
     // 通过 background.js 调用微信公众号编辑器 JSAPI
     const result = await chrome.runtime.sendMessage({
       action: "invokeMPEditorAPI",
-      apiName: "mp_editor_set_content",
-      apiParam: {
-        content: htmlContent,
-      },
+      apiName: apiName,
+      apiParam: apiParam,
     });
 
     if (result.success) {
-      console.log("内容设置成功:", result.data);
+      console.log(`API ${apiName} 调用成功:`, result.data);
       return true;
     } else {
-      console.error("内容设置失败:", result.error);
+      console.error(`API ${apiName} 调用失败:`, result.error);
       return false;
     }
   } catch (error) {

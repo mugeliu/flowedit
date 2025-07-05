@@ -126,10 +126,12 @@ async function saveContent(options = {}) {
     const outputData = await editor.save();
     console.log("保存的数据:", outputData);
 
-    // 直接保存内容，使用解析器生成HTML
-
+    // 使用mp_editor_set_content API保存内容
     const success = await saveToOriginalEditor(outputData, {
       ...options,
+      apiName: "mp_editor_set_content",
+      apiParam: {},
+      contentField: "content"
     });
 
     if (success) {
@@ -144,7 +146,46 @@ async function saveContent(options = {}) {
   }
 }
 
+
+//  todo 插入功能不完善先注释
 /**
+ * 插入内容到编辑器
+ * @param {Object} options 插入选项
+ */
+async function insertContent(options = {}) {
+  if (!editor) {
+    console.error("编辑器未初始化");
+    return;
+  }
+
+  try {
+    const outputData = await editor.save();
+    console.log("插入的数据:", outputData);
+
+    // 使用mp_editor_insert_html API插入内容
+    const success = await saveToOriginalEditor(outputData, {
+      ...options,
+      apiName: "mp_editor_insert_html",
+      apiParam: {
+        isSelect: options.isSelect || false
+      },
+      contentField: "html"
+    });
+
+    if (success) {
+      console.log("内容已成功插入到原编辑器");
+    } else {
+      console.error("插入到原编辑器失败");
+    }
+  } catch (error) {
+    console.error("插入失败:", error);
+  } finally {
+    deactivateSmartEditor();
+  }
+}
+
+/**
+ * 获取当前编辑器实例
  * 获取当前编辑器实例
  * @returns {Object|null} 编辑器实例
  */

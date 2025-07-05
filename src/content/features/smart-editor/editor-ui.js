@@ -53,7 +53,7 @@ export function createEditorPage() {
  */
 
 export function createEditorToolbar(callbacks = {}) {
-  const { onSave, onCancel, onPreview } = callbacks;
+  const { onSave, onCancel } = callbacks;
 
   const controlBar = createElement("div", {
     id: "flow-editor-control-panel",
