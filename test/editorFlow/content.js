@@ -1,292 +1,224 @@
-// content.js - 重新创建的功能
+// content.js - WeUI侧边栏按钮实现
 
 /**
- * 创建多级节点结构的容器
+ * 创建侧边栏按钮
+ * @returns {HTMLElement} 按钮元素
  */
-function createAppMsgContainer() {
-  // 创建主容器
-  const mainContainer = document.createElement("div");
-  mainContainer.className =
-    "weui-desktop-layout__main__hd main_hd appmsg_edit_mod default appmsg_preview_area scrollbar-macosx";
+function createSidebarButton() {
+  const feedbackBtn = document.createElement("div");
+  feedbackBtn.className = "weui-desktop-online-faq__wrp";
+  feedbackBtn.style.bottom = "600px";
+  feedbackBtn.innerHTML = `
+        <div class="weui-desktop-online-faq__switch" style="border-radius: 4px;">
+            <div class="weui-desktop-online-faq__switch_content" style="cursor: pointer; border-radius: 4px;">
+                <div class="text" style="font-size: 14px; color: rgb(76, 77, 78); line-height: 19.6px;">历史文章</div>
+            </div>
+        </div>
+    `;
 
-  // 创建内容区域
-  const contentSection = document.createElement("div");
-  contentSection.className = "appmsg_preview_container appmsg-side__wrapper";
-  mainContainer.appendChild(contentSection);
+  // 添加点击事件到按钮内容区域
+  const switchContent = feedbackBtn.querySelector(
+    ".weui-desktop-online-faq__switch_content"
+  );
+  if (switchContent) {
+    switchContent.addEventListener("click", toggleSidebar);
+  }
 
-  // 创建Tab容器
-  const tabContainer = document.createElement("div");
-  tabContainer.className = "weui-tab";
-  contentSection.appendChild(tabContainer);
+  return feedbackBtn;
+}
 
-  // 创建导航栏
-  const navbar = document.createElement("div");
-  navbar.className = "weui-navbar";
-  tabContainer.appendChild(navbar);
+/**
+ * 创建侧边栏
+ * @returns {HTMLElement} 侧边栏元素
+ */
+function createSidebar() {
+  // 直接创建WeUI panel作为侧边栏
+  const panel = document.createElement("div");
+  panel.id = "history-sidebar";
+  panel.className = "weui-panel weui-panel_access";
+  panel.style.cssText = `
+        position: fixed;
+        right: -390px;
+        top: 0;
+        width: 350px;
+        height: 100vh;
+        background: white;
+        box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+        transition: right 0.3s ease;
+        z-index: 5001;
+        overflow-y: auto;
+        padding: 20px;
+    `;
+  
+  panel.innerHTML = `
+        <button class="weui-btn weui-btn_mini weui-btn_default" id="close-sidebar-btn" style="
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            line-height: 1;
+            padding: 0;
+            border: 1px solid #ddd;
+            background: white;
+            z-index: 5002;
+        ">×</button>
+        <div class="weui-panel__hd">历史文章</div>
+        <div class="weui-panel__bd">
+            <div role="option" class="weui-media-box weui-media-box_text" id="article-item">
+                <strong class="weui-media-box__title">如何使用WeUI组件</strong>
+                <p class="weui-media-box__desc">这是一篇关于WeUI组件使用方法的详细教程，包含了常用组件的使用示例和最佳实践。</p>
+                <p class="weui-media-box__desc" style="color: #999; font-size: 12px; margin-top: 5px;">发布时间：2024-01-15</p>
+            </div>
+        </div>
+        <div class="weui-panel__ft">
+            <a href="javascript:" class="weui-cell weui-cell_active weui-cell_access weui-cell_link">
+                <span class="weui-cell__bd">查看更多</span>
+                <span class="weui-cell__ft"></span>
+            </a>
+        </div>
+    `;
 
-  // 创建导航项
-  const navItems = [
-    { id: "tab1", text: "文章预览", active: true },
-    { id: "tab2", text: "编辑器", active: false },
-    { id: "tab3", text: "设置", active: false }
-  ];
+  // 添加关闭按钮事件
+  const closeBtn = panel.querySelector("#close-sidebar-btn");
+  closeBtn.addEventListener("click", toggleSidebar);
 
-  navItems.forEach(item => {
-    const navItem = document.createElement("div");
-    navItem.id = item.id;
-    navItem.className = item.active ? "weui-navbar__item weui-bar__item_on" : "weui-navbar__item";
-    navItem.textContent = item.text;
-    navbar.appendChild(navItem);
+  // 添加文章点击事件，显示dialog
+  const articleItem = panel.querySelector("#article-item");
+  articleItem.addEventListener("click", () => {
+    showArticleDialog();
   });
 
-  // 创建Tab内容面板容器
-  const tabPanelContainer = document.createElement("div");
-  tabPanelContainer.className = "weui-tab__panel";
-  tabContainer.appendChild(tabPanelContainer);
+  // 添加查看更多点击事件
+  const viewMoreBtn = panel.querySelector(".weui-cell_link");
+  viewMoreBtn.addEventListener("click", () => {
+    console.log("查看更多文章");
+  });
 
-  // 创建各个面板内容
-  const panels = [
-    {
-      id: "panel1",
-      display: "block",
-      content: `
-        <article style="line-height: 1.6; color: #333; padding: 15px;">
-          <h1 style="color: #2c3e50; margin-bottom: 20px; font-size: 24px;">测试文章标题</h1>
-          <p style="margin-bottom: 15px; text-indent: 2em;">这是一段测试文章内容。在现代Web开发中，内容管理和编辑器功能变得越来越重要。我们需要提供一个直观、易用的界面来帮助用户创建和编辑内容。</p>
-          
-          <h2 style="color: #34495e; margin: 20px 0 15px 0; font-size: 20px;">功能特性</h2>
-          <ul style="margin-bottom: 15px; padding-left: 20px;">
-            <li style="margin-bottom: 8px;">支持富文本编辑</li>
-            <li style="margin-bottom: 8px;">实时预览功能</li>
-            <li style="margin-bottom: 8px;">响应式设计</li>
-            <li style="margin-bottom: 8px;">WeUI样式集成</li>
-          </ul>
-          
-          <h2 style="color: #34495e; margin: 20px 0 15px 0; font-size: 20px;">技术实现</h2>
-          <p style="margin-bottom: 15px; text-indent: 2em;">本项目采用了现代化的前端技术栈，包括原生JavaScript、WeUI组件库以及模块化的代码结构。通过精心设计的架构，我们实现了高性能和良好的用户体验。</p>
-          
-          <blockquote style="border-left: 4px solid #3498db; padding-left: 15px; margin: 20px 0; font-style: italic; color: #7f8c8d;">
-            "好的设计不仅仅是外观和感觉，更重要的是它如何工作。" - Steve Jobs
-          </blockquote>
-          
-          <div style="margin-top: 30px; padding: 15px; background: #ecf0f1; border-radius: 5px; text-align: center;">
-            <p style="margin: 0; color: #7f8c8d; font-size: 14px;">— 文章结束 —</p>
-          </div>
-        </article>
-      `
-    },
-    {
-      id: "panel2",
-      display: "none",
-      content: `
-        <div style="padding: 20px;">
-          <h2 style="color: #34495e; margin-bottom: 20px;">编辑器功能</h2>
-          <p style="margin-bottom: 15px;">这里是编辑器面板，可以集成各种编辑功能：</p>
-          <ul style="padding-left: 20px;">
-            <li style="margin-bottom: 8px;">富文本编辑器</li>
-            <li style="margin-bottom: 8px;">代码高亮</li>
-            <li style="margin-bottom: 8px;">图片上传</li>
-            <li style="margin-bottom: 8px;">表格编辑</li>
-          </ul>
-          <pre style="background: #f8f9fa; padding: 15px; border-radius: 5px; overflow-x: auto; margin-top: 20px;"><code>function createEditor() {
-  const editor = document.createElement('div');
-  editor.className = 'editor-container';
-  return editor;
-}</code></pre>
+  return panel;
+}
+
+/**
+ * 切换侧边栏显示状态
+ */
+function toggleSidebar() {
+  const sidebar = document.getElementById("history-sidebar");
+  if (!sidebar) return;
+
+  const isVisible = sidebar.style.right === "0px";
+
+  if (isVisible) {
+    // 隐藏侧边栏
+    sidebar.style.right = "-390px";
+  } else {
+    // 显示侧边栏
+    sidebar.style.right = "0px";
+  }
+}
+
+/**
+ * 显示文章操作对话框
+ */
+function showArticleDialog() {
+  // 创建dialog遮罩层
+  const dialogMask = document.createElement("div");
+  dialogMask.className = "weui-mask";
+  dialogMask.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.6);
+        z-index: 5002;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    `;
+
+  // 创建dialog主体
+  const dialog = document.createElement("div");
+  dialog.className = "weui-dialog";
+  dialog.style.cssText = `
+        background: white;
+        border-radius: 8px;
+        width: 280px;
+        max-width: 90%;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    `;
+
+  dialog.innerHTML = `
+        <div class="weui-dialog__hd">
+            <strong class="weui-dialog__title">文章操作</strong>
         </div>
-      `
-    },
-    {
-      id: "panel3",
-      display: "none",
-      content: `
-        <div style="padding: 20px;">
-          <h2 style="color: #34495e; margin-bottom: 20px;">设置选项</h2>
-          <p style="margin-bottom: 15px;">这里是设置面板，可以配置各种选项：</p>
-          <div style="margin-bottom: 20px;">
-            <h3 style="color: #2c3e50; margin-bottom: 10px;">主题设置</h3>
-            <p style="margin-bottom: 10px;">选择您喜欢的主题风格</p>
-          </div>
-          <div style="margin-bottom: 20px;">
-            <h3 style="color: #2c3e50; margin-bottom: 10px;">编辑器配置</h3>
-            <p style="margin-bottom: 10px;">自定义编辑器的行为和外观</p>
-          </div>
-          <div style="margin-bottom: 20px;">
-            <h3 style="color: #2c3e50; margin-bottom: 10px;">导出设置</h3>
-            <p style="margin-bottom: 10px;">配置文档导出格式和选项</p>
-          </div>
+        <div class="weui-dialog__bd" style="padding: 20px; text-align: center; color: #999;">
+            确定要插入这篇文章吗？
         </div>
-      `
+        <div class="weui-dialog__ft">
+            <a href="javascript:;" class="weui-dialog__btn weui-dialog__btn_default" id="cancel-btn">取消</a>
+            <a href="javascript:;" class="weui-dialog__btn weui-dialog__btn_primary" id="insert-dialog-btn">插入</a>
+        </div>
+    `;
+
+  dialogMask.appendChild(dialog);
+  document.body.appendChild(dialogMask);
+
+  // 添加按钮事件
+  const cancelBtn = dialog.querySelector("#cancel-btn");
+  const insertBtn = dialog.querySelector("#insert-dialog-btn");
+
+  // 取消按钮 - 关闭弹框
+  cancelBtn.addEventListener("click", () => {
+    document.body.removeChild(dialogMask);
+  });
+
+  // 插入按钮 - 执行插入逻辑
+  insertBtn.addEventListener("click", () => {
+    console.log("插入文章");
+    // 这里可以添加插入文章的逻辑
+    document.body.removeChild(dialogMask);
+  });
+
+  // 点击遮罩层关闭弹框
+  dialogMask.addEventListener("click", (e) => {
+    if (e.target === dialogMask) {
+      document.body.removeChild(dialogMask);
     }
-  ];
-
-  panels.forEach(panel => {
-    const panelElement = document.createElement("div");
-    panelElement.id = panel.id;
-    panelElement.className = "weui-panel";
-    panelElement.style.display = panel.display;
-    panelElement.innerHTML = panel.content;
-    tabPanelContainer.appendChild(panelElement);
   });
-
-  return mainContainer;
-}
-
-/**
- * 创建切换按钮
- */
-function createToggleButton() {
-  const toggleButton = document.createElement("button");
-  toggleButton.id = "toggle-view-button";
-  toggleButton.textContent = "切换到编辑器视图";
-  toggleButton.style.cssText = `
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 9999;
-    padding: 10px 20px;
-    background-color: #007cba;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 14px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-    transition: background-color 0.3s;
-  `;
-
-  // 添加悬停效果
-  toggleButton.addEventListener("mouseenter", () => {
-    toggleButton.style.backgroundColor = "#005a87";
-  });
-
-  toggleButton.addEventListener("mouseleave", () => {
-    toggleButton.style.backgroundColor = "#007cba";
-  });
-
-  return toggleButton;
-}
-
-/**
- * 切换视图显示状态
- */
-function toggleView() {
-  const sideMenuElement = document.getElementById("js_mp_sidemenu");
-  const customContainer = document.getElementById("custom-appmsg-container");
-  const toggleButton = document.getElementById("toggle-view-button");
-
-  if (!sideMenuElement || !customContainer || !toggleButton) {
-    console.error("切换所需的元素未找到");
-    return;
-  }
-
-  const isCustomVisible = customContainer.style.display !== "none";
-
-  if (isCustomVisible) {
-    // 当前显示自定义容器，切换到原始侧边菜单
-    customContainer.style.display = "none";
-    sideMenuElement.style.display = "";
-    toggleButton.textContent = "切换到编辑器视图";
-    console.log("已切换到原始侧边菜单视图");
-  } else {
-    // 当前显示原始侧边菜单，切换到自定义容器
-    sideMenuElement.style.display = "none";
-    customContainer.style.display = "";
-    toggleButton.textContent = "切换到原始视图";
-    console.log("已切换到编辑器视图");
-  }
-}
-
-/**
- * 设置页面元素和插入容器
- */
-function setupPageElements() {
-  // 查找目标元素
-  const sideMenuElement = document.getElementById("js_mp_sidemenu");
-
-  if (!sideMenuElement) {
-    console.error('未找到 id="js_mp_sidemenu" 的元素');
-    return;
-  }
-
-  // 创建新容器
-  const container = createAppMsgContainer();
-  container.id = "custom-appmsg-container";
-
-  // 初始状态：隐藏原有元素，显示新容器
-  sideMenuElement.style.display = "none";
-  console.log("已隐藏 #js_mp_sidemenu 元素");
-
-  // 将容器插入为兄弟节点
-  if (sideMenuElement.parentNode) {
-    sideMenuElement.parentNode.insertBefore(
-      container,
-      sideMenuElement.nextSibling
-    );
-    console.log("appmsg_container_bd 容器已插入为 #js_mp_sidemenu 的兄弟节点");
-  } else {
-    console.error("#js_mp_sidemenu 元素没有父节点");
-    return;
-  }
-
-  // 创建并添加切换按钮
-  const toggleButton = createToggleButton();
-  toggleButton.addEventListener("click", toggleView);
-  document.body.appendChild(toggleButton);
-  console.log("切换按钮已添加到页面");
 }
 
 /**
  * 初始化函数
  */
 function init() {
-  console.log("开始初始化新功能...");
-
   // 等待DOM加载完成
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", setupPageElements);
+    document.addEventListener("DOMContentLoaded", setupElements);
   } else {
-    setupPageElements();
+    setupElements();
   }
 }
 
 /**
- * 初始化导航栏事件监听
+ * 设置页面元素
  */
-function initNavbarEvents() {
-  // 为导航栏项添加点击事件
-  document.addEventListener('click', function(event) {
-    if (event.target.classList.contains('weui-navbar__item')) {
-      // 移除所有导航项的激活状态
-      const navItems = document.querySelectorAll('.weui-navbar__item');
-      navItems.forEach(item => {
-        item.classList.remove('weui-bar__item_on');
-      });
-      
-      // 激活当前点击的导航项
-      event.target.classList.add('weui-bar__item_on');
-      
-      // 获取对应的面板ID（根据导航项的ID推导面板ID）
-      const navId = event.target.id;
-      const panelId = navId.replace('tab', 'panel');
-      
-      // 隐藏所有面板
-      const panels = document.querySelectorAll('.weui-panel');
-      panels.forEach(panel => {
-        panel.style.display = 'none';
-      });
-      
-      // 显示对应的面板
-      const targetPanel = document.getElementById(panelId);
-      if (targetPanel) {
-        targetPanel.style.display = 'block';
-      }
-    }
-  });
+function setupElements() {
+  // 创建并插入按钮
+  const button = createSidebarButton();
+  document.body.appendChild(button);
+
+  // 创建并插入侧边栏
+  const sidebar = createSidebar();
+  document.body.appendChild(sidebar);
+
+  console.log("侧边栏按钮和侧边栏已成功创建");
 }
 
 // 启动初始化
 init();
-
-// 初始化导航栏事件
-initNavbarEvents();
