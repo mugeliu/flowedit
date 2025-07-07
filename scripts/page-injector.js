@@ -1,40 +1,62 @@
-// page-injector.js - 注入到页面环境中的脚本，用于获取window.wx.data
-
 (function () {
-  "use strict";
-
-  // 标识符，防止重复注入
-  if (window.flowEditPageInjector) {
+  if (!window.__MP_Editor_JSAPI__) {
+    console.warn("[editor-bridge] __MP_Editor_JSAPI__ 不存在");
     return;
   }
-  window.flowEditPageInjector = true;
 
-  try {
-    // 获取微信数据
-    const wxData = window.wx?.data || null;
+  window.addEventListener("message", (event) => {
+    if (event.source !== window) return;
+    const { source, type, apiName, apiParam, eventName } = event.data || {};
+    if (source !== "editor-bridge") return;
 
-    // 发送微信数据
-    window.dispatchEvent(
-      new CustomEvent("pageDataReady", {
-        detail: {
-          wxData: wxData,
-          timestamp: new Date().toISOString(),
+    // === 调用 API ===
+    if (type === "invoke" && apiName) {
+      window.__MP_Editor_JSAPI__.invoke({
+        apiName,
+        apiParam,
+        sucCb: (res) => {
+          window.postMessage(
+            {
+              source: "editor-bridge",
+              type: "invoke-result",
+              apiName,
+              status: "success",
+              payload: res,
+            },
+            "*"
+          );
         },
-      })
-    );
-
-    console.log("FlowEdit: 页面注入器已加载，微信数据已发送", wxData);
-  } catch (error) {
-    console.error("FlowEdit: 页面脚本执行错误:", error);
-    // 即使出错也要发送事件，避免Content Script无限等待
-    window.dispatchEvent(
-      new CustomEvent("pageDataReady", {
-        detail: {
-          error: error.message,
-          wxData: null,
-          timestamp: new Date().toISOString(),
+        errCb: (err) => {
+          window.postMessage(
+            {
+              source: "editor-bridge",
+              type: "invoke-result",
+              apiName,
+              status: "error",
+              payload: err,
+            },
+            "*"
+          );
         },
-      })
-    );
-  }
+      });
+    }
+
+    // === 注册事件监听 ===
+    if (type === "listen" && eventName) {
+      window.__MP_Editor_JSAPI__.on({
+        eventName,
+        callBack: (param) => {
+          window.postMessage(
+            {
+              source: "editor-bridge",
+              type: "event",
+              eventName,
+              payload: param,
+            },
+            "*"
+          );
+        },
+      });
+    }
+  });
 })();

@@ -8,6 +8,10 @@ import {
   initializeDOMWatcher,
   cleanupDOMWatcher,
 } from "./services/dom-watcher.js";
+import {
+  initializeEditorBridge,
+  callEditorAPI,
+} from "./services/editor-bridge.js";
 
 // 注册功能模块插件
 pluginRegistry.register("smart-editor", smartEditorPlugin);
@@ -16,33 +20,43 @@ pluginRegistry.register("sidebar", sidebarPlugin);
 /**
  * 初始化插件功能模块
  */
+
 async function initializePluginFeatures() {
-  // 检查微信编辑器是否就绪
-  chrome.runtime.sendMessage(
-    {
-      action: "invokeMPEditorAPI",
-      apiName: "mp_editor_get_isready",
-    },
-    async (response) => {
-      if (response.success && response.data && response.data.isReady === true) {
-        console.log("编辑器已就绪，开始初始化插件:", response.data);
-
-        // 初始化所有功能模块
-        const initResults = await pluginRegistry.initializeAll();
-
-        if (initResults.failed.length > 0) {
-          console.warn(
-            `初始化失败的功能模块: ${initResults.failed.join(", ")}`
-          );
+  try {
+    // 初始化编辑器桥接服务，使用回调确保脚本注入完成
+    initializeEditorBridge(() => {
+      console.log("[FlowEdit] 桥接脚本注入完成，开始检查编辑器就绪状态");
+      // 检查微信编辑器是否就绪
+      callEditorAPI("mp_editor_get_isready", {}, async (success, res) => {
+        try {
+          // 检查API调用是否成功且编辑器确实就绪
+          if (success && res && res.isReady === true) {
+            console.log("编辑器已就绪，开始初始化插件:", res);
+            // 初始化所有功能模块
+            const initResults = await pluginRegistry.initializeAll();
+            if (initResults.failed.length > 0) {
+              console.warn(
+                `初始化失败的功能模块: ${initResults.failed.join(", ")}`
+              );
+            }
+            // 启动DOM监听服务（监听插件组件是否被页面更新移除）
+            initializeDOMWatcher();
+          } else {
+            console.error(
+              "编辑器未就绪，跳过插件初始化。API调用成功:",
+              success,
+              "响应数据:",
+              res
+            );
+          }
+        } catch (error) {
+          console.error("[FlowEdit] 插件初始化过程中发生错误:", error);
         }
-
-        // 启动DOM监听服务（监听插件组件是否被页面更新移除）
-        initializeDOMWatcher();
-      } else {
-        console.log("编辑器未就绪，跳过插件初始化:", response);
-      }
-    }
-  );
+      });
+    });
+  } catch (error) {
+    console.error("[FlowEdit] initializePluginFeatures函数执行失败:", error);
+  }
 }
 
 /**
@@ -58,7 +72,11 @@ async function main() {
   }
 
   // 初始化插件功能模块
-  await initializePluginFeatures();
+  try {
+    await initializePluginFeatures();
+  } catch (error) {
+    console.error("[FlowEdit] 插件功能模块初始化失败:", error);
+  }
 }
 
 // 页面卸载时清理资源

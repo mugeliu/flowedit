@@ -9,6 +9,10 @@ import {
 import { safeQuerySelector } from "../../utils/dom.js";
 import { initializeEditorUI, cleanupEditorUI } from "./editor-ui.js";
 import { createSmartButton } from "./smart-button.js";
+import {
+  enableAdditionObserver,
+  disableAdditionObserver,
+} from "../../services/dom-watcher.js";
 
 let editor = null;
 let uiElements = null;
@@ -66,6 +70,9 @@ export async function activateSmartEditor() {
     // 设置编辑器激活状态
     setEditorActiveState(true);
 
+    // 启用独立监听器
+    enableAdditionObserver();
+
     console.log("智能编辑器激活成功");
   } catch (error) {
     console.error("智能插入功能启动失败:", error);
@@ -93,6 +100,9 @@ export function deactivateSmartEditor() {
 
   // 重置编辑器激活状态
   setEditorActiveState(false);
+
+  // 禁用独立监听器
+  disableAdditionObserver();
 
   console.log("智能编辑器已停用");
 }
@@ -124,13 +134,13 @@ async function saveContent(options = {}) {
 
   try {
     const outputData = await editor.save();
-  
+
     // 使用mp_editor_set_content API保存内容
     const success = await saveToOriginalEditor(outputData, {
       ...options,
       apiName: "mp_editor_set_content",
       apiParam: {},
-      contentField: "content"
+      contentField: "content",
     });
 
     if (success) {
@@ -144,7 +154,6 @@ async function saveContent(options = {}) {
     deactivateSmartEditor();
   }
 }
-
 
 //  todo 插入功能不完善先注释
 /**
@@ -166,9 +175,9 @@ async function insertContent(options = {}) {
       ...options,
       apiName: "mp_editor_insert_html",
       apiParam: {
-        isSelect: options.isSelect || false
+        isSelect: options.isSelect || false,
       },
-      contentField: "html"
+      contentField: "html",
     });
 
     if (success) {

@@ -1,7 +1,8 @@
 // 编辑器相关工具函数
 import { editorConfig } from "../config/index.js";
 import { convertToHtml } from "./parsers/index.js";
-import { renderPreviewContent } from "../features/sidebar/preview.js"; 
+import { renderPreviewContent } from "../features/sidebar/preview.js";
+import { callEditorAPI } from "../services/editor-bridge.js";
 
 // 全局编辑器状态管理
 let isEditorActive = false;
@@ -12,11 +13,13 @@ let isEditorActive = false;
  */
 export async function loadStyleTemplate() {
   try {
-    const templateResponse = await fetch(chrome.runtime.getURL('assets/style-template.json'));
+    const templateResponse = await fetch(
+      chrome.runtime.getURL("assets/style-template.json")
+    );
     const styleTemplate = await templateResponse.json();
     return styleTemplate;
   } catch (error) {
-    console.error('加载样式模板失败:', error);
+    console.error("加载样式模板失败:", error);
     throw error;
   }
 }
@@ -39,34 +42,32 @@ export async function saveToOriginalEditor(editorData, options = {}) {
   try {
     // 加载样式模板
     const styleTemplate = await loadStyleTemplate();
-    
+
     // 使用HTML解析器生成HTML内容
     const htmlContent = convertToHtml(editorData, styleTemplate);
 
     // 从options中获取API配置
     const apiName = options.apiName || "mp_editor_set_content";
     const contentField = options.contentField || "content";
-    
+
     // 构建API参数，将HTML内容注入到指定字段
     const apiParam = {
       ...options.apiParam,
-      [contentField]: htmlContent
+      [contentField]: htmlContent,
     };
 
-    // 通过 background.js 调用微信公众号编辑器 JSAPI
-    const result = await chrome.runtime.sendMessage({
-      action: "invokeMPEditorAPI",
-      apiName: apiName,
-      apiParam: apiParam,
+    // 使用编辑器桥接服务调用API
+    return new Promise((resolve) => {
+      callEditorAPI(apiName, apiParam, (success, res) => {
+        if (success) {
+          console.log(`API ${apiName} 调用成功:`, res);
+          resolve(true);
+        } else {
+          console.error(`API ${apiName} 调用失败:`, res);
+          resolve(false);
+        }
+      });
     });
-
-    if (result.success) {
-      console.log(`API ${apiName} 调用成功:`, result.data);
-      return true;
-    } else {
-      console.error(`API ${apiName} 调用失败:`, result.error);
-      return false;
-    }
   } catch (error) {
     console.error("保存到原编辑器失败:", error);
     return false;
@@ -113,8 +114,8 @@ export async function loadAndInitializeEditor(container) {
         const htmlContent = convertToHtml(output, styleTemplate);
         await renderPreviewContent(htmlContent);
       } catch (error) {
-        console.error('预览内容生成失败:', error);
-        await renderPreviewContent('');
+        console.error("预览内容生成失败:", error);
+        await renderPreviewContent("");
       }
     },
     onReady: () => {
@@ -124,45 +125,32 @@ export async function loadAndInitializeEditor(container) {
       // 1. 初始化时滚动到顶部
       window.scrollTo({ top: 0, behavior: "auto" });
 
-      // 2. 自动滚动逻辑
+      // 2. 自动滚动逻辑 - 确保当前输入位置始终可见
       const autoScroll = () => {
         // 获取当前活跃的编辑器区块
         const currentBlockIndex = editorInstance.blocks.getCurrentBlockIndex();
         const currentBlock =
           editorInstance.blocks.getBlockByIndex(currentBlockIndex);
 
-        if (currentBlock) {
-          // 获取区块底部位置
-          const blockRect = currentBlock.holder.getBoundingClientRect();
-          const blockBottom = blockRect.bottom;
-          const viewportHeight = window.innerHeight;
-
-          // 当区块接近视窗底部时（留50px缓冲）
-          if (blockBottom > viewportHeight - 50) {
-            // 计算需要滚动的距离（一行高度约为30px）
-            const scrollAmount = Math.max(
-              30,
-              blockBottom - viewportHeight + 50
-            );
-
-            // 平滑滚动
-            window.scrollBy({
-              top: scrollAmount,
-              behavior: "smooth",
-            });
-          }
+        if (currentBlock && currentBlock.holder) {
+          // 直接将当前区块滚动到视窗中央
+          currentBlock.holder.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          });
         }
       };
 
-      // 3. 监听关键事件
-      const events = ["input", "keydown", "blockAdded"];
-      events.forEach((event) => {
-        editorInstance.ui.nodes.redactor.addEventListener(event, () => {
-          // 仅在回车键或新增区块时触发
-          if (event === "keydown" || event === "blockAdded") {
-            setTimeout(autoScroll, 10); // 稍延迟确保DOM更新
-          }
-        });
+      // 3. 监听输入事件
+      editorInstance.ui.nodes.redactor.addEventListener("input", () => {
+        setTimeout(autoScroll, 50); // 延迟确保DOM更新完成
+      });
+
+      // 监听键盘事件（回车键等）
+      editorInstance.ui.nodes.redactor.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          setTimeout(autoScroll, 100); // 回车后稍长延迟确保新区块创建
+        }
       });
     },
   });

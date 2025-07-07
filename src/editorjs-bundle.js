@@ -12,7 +12,7 @@ import Paragraph from "@editorjs/paragraph";
 import List from "@editorjs/list";
 import Code from "@editorjs/code";
 import Delimiter from "@editorjs/delimiter";
-import Image from "@editorjs/image";
+import SimpleImage from "@editorjs/simple-image";
 import InlineCode from "@editorjs/inline-code";
 import Marker from "@editorjs/marker";
 import Quote from "@editorjs/quote";
@@ -26,7 +26,7 @@ EditorJS.Paragraph = Paragraph;
 EditorJS.List = List;
 EditorJS.Code = Code;
 EditorJS.Delimiter = Delimiter;
-EditorJS.Image = Image;
+EditorJS.SimpleImage = SimpleImage;
 EditorJS.InlineCode = InlineCode;
 EditorJS.Marker = Marker;
 EditorJS.Quote = Quote;
@@ -47,7 +47,7 @@ export {
   List,
   Code,
   Delimiter,
-  Image,
+  SimpleImage,
   InlineCode,
   Marker,
   Quote,

@@ -49,7 +49,7 @@ function createSidebar() {
         overflow-y: auto;
         padding: 20px;
     `;
-  
+
   panel.innerHTML = `
         <button class="weui-btn weui-btn_mini weui-btn_default" id="close-sidebar-btn" style="
             position: absolute;

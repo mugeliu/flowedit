@@ -1,7 +1,7 @@
 // DOM变化监听服务
 // 使用MutationObserver监听工具栏元素变化
 
-import { pluginRegistry } from './plugin-registry.js';
+import { pluginRegistry } from "./plugin-registry.js";
 
 /**
  * DOM变化监听器类
@@ -12,6 +12,10 @@ class DOMWatcher {
     this.isWatching = false;
     this.mutationObserver = null;
     this.targetElement = null;
+
+    // 新增的独立监听器
+    this.additionObserver = null;
+    this.isAdditionObserverEnabled = false;
   }
 
   // ==================== MutationObserver 逻辑部分 ====================
@@ -37,11 +41,11 @@ class DOMWatcher {
     }
 
     // 检查是否存在包含 data-flowedit="true" 的元素
-    const floweditElements = toolbarElement.querySelectorAll('[data-flowedit="true"]');
+    const floweditElements = toolbarElement.querySelectorAll(
+      '[data-flowedit="true"]'
+    );
     return floweditElements.length === 0;
   }
-
-
 
   // ==================== 插件自定义元素恢复部分 ====================
 
@@ -51,17 +55,84 @@ class DOMWatcher {
   async restoreButtons() {
     try {
       // 先清理现有的插件实例
-      pluginRegistry.cleanupPlugin('smart-editor');
-      pluginRegistry.cleanupPlugin('sidebar');
-      
+      pluginRegistry.cleanupPlugin("smart-editor");
+      pluginRegistry.cleanupPlugin("sidebar");
+
       // 重新初始化 smart-editor 插件
-      await pluginRegistry.initializePlugin('smart-editor');
-      
+      await pluginRegistry.initializePlugin("smart-editor");
+
       // 重新初始化 sidebar 插件
-      await pluginRegistry.initializePlugin('sidebar');
+      await pluginRegistry.initializePlugin("sidebar");
     } catch (error) {
-      console.error('[DOMWatcher] 恢复按钮失败:', error);
+      console.error("[DOMWatcher] 恢复按钮失败:", error);
     }
+  }
+
+  // ==================== 独立监听器功能部分 ====================
+
+  /**
+   * 启用独立的DOM变化监听器
+   * 监听#ueditor_0容器中的新增节点
+   */
+  enableAdditionObserver() {
+    const container = document.getElementById("ueditor_0");
+    if (!container) {
+      console.warn("[DOMWatcher] 未找到 #ueditor_0 容器");
+      return;
+    }
+
+    if (this.additionObserver) {
+      console.log("[DOMWatcher] 独立监听器已启用");
+      return;
+    }
+
+    this.additionObserver = new MutationObserver((mutationsList) => {
+      for (const mutation of mutationsList) {
+        if (mutation.type === "childList" && mutation.addedNodes.length > 0) {
+          mutation.addedNodes.forEach((node) => {
+            if (node.nodeType === Node.ELEMENT_NODE) {
+              console.log("[DOMWatcher] 检测到新增节点:", node);
+              const [firstChild] = node.children; // 获取第一个子元素
+              if (firstChild?.tagName === "IMG") {
+                const { src } = firstChild;
+                src && console.log("图片src:", src);
+              } else if (firstChild?.classList?.contains("video")) {
+                const { dataset } = firstChild;
+                dataset.id && console.log("视频ID:", dataset.id);
+              }
+            }
+          });
+        }
+      }
+    });
+
+    this.additionObserver.observe(container, {
+      childList: true,
+      subtree: true,
+    });
+
+    this.isAdditionObserverEnabled = true;
+    console.log("[DOMWatcher] 启用独立监听器");
+  }
+
+  /**
+   * 禁用独立的DOM变化监听器
+   */
+  disableAdditionObserver() {
+    if (this.additionObserver) {
+      this.additionObserver.disconnect();
+      this.additionObserver = null;
+      this.isAdditionObserverEnabled = false;
+      console.log("[DOMWatcher] 已关闭独立监听器");
+    }
+  }
+
+  /**
+   * 获取独立监听器状态
+   * @returns {boolean} 是否启用
+   */
+  isAdditionObserverActive() {
+    return this.isAdditionObserverEnabled;
   }
 
   // ==================== DOM监听启动停止部分 ====================
@@ -123,4 +194,26 @@ export function initializeDOMWatcher() {
  */
 export function cleanupDOMWatcher() {
   domWatcher.stopWatching();
+}
+
+/**
+ * 启用独立监听器
+ */
+export function enableAdditionObserver() {
+  domWatcher.enableAdditionObserver();
+}
+
+/**
+ * 禁用独立监听器
+ */
+export function disableAdditionObserver() {
+  domWatcher.disableAdditionObserver();
+}
+
+/**
+ * 获取独立监听器状态
+ * @returns {boolean} 是否启用
+ */
+export function isAdditionObserverActive() {
+  return domWatcher.isAdditionObserverActive();
 }
