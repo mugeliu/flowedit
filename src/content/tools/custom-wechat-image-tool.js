@@ -3,6 +3,8 @@
  * 提供微信图片上传相关的方法
  */
 
+import { getWxData } from '../services/editor-bridge.js';
+
 /**
  * 强制清理图片工具UI状态
  * 解决EditorJS hidePreloader方法不生效的问题
@@ -40,19 +42,6 @@ function validateImageFile(file) {
       return;
     }
 
-    // 检查文件类型
-    const allowedTypes = [
-      "image/jpeg",
-      "image/jpg",
-      "image/png",
-      "image/gif",
-      "image/webp",
-    ];
-    if (!allowedTypes.includes(file.type)) {
-      reject(new Error("仅支持 JPEG、PNG、GIF、WebP 格式的图片"));
-      return;
-    }
-
     resolve();
   });
 }
@@ -60,22 +49,19 @@ function validateImageFile(file) {
 /**
  * 获取微信数据
  */
-function getWxData() {
-  return new Promise((resolve) => {
-    // 创建外部脚本文件来避免CSP限制
-    const script = document.createElement("script");
-    script.src = chrome.runtime.getURL("scripts/page-injector.js");
-
-    const listener = (event) => {
-      if (event.type === "pageDataReady") {
-        window.removeEventListener("pageDataReady", listener);
-        document.head.removeChild(script);
-        resolve(event.detail.wxData);
+function getWxDataAsync() {
+  return new Promise((resolve, reject) => {
+    // 获取微信数据
+    getWxData((success, data) => {
+      if (success) {
+        console.log('微信数据获取成功:', data.data);
+        console.log('获取时间:', data.timestamp);
+        resolve(data.data);
+      } else {
+        console.error('微信数据获取失败:', data.error);
+        reject(new Error(data.error));
       }
-    };
-
-    window.addEventListener("pageDataReady", listener);
-    document.head.appendChild(script);
+    });
   });
 }
 
@@ -90,7 +76,7 @@ export async function performWeChatUpload(file) {
   console.log("开始执行微信图片上传");
 
   try {
-    wechatData = await getWxData();
+    wechatData = await getWxDataAsync();
     console.log("获取到的wx数据:", wechatData);
   } catch (error) {
     throw new Error("无法获取wx数据，请确保在微信公众号后台中使用");

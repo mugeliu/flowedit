@@ -7,7 +7,7 @@
 function createSidebarButton() {
   const feedbackBtn = document.createElement("div");
   feedbackBtn.className = "weui-desktop-online-faq__wrp";
-  feedbackBtn.style.bottom = "600px";
+  feedbackBtn.style.bottom = "400px";
   feedbackBtn.innerHTML = `
         <div class="weui-desktop-online-faq__switch" style="border-radius: 4px;">
             <div class="weui-desktop-online-faq__switch_content" style="cursor: pointer; border-radius: 4px;">

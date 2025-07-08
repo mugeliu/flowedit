@@ -2,6 +2,7 @@
 // 使用MutationObserver监听工具栏元素变化
 
 import { pluginRegistry } from "./plugin-registry.js";
+import { getCurrentEditor } from "../features/smart-editor/manager.js";
 
 /**
  * DOM变化监听器类
@@ -95,10 +96,17 @@ class DOMWatcher {
               const [firstChild] = node.children; // 获取第一个子元素
               if (firstChild?.tagName === "IMG") {
                 const { src } = firstChild;
-                src && console.log("图片src:", src);
-              } else if (firstChild?.classList?.contains("video")) {
-                const { dataset } = firstChild;
-                dataset.id && console.log("视频ID:", dataset.id);
+                if (src) {
+                  console.log("图片src:", src);
+                  this.insertImageBlock(src);
+                }
+              } else {
+                // 对于其他类型的内容，插入raw块
+                const htmlContent = node.outerHTML || node.innerHTML;
+                if (htmlContent) {
+                  console.log("插入raw块内容:", htmlContent);
+                  this.insertRawBlock(htmlContent);
+                }
               }
             }
           });
@@ -113,6 +121,54 @@ class DOMWatcher {
 
     this.isAdditionObserverEnabled = true;
     console.log("[DOMWatcher] 启用独立监听器");
+  }
+
+  /**
+   * 插入图片块到编辑器
+   * @param {string} src - 图片URL
+   */
+  insertImageBlock(src) {
+    const editor = getCurrentEditor();
+    if (!editor) {
+      console.warn("[DOMWatcher] 编辑器未激活，无法插入图片块");
+      return;
+    }
+
+    try {
+      editor.blocks.insert('image', {
+        file: {
+          url: src
+        },
+        caption: '',
+        withBorder: false,
+        withBackground: false,
+        stretched: false
+      });
+      console.log("[DOMWatcher] 成功插入图片块:", src);
+    } catch (error) {
+      console.error("[DOMWatcher] 插入图片块失败:", error);
+    }
+  }
+
+  /**
+   * 插入原始HTML块到编辑器
+   * @param {string} htmlContent - HTML内容
+   */
+  insertRawBlock(htmlContent) {
+    const editor = getCurrentEditor();
+    if (!editor) {
+      console.warn("[DOMWatcher] 编辑器未激活，无法插入raw块");
+      return;
+    }
+
+    try {
+      editor.blocks.insert('raw', {
+        html: htmlContent
+      });
+      console.log("[DOMWatcher] 成功插入raw块:", htmlContent.substring(0, 100) + '...');
+    } catch (error) {
+      console.error("[DOMWatcher] 插入raw块失败:", error);
+    }
   }
 
   /**

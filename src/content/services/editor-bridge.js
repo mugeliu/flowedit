@@ -74,6 +74,34 @@ function listenEditorEvent(eventName, callback) {
 }
 
 /**
+ * 获取微信数据
+ * @param {function} callback - 回调函数，参数为 (success, data)
+ */
+function getWxData(callback) {
+  window.postMessage(
+    {
+      source: "editor-bridge",
+      type: "get-wxdata",
+    },
+    "*"
+  );
+
+  function handler(event) {
+    if (
+      event.source !== window ||
+      event.data?.source !== "editor-bridge" ||
+      event.data?.type !== "wxdata-result"
+    )
+      return;
+
+    window.removeEventListener("message", handler);
+    callback(event.data.status === "success", event.data.payload);
+  }
+
+  window.addEventListener("message", handler);
+}
+
+/**
  * 初始化编辑器桥接服务
  * @param {function} callback - 脚本注入完成后的回调函数
  */
@@ -104,5 +132,6 @@ export {
   injectBridgeScript,
   callEditorAPI,
   listenEditorEvent,
+  getWxData,
   initializeEditorBridge,
 };

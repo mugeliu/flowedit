@@ -9,6 +9,42 @@
     const { source, type, apiName, apiParam, eventName } = event.data || {};
     if (source !== "editor-bridge") return;
 
+    // === 获取微信数据 ===
+    if (type === "get-wxdata") {
+      try {
+        const wxData = window.wx?.data || null;
+        window.postMessage(
+          {
+            source: "editor-bridge",
+            type: "wxdata-result",
+            status: "success",
+            payload: {
+              success: true,
+              data: wxData,
+              timestamp: new Date().toISOString()
+            }
+          },
+          "*"
+        );
+      } catch (error) {
+        window.postMessage(
+          {
+            source: "editor-bridge",
+            type: "wxdata-result",
+            status: "error",
+            payload: {
+              success: false,
+              error: error.message,
+              data: null,
+              timestamp: new Date().toISOString()
+            }
+          },
+          "*"
+        );
+      }
+      return;
+    }
+
     // === 调用 API ===
     if (type === "invoke" && apiName) {
       window.__MP_Editor_JSAPI__.invoke({

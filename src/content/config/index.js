@@ -1,5 +1,5 @@
 // 配置管理
-
+import { createWeChatImageUploader } from "../tools/custom-wechat-image-tool";
 /**
  * 标题工具图标常量
  */
@@ -68,10 +68,18 @@ export const editorConfig = {
       },
     },
     image: {
-      class: "SimpleImage", // 将在editor.js中解析为实际的类引用
-      inlineToolbar: true,
+      class: "ImageTool", // 将在editor.js中解析为实际的类引用
       config: {
-        placeholder: "Paste image URL",
+        types: "image/gif,image/jpeg,image/jpg,image/png,image/svg,image/webp",
+        captionPlaceholder: "图片描述",
+        buttonContent: "选择图片或素材库插入",
+        features: {
+          caption: true, // caption作为可选功能
+          withBorder: true, // 启用边框功能
+          withBackground: true, // 启用背景功能
+          stretched: true, // 启用拉伸功能
+        },
+        uploader: createWeChatImageUploader(),
       },
     },
     delimiter: {
