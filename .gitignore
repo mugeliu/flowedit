@@ -2,7 +2,7 @@
 # build/ # 对于Chrome扩展，可能需要包含构建输出目录以方便直接使用
 
 # Node.js 依赖
-node_modules/
+**/node_modules/
 
 # npm 日志文件
 npm-debug.log*
@@ -49,6 +49,5 @@ temp/
 
 # build文件
 /dist/
-/assets/editorjs/
 
 
