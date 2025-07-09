@@ -126,30 +126,37 @@ export async function loadAndInitializeEditor(container) {
       window.scrollTo({ top: 0, behavior: "auto" });
 
       // 2. 自动滚动逻辑 - 确保当前输入位置始终可见
-      const autoScroll = () => {
-        // 获取当前活跃的编辑器区块
-        const currentBlockIndex = editorInstance.blocks.getCurrentBlockIndex();
-        const currentBlock =
-          editorInstance.blocks.getBlockByIndex(currentBlockIndex);
-
-        if (currentBlock && currentBlock.holder) {
-          // 直接将当前区块滚动到视窗中央
-          currentBlock.holder.scrollIntoView({
+      const autoScrollToCaret = () => {
+        const selection = window.getSelection();
+      
+        if (!selection || selection.rangeCount === 0) return;
+      
+        const range = selection.getRangeAt(0);
+        const rect = range.getBoundingClientRect();
+      
+        if (rect && rect.top !== 0) {
+          const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+          const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      
+          // 将光标位置滚动到视窗中央
+          const targetScroll = scrollTop + rect.top - viewportHeight / 2;
+      
+          window.scrollTo({
+            top: targetScroll,
             behavior: "smooth",
-            block: "center",
           });
         }
       };
 
       // 3. 监听输入事件
       editorInstance.ui.nodes.redactor.addEventListener("input", () => {
-        setTimeout(autoScroll, 50); // 延迟确保DOM更新完成
+        setTimeout(autoScrollToCaret, 50); // 延迟确保DOM更新完成
       });
 
       // 监听键盘事件（回车键等）
       editorInstance.ui.nodes.redactor.addEventListener("keydown", (e) => {
         if (e.key === "Enter") {
-          setTimeout(autoScroll, 100); // 回车后稍长延迟确保新区块创建
+          setTimeout(autoScrollToCaret, 100); // 回车后稍长延迟确保新区块创建
         }
       });
     },
