@@ -51,3 +51,5 @@ temp/
 /dist/
 
 
+# claude文件
+.claude/

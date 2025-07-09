@@ -1,4 +1,5 @@
 // 系统初始化器 - 负责用户相关服务的初始化
+import { initializeStorage } from "../utils/storage/index.js";
 
 /**
  * 用户配置管理器
@@ -149,7 +150,10 @@ export async function initializeAppServices(config = {}) {
     // 1. 初始化用户配置管理器
     await userConfigManager.initialize();
     
-    // 2. 初始化远程样式同步服务
+    // 2. 初始化文章存储服务
+    await initializeStorage();
+    
+    // 3. 初始化远程样式同步服务
     await initializeRemoteStyleSystem(config);
     
     return true;

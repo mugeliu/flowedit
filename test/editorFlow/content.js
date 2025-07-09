@@ -38,47 +38,94 @@ function createSidebar() {
   panel.className = "weui-panel weui-panel_access";
   panel.style.cssText = `
         position: fixed;
-        right: -390px;
-        top: 0;
+        right: -400px;
+        top: 100px;
         width: 350px;
-        height: 100vh;
+        height: calc(100vh - 120px);
         background: white;
-        box-shadow: -2px 0 10px rgba(0,0,0,0.1);
-        transition: right 0.3s ease;
+        border-radius: 16px 0 0 16px;
+        box-shadow: -4px 0 20px rgba(0,0,0,0.15);
+        transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         z-index: 5001;
         overflow-y: auto;
-        padding: 20px;
+        padding: 24px;
+        border: 1px solid #e5e7eb;
+        border-right: none;
     `;
 
   panel.innerHTML = `
         <button class="weui-btn weui-btn_mini weui-btn_default" id="close-sidebar-btn" style="
             position: absolute;
-            top: 15px;
-            right: 15px;
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
+            top: 20px;
+            right: 20px;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 16px;
+            font-size: 18px;
             line-height: 1;
             padding: 0;
-            border: 1px solid #ddd;
-            background: white;
+            border: 1px solid #e5e7eb;
+            background: #f9fafb;
+            color: #6b7280;
             z-index: 5002;
-        ">×</button>
-        <div class="weui-panel__hd">历史文章</div>
+            transition: all 0.2s ease;
+            cursor: pointer;
+        " onmouseover="this.style.background='#f3f4f6'; this.style.borderColor='#d1d5db';" 
+           onmouseout="this.style.background='#f9fafb'; this.style.borderColor='#e5e7eb';">×</button>
+        
+        <div class="weui-panel__hd" style="
+            font-size: 18px;
+            font-weight: 600;
+            color: #111827;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #f3f4f6;
+        ">历史文章</div>
+        
         <div class="weui-panel__bd">
-            <div role="option" class="weui-media-box weui-media-box_text" id="article-item">
-                <strong class="weui-media-box__title">如何使用WeUI组件</strong>
-                <p class="weui-media-box__desc">这是一篇关于WeUI组件使用方法的详细教程，包含了常用组件的使用示例和最佳实践。</p>
-                <p class="weui-media-box__desc" style="color: #999; font-size: 12px; margin-top: 5px;">发布时间：2024-01-15</p>
+            <div role="option" class="weui-media-box weui-media-box_text" id="article-item" style="
+                padding: 16px;
+                border-radius: 12px;
+                border: 1px solid #f3f4f6;
+                background: #fafafa;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                margin-bottom: 12px;
+            " onmouseover="this.style.background='#f3f4f6'; this.style.borderColor='#e5e7eb';" 
+               onmouseout="this.style.background='#fafafa'; this.style.borderColor='#f3f4f6';">
+                <strong class="weui-media-box__title" style="
+                    color: #111827;
+                    font-size: 16px;
+                    font-weight: 600;
+                    margin-bottom: 8px;
+                    display: block;
+                ">如何使用WeUI组件</strong>
+                <p class="weui-media-box__desc" style="
+                    color: #6b7280;
+                    font-size: 14px;
+                    line-height: 1.5;
+                    margin-bottom: 8px;
+                ">这是一篇关于WeUI组件使用方法的详细教程，包含了常用组件的使用示例和最佳实践。</p>
+                <p class="weui-media-box__desc" style="
+                    color: #9ca3af;
+                    font-size: 12px;
+                    margin: 0;
+                ">发布时间：2024-01-15</p>
             </div>
         </div>
-        <div class="weui-panel__ft">
-            <a href="javascript:" class="weui-cell weui-cell_active weui-cell_access weui-cell_link">
-                <span class="weui-cell__bd">查看更多</span>
+        
+        <div class="weui-panel__ft" style="margin-top: 16px;">
+            <a href="javascript:" class="weui-cell weui-cell_active weui-cell_access weui-cell_link" style="
+                border-radius: 8px;
+                background: #f8fafc;
+                border: 1px solid #e2e8f0;
+                transition: all 0.2s ease;
+            " onmouseover="this.style.background='#f1f5f9';" 
+               onmouseout="this.style.background='#f8fafc';">
+                <span class="weui-cell__bd" style="color: #475569; font-weight: 500;">查看更多</span>
                 <span class="weui-cell__ft"></span>
             </a>
         </div>
@@ -114,10 +161,32 @@ function toggleSidebar() {
 
   if (isVisible) {
     // 隐藏侧边栏
-    sidebar.style.right = "-390px";
+    sidebar.style.right = "-400px";
+    // 移除外部点击监听器
+    document.removeEventListener("click", handleOutsideClick);
   } else {
     // 显示侧边栏
     sidebar.style.right = "0px";
+    // 添加外部点击监听器
+    setTimeout(() => {
+      document.addEventListener("click", handleOutsideClick);
+    }, 100); // 延迟添加，避免立即触发
+  }
+}
+
+/**
+ * 处理侧边栏外部点击事件
+ */
+function handleOutsideClick(event) {
+  const sidebar = document.getElementById("history-sidebar");
+  const button = document.querySelector(".weui-desktop-online-faq__wrp");
+  
+  // 如果点击的不是侧边栏内部和触发按钮
+  if (sidebar && 
+      !sidebar.contains(event.target) && 
+      !button.contains(event.target) &&
+      sidebar.style.right === "0px") {
+    toggleSidebar();
   }
 }
 
@@ -146,23 +215,59 @@ function showArticleDialog() {
   dialog.className = "weui-dialog";
   dialog.style.cssText = `
         background: white;
-        border-radius: 8px;
-        width: 280px;
+        border-radius: 16px;
+        width: 320px;
         max-width: 90%;
         overflow: hidden;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     `;
 
   dialog.innerHTML = `
-        <div class="weui-dialog__hd">
-            <strong class="weui-dialog__title">文章操作</strong>
+        <div class="weui-dialog__hd" style="
+            padding: 24px 24px 8px 24px;
+            text-align: center;
+        ">
+            <strong class="weui-dialog__title" style="
+                font-size: 18px;
+                font-weight: 600;
+                color: #111827;
+            ">文章操作</strong>
         </div>
-        <div class="weui-dialog__bd" style="padding: 20px; text-align: center; color: #999;">
+        <div class="weui-dialog__bd" style="
+            padding: 8px 24px 24px 24px;
+            text-align: center;
+            color: #6b7280;
+            font-size: 15px;
+            line-height: 1.5;
+        ">
             确定要插入这篇文章吗？
         </div>
-        <div class="weui-dialog__ft">
-            <a href="javascript:;" class="weui-dialog__btn weui-dialog__btn_default" id="cancel-btn">取消</a>
-            <a href="javascript:;" class="weui-dialog__btn weui-dialog__btn_primary" id="insert-dialog-btn">插入</a>
+        <div class="weui-dialog__ft" style="
+            display: flex;
+            border-top: 1px solid #f3f4f6;
+        ">
+            <a href="javascript:;" class="weui-dialog__btn weui-dialog__btn_default" id="cancel-btn" style="
+                flex: 1;
+                padding: 16px;
+                text-align: center;
+                color: #6b7280;
+                font-weight: 500;
+                border-right: 1px solid #f3f4f6;
+                transition: background-color 0.2s ease;
+                text-decoration: none;
+            " onmouseover="this.style.backgroundColor='#f9fafb';" 
+               onmouseout="this.style.backgroundColor='transparent';">取消</a>
+            <a href="javascript:;" class="weui-dialog__btn weui-dialog__btn_primary" id="insert-dialog-btn" style="
+                flex: 1;
+                padding: 16px;
+                text-align: center;
+                color: #2563eb;
+                font-weight: 600;
+                transition: background-color 0.2s ease;
+                text-decoration: none;
+            " onmouseover="this.style.backgroundColor='#f0f9ff';" 
+               onmouseout="this.style.backgroundColor='transparent';">插入</a>
         </div>
     `;
 
@@ -183,6 +288,8 @@ function showArticleDialog() {
     console.log("插入文章");
     // 这里可以添加插入文章的逻辑
     document.body.removeChild(dialogMask);
+    // 关闭侧边栏
+    toggleSidebar();
   });
 
   // 点击遮罩层关闭弹框

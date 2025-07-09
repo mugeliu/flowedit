@@ -3,6 +3,7 @@
 import { pluginRegistry } from "./services/plugin-registry.js";
 import smartEditorPlugin from "./features/smart-editor/index.js";
 import sidebarPlugin from "./features/sidebar/index.js";
+import historySidebarPlugin from "./features/history-sidebar/index.js";
 import { initializeAppServices } from "./services/system-initializer.js";
 import {
   initializeDOMWatcher,
@@ -16,6 +17,7 @@ import {
 // 注册功能模块插件
 pluginRegistry.register("smart-editor", smartEditorPlugin);
 pluginRegistry.register("sidebar", sidebarPlugin);
+pluginRegistry.register("history-sidebar", historySidebarPlugin);
 
 /**
  * 初始化插件功能模块
