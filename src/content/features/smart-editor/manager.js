@@ -3,6 +3,7 @@ import { selectorConfig } from "../../config/index.js";
 import {
   saveToOriginalEditor,
   loadAndInitializeEditor,
+  loadAndInitializeEditorWithData,
   destroyEditor,
   setEditorActiveState,
 } from "../../utils/editor.js";
@@ -14,10 +15,12 @@ import {
   disableAdditionObserver,
 } from "../../services/dom-watcher.js";
 import { storage } from "../../utils/storage/index.js";
+import { showErrorToast, showSuccessToast } from "../../utils/toast.js";
 
 let editor = null;
 let uiElements = null;
 let smartButton = null;
+let currentEditingArticleId = null; // 当前编辑的文章ID
 
 /**
  * 初始化智能编辑器功能（包括智能按钮）
@@ -39,16 +42,26 @@ export function initializeSmartEditor() {
 /**
  * 激活智能编辑器功能
  * 这是智能插入按钮点击后的主要入口函数
+ * @param {Object} initialData - 可选的初始数据
  */
-export async function activateSmartEditor() {
+export async function activateSmartEditor(initialData = null) {
   if (editor) {
     console.debug("智能编辑器已经激活");
     return;
   }
 
+  // 记录当前编辑的文章ID（如果是编辑历史文章）
+  if (initialData && initialData.id) {
+    currentEditingArticleId = initialData.id;
+    console.log("开始编辑历史文章:", currentEditingArticleId);
+  } else {
+    currentEditingArticleId = null;
+    console.log("创建新文章");
+  }
+
   const ueditor = safeQuerySelector(selectorConfig.editorContent);
   if (!ueditor) {
-    alert("找不到编辑器容器");
+    showErrorToast("找不到编辑器容器");
     return;
   }
 
@@ -66,7 +79,11 @@ export async function activateSmartEditor() {
     }
 
     // 加载并初始化编辑器
-    editor = await loadAndInitializeEditor("flow-editorjs-container");
+    if (initialData) {
+      editor = await loadAndInitializeEditorWithData("flow-editorjs-container", initialData);
+    } else {
+      editor = await loadAndInitializeEditor("flow-editorjs-container");
+    }
 
     // 设置编辑器激活状态
     setEditorActiveState(true);
@@ -77,7 +94,7 @@ export async function activateSmartEditor() {
     console.log("智能编辑器激活成功");
   } catch (error) {
     console.error("智能插入功能启动失败:", error);
-    alert("智能插入功能启动失败");
+    showErrorToast("智能插入功能启动失败");
     deactivateSmartEditor();
   }
 }
@@ -98,6 +115,9 @@ export function deactivateSmartEditor() {
     destroyEditor(editor);
     editor = null;
   }
+
+  // 清理当前编辑的文章ID
+  currentEditingArticleId = null;
 
   // 重置编辑器激活状态
   setEditorActiveState(false);
@@ -167,27 +187,47 @@ async function saveToLocalStorage(editorData) {
   try {
     console.log("正在保存文章到本地存储...");
     
-    // 生成文章标题（从内容中提取或使用默认标题）
-    const title = extractTitleFromContent(editorData) || `文章_${new Date().toLocaleDateString()}`;
-    
-    // 保存文章
-    const result = await storage.saveArticle(editorData, {
-      title: title,
-      status: 'published' // 标记为已发布
-    });
-    
-    if (result.success) {
-      console.log(`文章已保存到本地存储: ${result.article.title} (${result.articleId})`);
+    if (currentEditingArticleId) {
+      // 更新现有文章
+      console.log("更新现有文章:", currentEditingArticleId);
       
-      // 显示保存成功提示（可选）
-      showSaveNotification(`文章《${result.article.title}》已保存`, 'success');
+      const result = await storage.updateArticle(currentEditingArticleId, editorData, {
+        status: 'published' // 标记为已发布
+      });
+      
+      if (result.success) {
+        console.log(`文章已更新: ${result.article.title} (${currentEditingArticleId})`);
+        showSuccessToast(`文章《${result.article.title}》已更新`);
+      } else {
+        console.error("更新文章失败:", result.error);
+        showErrorToast("更新文章失败");
+      }
     } else {
-      console.error("保存到本地存储失败:", result.error);
-      showSaveNotification("保存到本地存储失败", 'error');
+      // 创建新文章
+      console.log("创建新文章");
+      
+      // 生成文章标题（从内容中提取或使用默认标题）
+      const title = extractTitleFromContent(editorData) || `文章_${new Date().toLocaleDateString()}`;
+      
+      const result = await storage.saveArticle(editorData, {
+        title: title,
+        status: 'published' // 标记为已发布
+      });
+      
+      if (result.success) {
+        console.log(`新文章已保存: ${result.article.title} (${result.articleId})`);
+        showSuccessToast(`文章《${result.article.title}》已保存`);
+        
+        // 更新当前编辑的文章ID，以便后续保存时更新而不是新建
+        currentEditingArticleId = result.articleId;
+      } else {
+        console.error("保存新文章失败:", result.error);
+        showErrorToast("保存文章失败");
+      }
     }
   } catch (error) {
     console.error("保存到本地存储时发生错误:", error);
-    showSaveNotification("保存到本地存储时发生错误", 'error');
+    showErrorToast("保存到本地存储时发生错误");
   }
 }
 
@@ -217,102 +257,6 @@ function extractTitleFromContent(editorData) {
 }
 
 /**
- * 显示保存通知
- * @param {string} message - 通知消息
- * @param {string} type - 通知类型 ('success', 'error', 'info')
- */
-function showSaveNotification(message, type = 'info') {
-  // 创建通知元素
-  const notification = document.createElement('div');
-  notification.style.cssText = `
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 10000;
-    padding: 12px 20px;
-    border-radius: 6px;
-    font-size: 14px;
-    font-weight: 500;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    transition: all 0.3s ease;
-    max-width: 300px;
-    word-wrap: break-word;
-  `;
-  
-  // 根据类型设置样式
-  switch (type) {
-    case 'success':
-      notification.style.backgroundColor = '#f0f9ff';
-      notification.style.color = '#1e40af';
-      notification.style.border = '1px solid #93c5fd';
-      break;
-    case 'error':
-      notification.style.backgroundColor = '#fef2f2';
-      notification.style.color = '#dc2626';
-      notification.style.border = '1px solid #fca5a5';
-      break;
-    default:
-      notification.style.backgroundColor = '#f8fafc';
-      notification.style.color = '#475569';
-      notification.style.border = '1px solid #e2e8f0';
-  }
-  
-  notification.textContent = message;
-  document.body.appendChild(notification);
-  
-  // 3秒后自动消失
-  setTimeout(() => {
-    if (notification.parentNode) {
-      notification.style.opacity = '0';
-      notification.style.transform = 'translateX(100%)';
-      setTimeout(() => {
-        if (notification.parentNode) {
-          notification.parentNode.removeChild(notification);
-        }
-      }, 300);
-    }
-  }, 3000);
-}
-
-//  todo 插入功能不完善先注释
-/**
- * 插入内容到编辑器
- * @param {Object} options 插入选项
- */
-async function insertContent(options = {}) {
-  if (!editor) {
-    console.error("编辑器未初始化");
-    return;
-  }
-
-  try {
-    const outputData = await editor.save();
-    console.log("插入的数据:", outputData);
-
-    // 使用mp_editor_insert_html API插入内容
-    const success = await saveToOriginalEditor(outputData, {
-      ...options,
-      apiName: "mp_editor_insert_html",
-      apiParam: {
-        isSelect: options.isSelect || false,
-      },
-      contentField: "html",
-    });
-
-    if (success) {
-      console.log("内容已成功插入到原编辑器");
-    } else {
-      console.error("插入到原编辑器失败");
-    }
-  } catch (error) {
-    console.error("插入失败:", error);
-  } finally {
-    deactivateSmartEditor();
-  }
-}
-
-/**
- * 获取当前编辑器实例
  * 获取当前编辑器实例
  * @returns {Object|null} 编辑器实例
  */

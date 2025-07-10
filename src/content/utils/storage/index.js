@@ -18,82 +18,43 @@ export {
   ArticleMetadata 
 } from './article-serializer.js';
 
-// 文章存储服务
-export { 
+// 延迟导入存储服务，避免循环引用
+import { 
   ArticleStorageService, 
   articleStorageService, 
   ArticleStatus, 
   SortOrder 
 } from '../../services/article-storage-service.js';
 
+// 重新导出
+export { ArticleStorageService, articleStorageService, ArticleStatus, SortOrder };
+
 /**
  * 快速访问常用功能
- * 使用懒加载模式避免循环引用问题
  */
 export const storage = {
   // 文章操作
-  saveArticle: async (...args) => {
-    const { articleStorageService } = await import('../../services/article-storage-service.js');
-    return articleStorageService.saveArticle(...args);
-  },
-  getArticle: async (...args) => {
-    const { articleStorageService } = await import('../../services/article-storage-service.js');
-    return articleStorageService.getArticle(...args);
-  },
-  getAllArticles: async (...args) => {
-    const { articleStorageService } = await import('../../services/article-storage-service.js');
-    return articleStorageService.getAllArticles(...args);
-  },
-  deleteArticle: async (...args) => {
-    const { articleStorageService } = await import('../../services/article-storage-service.js');
-    return articleStorageService.deleteArticle(...args);
-  },
-  updateArticle: async (...args) => {
-    const { articleStorageService } = await import('../../services/article-storage-service.js');
-    return articleStorageService.updateArticle(...args);
-  },
+  saveArticle: (...args) => articleStorageService.saveArticle(...args),
+  getArticle: (...args) => articleStorageService.getArticle(...args),
+  getAllArticles: (...args) => articleStorageService.getAllArticles(...args),
+  deleteArticle: (...args) => articleStorageService.deleteArticle(...args),
+  updateArticle: (...args) => articleStorageService.updateArticle(...args),
   
   // 草稿操作
-  saveDraft: async (...args) => {
-    const { articleStorageService } = await import('../../services/article-storage-service.js');
-    return articleStorageService.saveDraft(...args);
-  },
-  getDrafts: async (...args) => {
-    const { articleStorageService } = await import('../../services/article-storage-service.js');
-    return articleStorageService.getDrafts(...args);
-  },
-  deleteDraft: async (...args) => {
-    const { articleStorageService } = await import('../../services/article-storage-service.js');
-    return articleStorageService.deleteDraft(...args);
-  },
+  saveDraft: (...args) => articleStorageService.saveDraft(...args),
+  getDrafts: (...args) => articleStorageService.getDrafts(...args),
+  deleteDraft: (...args) => articleStorageService.deleteDraft(...args),
   
   // 工具方法
-  getStats: async (...args) => {
-    const { articleStorageService } = await import('../../services/article-storage-service.js');
-    return articleStorageService.getStorageStats(...args);
-  },
-  cleanup: async (...args) => {
-    const { articleStorageService } = await import('../../services/article-storage-service.js');
-    return articleStorageService.cleanup(...args);
-  },
-  initialize: async (...args) => {
-    const { articleStorageService } = await import('../../services/article-storage-service.js');
-    return articleStorageService.initialize(...args);
-  },
+  getStats: (...args) => articleStorageService.getStorageStats(...args),
+  cleanup: (...args) => articleStorageService.cleanup(...args),
+  initialize: (...args) => articleStorageService.initialize(...args),
   
   // 序列化工具
-  serialize: (...args) => {
-    return articleSerializer.serialize(...args);
-  },
-  deserialize: (...args) => {
-    return articleSerializer.deserialize(...args);
-  },
-  createEmpty: (...args) => {
-    return articleSerializer.createEmptyArticle(...args);
-  },
-  clone: (...args) => {
-    return articleSerializer.cloneArticle(...args);
-  }
+  serialize: (...args) => articleSerializer.serialize(...args),
+  deserialize: (...args) => articleSerializer.deserialize(...args),
+  createEmpty: (...args) => articleSerializer.createEmptyArticle(...args),
+  clone: (...args) => articleSerializer.cloneArticle(...args)
 };
 
 /**
@@ -102,7 +63,6 @@ export const storage = {
  */
 export async function initializeStorage() {
   try {
-    const { articleStorageService } = await import('../../services/article-storage-service.js');
     const success = await articleStorageService.initialize();
     if (success) {
       console.log('存储系统初始化成功');

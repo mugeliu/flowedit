@@ -166,6 +166,114 @@ export async function loadAndInitializeEditor(container) {
 }
 
 /**
+ * 加载并初始化编辑器（支持初始数据）
+ * @param {string} container 编辑器容器ID或元素
+ * @param {Object} initialData 初始EditorJS数据
+ * @returns {Promise<Object>} EditorJS实例
+ */
+export async function loadAndInitializeEditorWithData(container, initialData = null) {
+  const holderElement = document.getElementById(container);
+  if (!holderElement) {
+    throw new Error(`${container}元素不存在，请检查DOM结构`);
+  }
+
+  // 解析配置中的工具类引用
+  const resolvedTools = {};
+  for (const [toolName, toolConfig] of Object.entries(editorConfig.tools)) {
+    if (typeof toolConfig.class === "string") {
+      // 将字符串类名解析为实际的类引用
+      resolvedTools[toolName] = {
+        ...toolConfig,
+        class: EditorJS[toolConfig.class],
+      };
+    } else {
+      resolvedTools[toolName] = toolConfig;
+    }
+  }
+
+  const editorOptions = {
+    holder: holderElement,
+    placeholder: editorConfig.placeholder,
+    autofocus: editorConfig.autofocus,
+    minHeight: editorConfig.minHeight,
+    logLevel: editorConfig.logLevel,
+    tools: resolvedTools,
+    onChange: async (api, event) => {
+      try {
+        const output = await api.saver.save();
+        // 加载样式模板并生成HTML预览
+        const styleTemplate = await loadStyleTemplate();
+        const htmlContent = convertToHtml(output, styleTemplate);
+        await renderPreviewContent(htmlContent);
+      } catch (error) {
+        console.error("预览内容生成失败:", error);
+        await renderPreviewContent("");
+      }
+    },
+    onReady: () => {
+      if (window.EditorJS.DragDrop) {
+        new window.EditorJS.DragDrop(editorInstance);
+      }
+      // 1. 初始化时滚动到顶部
+      window.scrollTo({ top: 0, behavior: "auto" });
+
+      // 2. 自动滚动逻辑 - 确保当前输入位置始终可见
+      const autoScrollToCaret = () => {
+        const selection = window.getSelection();
+      
+        if (!selection || selection.rangeCount === 0) return;
+      
+        const range = selection.getRangeAt(0);
+        const rect = range.getBoundingClientRect();
+      
+        if (rect && rect.top !== 0) {
+          const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+          const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      
+          // 将光标位置滚动到视窗中央
+          const targetScroll = scrollTop + rect.top - viewportHeight / 2;
+      
+          window.scrollTo({
+            top: targetScroll,
+            behavior: "smooth",
+          });
+        }
+      };
+
+      // 添加键盘和鼠标事件监听
+      holderElement.addEventListener("keyup", autoScrollToCaret);
+      holderElement.addEventListener("click", autoScrollToCaret);
+    },
+  };
+
+  // 如果有初始数据，添加到配置中
+  if (initialData) {
+    // 检查不同的数据结构
+    let editorData = null;
+    
+    if (initialData.content && initialData.content.blocks) {
+      // 文章存储格式：{ content: { blocks: [...] } }
+      editorData = initialData.content;
+    } else if (initialData.editorData && initialData.editorData.blocks) {
+      // 直接传入的EditorJS格式：{ editorData: { blocks: [...] } }
+      editorData = initialData.editorData;
+    } else if (initialData.blocks) {
+      // 直接EditorJS格式：{ blocks: [...] }
+      editorData = initialData;
+    }
+    
+    if (editorData && editorData.blocks) {
+      editorOptions.data = editorData;
+      console.log("加载初始数据到编辑器:", editorData);
+    }
+  }
+
+  const editorInstance = new EditorJS(editorOptions);
+
+  return editorInstance;
+}
+
+/**
  * 销毁编辑器实例
  * @param {Object} editor EditorJS实例
  */

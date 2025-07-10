@@ -48,10 +48,11 @@ const mainConfig = defineConfig({
           return "[name].js";
         },
         chunkFileNames: (chunkInfo) => {
-          // 根据chunk名称决定输出路径
+          // 强制所有内容脚本相关的chunks放到content目录下
           if (
             chunkInfo.facadeModuleId &&
-            chunkInfo.facadeModuleId.includes("/content/")
+            (chunkInfo.facadeModuleId.includes("/content/") ||
+             chunkInfo.facadeModuleId.includes("/src/content/"))
           ) {
             return "content/[name].js";
           }
@@ -62,7 +63,11 @@ const mainConfig = defineConfig({
           return "[name].[ext]";
         },
         sourcemap: false,
+        // 禁用代码分割，确保所有代码打包到一个文件中
+        manualChunks: undefined,
       },
+      // 内联所有动态导入，避免生成额外的chunk
+      external: [],
     },
     minify: false,
   },

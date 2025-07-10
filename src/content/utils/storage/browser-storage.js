@@ -54,6 +54,26 @@ export class BrowserStorage {
   }
 
   /**
+   * 检查Chrome扩展上下文是否有效
+   * @returns {boolean}
+   */
+  _isExtensionContextValid() {
+    try {
+      return !!(chrome && chrome.storage && chrome.storage.local);
+    } catch (error) {
+      return false;
+    }
+  }
+
+  /**
+   * 处理扩展上下文失效的情况
+   * @param {string} operation - 操作名称
+   */
+  _handleContextInvalidated(operation) {
+    console.warn(`扩展上下文失效，${operation}操作失败。请刷新页面或重新加载扩展。`);
+  }
+
+  /**
    * 获取数据
    * @param {string} key - 键名
    * @returns {Promise<any>} 数据值
@@ -63,6 +83,12 @@ export class BrowserStorage {
     
     try {
       if (this.storageType === StorageType.CHROME) {
+        // 检查扩展上下文是否有效
+        if (!this._isExtensionContextValid()) {
+          this._handleContextInvalidated('获取数据');
+          return null;
+        }
+        
         const result = await chrome.storage.local.get([namespacedKey]);
         return result[namespacedKey] || null;
       } else {
@@ -71,6 +97,11 @@ export class BrowserStorage {
         return value ? JSON.parse(value) : null;
       }
     } catch (error) {
+      // 检查是否是扩展上下文失效错误
+      if (error.message && error.message.includes('Extension context invalidated')) {
+        this._handleContextInvalidated('获取数据');
+        return null;
+      }
       console.error(`获取存储数据失败 (${key}):`, error);
       return null;
     }
@@ -87,6 +118,12 @@ export class BrowserStorage {
     
     try {
       if (this.storageType === StorageType.CHROME) {
+        // 检查扩展上下文是否有效
+        if (!this._isExtensionContextValid()) {
+          this._handleContextInvalidated('存储数据');
+          return false;
+        }
+        
         await chrome.storage.local.set({ [namespacedKey]: value });
       } else {
         const storage = this._getStorage();
@@ -94,6 +131,11 @@ export class BrowserStorage {
       }
       return true;
     } catch (error) {
+      // 检查是否是扩展上下文失效错误
+      if (error.message && error.message.includes('Extension context invalidated')) {
+        this._handleContextInvalidated('存储数据');
+        return false;
+      }
       console.error(`存储数据失败 (${key}):`, error);
       return false;
     }
