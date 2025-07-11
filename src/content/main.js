@@ -8,7 +8,7 @@ import { initializeAppServices } from "./services/system-initializer.js";
 import {
   initializeDOMWatcher,
   cleanupDOMWatcher,
-} from "./services/dom-watcher.js";
+} from "./services/dom-monitor.js";
 import {
   initializeEditorBridge,
   callEditorAPI,

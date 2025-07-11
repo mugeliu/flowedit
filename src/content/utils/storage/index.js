@@ -24,7 +24,7 @@ import {
   articleStorageService, 
   ArticleStatus, 
   SortOrder 
-} from '../../services/article-storage-service.js';
+} from '../../services/article-storage.js';
 
 // 重新导出
 export { ArticleStorageService, articleStorageService, ArticleStatus, SortOrder };

@@ -8,6 +8,67 @@ import { callEditorAPI } from "../services/editor-bridge.js";
 let isEditorActive = false;
 
 /**
+ * 创建通用的编辑器 onReady 处理器
+ * @param {HTMLElement} holderElement - 编辑器容器元素
+ * @returns {Function} onReady 处理器函数
+ */
+function createOnReadyHandler(holderElement) {
+  return function() {
+    // 这里的 this 指向 EditorJS 实例
+    const editorInstance = this;
+    
+    if (window.EditorJS.DragDrop) {
+      new window.EditorJS.DragDrop(editorInstance);
+    }
+    
+    // 1. 初始化时滚动到顶部
+    window.scrollTo({ top: 0, behavior: "auto" });
+
+    // 2. 自动滚动逻辑 - 确保当前输入位置始终可见
+    const autoScrollToCaret = () => {
+      const selection = window.getSelection();
+    
+      if (!selection || selection.rangeCount === 0) return;
+    
+      const range = selection.getRangeAt(0);
+      const rect = range.getBoundingClientRect();
+    
+      if (rect && rect.top !== 0) {
+        const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+    
+        // 将光标位置滚动到视窗中央
+        const targetScroll = scrollTop + rect.top - viewportHeight / 2;
+    
+        window.scrollTo({
+          top: targetScroll,
+          behavior: "smooth",
+        });
+      }
+    };
+
+    // 3. 为 loadAndInitializeEditor 添加输入监听
+    if (editorInstance.ui.nodes.redactor) {
+      editorInstance.ui.nodes.redactor.addEventListener("input", () => {
+        setTimeout(autoScrollToCaret, 50); // 延迟确保DOM更新完成
+      });
+
+      editorInstance.ui.nodes.redactor.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          setTimeout(autoScrollToCaret, 100); // 回车后稍长延迟确保新区块创建
+        }
+      });
+    }
+
+    // 4. 为 loadAndInitializeEditorWithData 添加事件监听
+    if (holderElement) {
+      holderElement.addEventListener("keyup", autoScrollToCaret);
+      holderElement.addEventListener("click", autoScrollToCaret);
+    }
+  };
+}
+
+/**
  * 加载样式模板
  * @returns {Promise<Object>} 样式模板对象
  */
@@ -118,48 +179,7 @@ export async function loadAndInitializeEditor(container) {
         await renderPreviewContent("");
       }
     },
-    onReady: () => {
-      if (window.EditorJS.DragDrop) {
-        new window.EditorJS.DragDrop(editorInstance);
-      }
-      // 1. 初始化时滚动到顶部
-      window.scrollTo({ top: 0, behavior: "auto" });
-
-      // 2. 自动滚动逻辑 - 确保当前输入位置始终可见
-      const autoScrollToCaret = () => {
-        const selection = window.getSelection();
-      
-        if (!selection || selection.rangeCount === 0) return;
-      
-        const range = selection.getRangeAt(0);
-        const rect = range.getBoundingClientRect();
-      
-        if (rect && rect.top !== 0) {
-          const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
-          const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-      
-          // 将光标位置滚动到视窗中央
-          const targetScroll = scrollTop + rect.top - viewportHeight / 2;
-      
-          window.scrollTo({
-            top: targetScroll,
-            behavior: "smooth",
-          });
-        }
-      };
-
-      // 3. 监听输入事件
-      editorInstance.ui.nodes.redactor.addEventListener("input", () => {
-        setTimeout(autoScrollToCaret, 50); // 延迟确保DOM更新完成
-      });
-
-      // 监听键盘事件（回车键等）
-      editorInstance.ui.nodes.redactor.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") {
-          setTimeout(autoScrollToCaret, 100); // 回车后稍长延迟确保新区块创建
-        }
-      });
-    },
+    onReady: createOnReadyHandler(holderElement),
   });
 
   return editorInstance;
@@ -210,40 +230,7 @@ export async function loadAndInitializeEditorWithData(container, initialData = n
         await renderPreviewContent("");
       }
     },
-    onReady: () => {
-      if (window.EditorJS.DragDrop) {
-        new window.EditorJS.DragDrop(editorInstance);
-      }
-      // 1. 初始化时滚动到顶部
-      window.scrollTo({ top: 0, behavior: "auto" });
-
-      // 2. 自动滚动逻辑 - 确保当前输入位置始终可见
-      const autoScrollToCaret = () => {
-        const selection = window.getSelection();
-      
-        if (!selection || selection.rangeCount === 0) return;
-      
-        const range = selection.getRangeAt(0);
-        const rect = range.getBoundingClientRect();
-      
-        if (rect && rect.top !== 0) {
-          const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
-          const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-      
-          // 将光标位置滚动到视窗中央
-          const targetScroll = scrollTop + rect.top - viewportHeight / 2;
-      
-          window.scrollTo({
-            top: targetScroll,
-            behavior: "smooth",
-          });
-        }
-      };
-
-      // 添加键盘和鼠标事件监听
-      holderElement.addEventListener("keyup", autoScrollToCaret);
-      holderElement.addEventListener("click", autoScrollToCaret);
-    },
+    onReady: createOnReadyHandler(holderElement),
   };
 
   // 如果有初始数据，添加到配置中

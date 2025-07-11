@@ -13,7 +13,7 @@ import { createSmartButton } from "./smart-button.js";
 import {
   enableAdditionObserver,
   disableAdditionObserver,
-} from "../../services/dom-watcher.js";
+} from "../../services/dom-monitor.js";
 import { storage } from "../../utils/storage/index.js";
 import { showErrorToast, showSuccessToast } from "../../utils/toast.js";
 

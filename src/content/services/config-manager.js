@@ -323,7 +323,7 @@ class UserConfigManager {
 }
 
 // 创建单例实例
-const userConfigManager = new UserConfigManager();
+export const configManager = new UserConfigManager();
 
-export default userConfigManager;
+// 导出类供测试使用
 export { UserConfigManager };

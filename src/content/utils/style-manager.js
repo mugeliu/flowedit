@@ -4,7 +4,7 @@
  */
 
 import { styleConfig, BLOCK_THEME_CONFIGS, REMOTE_STYLE_CONFIG, STYLE_VALIDATION_RULES } from '../config/style-config.js';
-import styleSyncService from '../services/style-sync-service.js';
+import { styleSyncService } from '../services/style-sync.js';
 
 /**
  * 预设样式配置

@@ -276,10 +276,28 @@ class StyleSyncService {
     this.currentVersion = null;
     this.lastSyncTime = null;
   }
+
+  /**
+   * 启动自动同步 (别名方法，与 system-initializer.js 兼容)
+   * @param {number} interval 同步间隔（毫秒）
+   */
+  startAutoSync(interval) {
+    if (interval) {
+      this.syncInterval = interval;
+    }
+    this.startPeriodicSync();
+  }
+
+  /**
+   * 停止自动同步 (别名方法，与 system-initializer.js 兼容)
+   */
+  stopAutoSync() {
+    this.stopPeriodicSync();
+  }
 }
 
 // 创建单例实例
-const styleSyncService = new StyleSyncService();
+export const styleSyncService = new StyleSyncService();
 
-export default styleSyncService;
+// 导出类供测试使用
 export { StyleSyncService };

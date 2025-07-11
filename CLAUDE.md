@@ -41,9 +41,10 @@ npm run test:all
 
 ### Plugin-Based Architecture
 The extension uses a plugin registry system (`src/content/services/plugin-registry.js`) where features are registered as plugins with standardized interfaces:
-- `initialize()` - Plugin initialization
-- `cleanup()` - Resource cleanup
-- `isEnabled()` - Feature toggle check
+- `initialize()` - Plugin initialization (required)
+- `cleanup()` - Resource cleanup (required)
+- `isEnabled()` - Feature toggle check (optional)
+- `isActive()` - Current activation state (optional)
 
 ### Core Structure
 ```
@@ -52,7 +53,8 @@ src/content/
 ├── config/                    # Editor.js configuration and feature toggles
 ├── features/                  # Feature modules (plugins)
 │   ├── smart-editor/          # Editor.js integration
-│   └── sidebar/               # Sidebar management
+│   ├── sidebar/               # Sidebar management
+│   └── history-sidebar/       # Article history management
 ├── services/                  # Core services
 │   ├── plugin-registry.js     # Plugin management system
 │   ├── system-initializer.js  # App services initialization
@@ -61,39 +63,46 @@ src/content/
 ├── tools/                     # Custom Editor.js tools
 ├── utils/                     # Utilities and parsers
 │   └── parsers/               # HTML conversion system
-└── editorjs-bundle.js         # Editor.js dependencies
+└── editorjs-bundle.js         # Editor.js dependencies (entry point)
 ```
 
 ### Key Components
 
 #### 1. System Initialization (`src/content/main.js`)
 - Registers feature plugins with the plugin registry
-- Initializes editor bridge to communicate with WeChat's editor API
-- Checks editor readiness before initializing features
+- Initializes editor bridge to communicate with WeChat's editor API via postMessage
+- Checks `mp_editor_get_isready` API before initializing features
 - Starts DOM watcher for dynamic content monitoring
 
-#### 2. Editor Configuration (`src/content/config/index.js`)
-- Defines Editor.js tools and their configurations
-- Manages feature toggles and positioning
-- Contains DOM selectors for WeChat editor elements
-- Configures custom tools like WeChat image uploader
+#### 2. Editor Bridge (`src/content/services/editor-bridge.js`)
+- Injects `scripts/page-injector.js` into the page context
+- Communicates with WeChat's `__MP_Editor_JSAPI__` through postMessage
+- Provides `callEditorAPI()` for invoking WeChat editor functions
+- Handles asynchronous API responses with callback pattern
 
-#### 3. HTML Parser System (`src/content/utils/parsers/`)
-- Converts Editor.js blocks to HTML with proper styling
-- Handles inline styles (bold, italic, underline)
-- Template-based rendering system
-- Supports custom block types and styling
+#### 3. Plugin Registry (`src/content/services/plugin-registry.js`)
+- Manages plugin lifecycle (register, initialize, cleanup)
+- Enforces plugin interface requirements
+- Provides `initializeAll()` for batch plugin initialization
+- Tracks initialization state to prevent duplicate initialization
 
-#### 4. Feature Modules
-- **Smart Editor**: Integrates Editor.js with WeChat's editor
+#### 4. HTML Parser System (`src/content/utils/parsers/`)
+- `TemplateLoader.js` - Manages CSS styling templates
+- `InlineStyleProcessor.js` - Handles text formatting (bold, italic, underline)
+- `Renderer.js` - Converts Editor.js blocks to HTML
+- `index.js` - Main converter class with validation
+
+#### 5. Feature Modules
+- **Smart Editor**: Integrates Editor.js with WeChat's editor, provides rich editing interface
 - **Sidebar**: Manages content navigation and tools
-- Each feature implements the plugin interface
+- **History Sidebar**: Manages saved article history with storage integration
 
 ### Build System (Vite)
 - Uses Vite for bundling with custom configuration
-- Separate entry points for content script and editor bundle
-- Automatic asset copying and manifest management
-- Outputs to `dist/` directory with proper Chrome extension structure
+- Two main entry points: `src/content/main.js` and `src/editorjs-bundle.js`
+- Custom plugin copies manifest.json, background.js, assets, and scripts
+- Outputs to `dist/` with proper Chrome extension structure
+- Disables code splitting to ensure single-file bundles
 
 ## Key Files
 
@@ -107,6 +116,7 @@ src/content/
 ### Feature Implementation
 - `src/content/features/smart-editor/` - Editor.js integration
 - `src/content/features/sidebar/` - Sidebar functionality
+- `src/content/features/history-sidebar/` - Article history management
 - `src/content/tools/custom-wechat-image-tool.js` - WeChat image uploader
 
 ### Core Services
@@ -124,7 +134,7 @@ src/content/
 
 ### Adding New Features
 1. Create plugin module in `src/content/features/`
-2. Implement plugin interface (initialize, cleanup, isEnabled)
+2. Implement required plugin interface (`initialize`, `cleanup`)
 3. Register plugin in `src/content/main.js`
 4. Add configuration in `src/content/config/index.js` if needed
 
@@ -141,17 +151,19 @@ src/content/
 ## Technical Details
 
 ### WeChat Editor Integration
-- Uses `editor-bridge.js` to communicate with WeChat's editor API
+- Uses `editor-bridge.js` to communicate with WeChat's `__MP_Editor_JSAPI__`
 - Monitors `mp_editor_get_isready` API for editor readiness
-- Targets specific DOM elements defined in `selectorConfig`
+- Injects `scripts/page-injector.js` to bridge content script and page context
+- Uses postMessage for secure cross-context communication
 
 ### Chrome Extension Structure
 - Manifest V3 extension
-- Content scripts injected into WeChat editor pages
+- Content scripts injected into WeChat editor pages (`https://mp.weixin.qq.com/cgi-bin/appmsg?*`)
 - Uses Chrome storage and scripting permissions
 - Web accessible resources for dynamic loading
 
 ### Module System
-- ES6 modules throughout
+- ES6 modules throughout (`"type": "module"` in package.json)
 - Dynamic imports for feature loading
+- Plugin-based architecture for modularity
 - Consistent error handling and logging
