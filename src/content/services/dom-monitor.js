@@ -3,6 +3,12 @@
 
 import { pluginRegistry } from "./plugin-registry.js";
 import { getCurrentEditor } from "../features/smart-editor/manager.js";
+import { createLogger } from './simple-logger.js';
+import { createErrorHandler } from './simple-error-handler.js';
+
+// 创建模块日志器和错误处理器
+const logger = createLogger('DOMWatcher');
+const errorHandler = createErrorHandler('DOMWatcher');
 
 /**
  * DOM变化监听器类
@@ -17,6 +23,8 @@ class DOMWatcher {
     // 新增的独立监听器
     this.additionObserver = null;
     this.isAdditionObserverEnabled = false;
+    
+    logger.debug('DOMWatcher 初始化完成');
   }
 
   // ==================== MutationObserver 逻辑部分 ====================
@@ -65,7 +73,7 @@ class DOMWatcher {
       // 重新初始化 sidebar 插件
       await pluginRegistry.initializePlugin("sidebar");
     } catch (error) {
-      console.error("[DOMWatcher] 恢复按钮失败:", error);
+      logger.error("[DOMWatcher] 恢复按钮失败:", error);
     }
   }
 
@@ -78,12 +86,12 @@ class DOMWatcher {
   enableAdditionObserver() {
     const container = document.getElementById("ueditor_0");
     if (!container) {
-      console.warn("[DOMWatcher] 未找到 #ueditor_0 容器");
+      logger.warn("未找到 #ueditor_0 容器");
       return;
     }
 
     if (this.additionObserver) {
-      console.log("[DOMWatcher] 独立监听器已启用");
+      logger.debug("独立监听器已启用");
       return;
     }
 
@@ -92,16 +100,16 @@ class DOMWatcher {
         if (mutation.type === "childList" && mutation.addedNodes.length > 0) {
           mutation.addedNodes.forEach((node) => {
             if (node.nodeType === Node.ELEMENT_NODE) {
-              console.log("[DOMWatcher] 检测到新增节点:", node);
+              logger.debug("检测到新增节点", node);
               const [firstChild] = node.children;
 
               if (firstChild?.tagName === "IMG") {
                 const { src } = firstChild;
                 if (src?.startsWith("http://") || src?.startsWith("https://")) {
-                  console.log("图片src:", src);
+                  logger.info("检测到图片", { src });
                   this.insertImageBlock(src);
                 } else {
-                  console.log("忽略非永久链接图片:", src);
+                  logger.debug("忽略非永久链接图片", { src });
                 }
               }
               
@@ -117,7 +125,7 @@ class DOMWatcher {
     });
 
     this.isAdditionObserverEnabled = true;
-    console.log("[DOMWatcher] 启用独立监听器");
+    logger.info("启用独立监听器");
   }
 
 
@@ -128,7 +136,7 @@ class DOMWatcher {
    insertImageBlock(src) {
     const editor = getCurrentEditor();
     if (!editor) {
-      console.warn("[DOMWatcher] 编辑器未激活，无法插入图片块");
+      logger.warn("编辑器未激活，无法插入图片块");
       return;
     }
 
@@ -142,9 +150,9 @@ class DOMWatcher {
         withBackground: false,
         stretched: false
       });
-      console.log("[DOMWatcher] 成功插入图片块:", src);
+      logger.info("成功插入图片块", { src });
     } catch (error) {
-      console.error("[DOMWatcher] 插入图片块失败:", error);
+      errorHandler.handle(error);
     }
   }
 
@@ -156,7 +164,7 @@ class DOMWatcher {
       this.additionObserver.disconnect();
       this.additionObserver = null;
       this.isAdditionObserverEnabled = false;
-      console.log("[DOMWatcher] 已关闭独立监听器");
+      logger.info("已关闭独立监听器");
     }
   }
 
@@ -175,12 +183,14 @@ class DOMWatcher {
    */
   startWatching() {
     if (this.isWatching) {
+      logger.debug('DOM监听器已在运行，跳过启动');
       return;
     }
 
     // 获取目标容器
     this.targetElement = document.getElementById("edui1_toolbarboxouter");
     if (!this.targetElement) {
+      logger.warn('未找到目标容器 #edui1_toolbarboxouter');
       return;
     }
 
@@ -196,6 +206,7 @@ class DOMWatcher {
     });
 
     this.isWatching = true;
+    logger.info('DOM监听器启动成功');
   }
 
   /**
@@ -209,6 +220,7 @@ class DOMWatcher {
 
     this.targetElement = null;
     this.isWatching = false;
+    logger.info('DOM监听器已停止');
   }
 }
 

@@ -16,6 +16,12 @@ import {
 } from "../../services/dom-monitor.js";
 import { storage } from "../../utils/storage/index.js";
 import { showErrorToast, showSuccessToast } from "../../utils/toast.js";
+import { createLogger } from "../../services/simple-logger.js";
+import { createErrorHandler } from "../../services/simple-error-handler.js";
+
+// 创建模块日志器
+const logger = createLogger('SmartEditorManager');
+const errorHandler = createErrorHandler('SmartEditorManager');
 
 let editor = null;
 let uiElements = null;
@@ -27,15 +33,15 @@ let currentEditingArticleId = null; // 当前编辑的文章ID
  */
 export function initializeSmartEditor() {
   if (smartButton) {
-    console.warn("智能插入按钮功能已经初始化");
+  logger.warn("智能插入按钮功能已经初始化");
     return;
   }
 
   try {
     smartButton = createSmartButton();
-    console.log("智能插入按钮成功");
+    logger.info("智能插入按钮成功");
   } catch (error) {
-    console.error("智能编辑器功能初始化失败:", error);
+    logger.error("智能编辑器功能初始化失败:", error);
   }
 }
 
@@ -46,17 +52,17 @@ export function initializeSmartEditor() {
  */
 export async function activateSmartEditor(initialData = null) {
   if (editor) {
-    console.debug("智能编辑器已经激活");
+    logger.debug("智能编辑器已经激活");
     return;
   }
 
   // 记录当前编辑的文章ID（如果是编辑历史文章）
   if (initialData && initialData.id) {
     currentEditingArticleId = initialData.id;
-    console.log("开始编辑历史文章:", currentEditingArticleId);
+    logger.info("开始编辑历史文章:", currentEditingArticleId);
   } else {
     currentEditingArticleId = null;
-    console.log("创建新文章");
+    logger.info("创建新文章");
   }
 
   const ueditor = safeQuerySelector(selectorConfig.editorContent);
@@ -78,6 +84,9 @@ export async function activateSmartEditor(initialData = null) {
       throw new Error("编辑器UI初始化失败");
     }
 
+    // 等待DOM更新完成
+    await new Promise(resolve => setTimeout(resolve, 10));
+
     // 加载并初始化编辑器
     if (initialData) {
       editor = await loadAndInitializeEditorWithData("flow-editorjs-container", initialData);
@@ -91,9 +100,9 @@ export async function activateSmartEditor(initialData = null) {
     // 启用独立监听器
     enableAdditionObserver();
 
-    console.log("智能编辑器激活成功");
+    logger.info("智能编辑器激活成功");
   } catch (error) {
-    console.error("智能插入功能启动失败:", error);
+    errorHandler.handle(error);
     showErrorToast("智能插入功能启动失败");
     deactivateSmartEditor();
   }
@@ -125,7 +134,7 @@ export function deactivateSmartEditor() {
   // 禁用独立监听器
   disableAdditionObserver();
 
-  console.log("智能编辑器已停用");
+  logger.info("智能编辑器已停用");
 }
 
 /**
@@ -139,7 +148,7 @@ export function cleanupSmartEditor() {
   if (smartButton && smartButton.cleanup) {
     smartButton.cleanup();
     smartButton = null;
-    console.log("智能编辑器功能已清理");
+    logger.info("智能编辑器功能已清理");
   }
 }
 
@@ -149,7 +158,7 @@ export function cleanupSmartEditor() {
  */
 async function saveContent(options = {}) {
   if (!editor) {
-    console.error("编辑器未初始化");
+    logger.error("编辑器未初始化");
     return;
   }
 
@@ -168,12 +177,12 @@ async function saveContent(options = {}) {
     });
 
     if (success) {
-      console.log("内容已成功保存到原编辑器");
+      logger.info("内容已成功保存到原编辑器");
     } else {
-      console.error("保存到原编辑器失败");
+      logger.error("保存到原编辑器失败");
     }
   } catch (error) {
-    console.error("保存失败:", error);
+    logger.error("保存失败:", error);
   } finally {
     deactivateSmartEditor();
   }
@@ -185,26 +194,26 @@ async function saveContent(options = {}) {
  */
 async function saveToLocalStorage(editorData) {
   try {
-    console.log("正在保存文章到本地存储...");
+    logger.info("正在保存文章到本地存储...");
     
     if (currentEditingArticleId) {
       // 更新现有文章
-      console.log("更新现有文章:", currentEditingArticleId);
+      logger.info("更新现有文章:", currentEditingArticleId);
       
       const result = await storage.updateArticle(currentEditingArticleId, editorData, {
         status: 'published' // 标记为已发布
       });
       
       if (result.success) {
-        console.log(`文章已更新: ${result.article.title} (${currentEditingArticleId})`);
+        logger.info(`文章已更新: ${result.article.title} (${currentEditingArticleId})`);
         showSuccessToast(`文章《${result.article.title}》已更新`);
       } else {
-        console.error("更新文章失败:", result.error);
+        logger.error("更新文章失败:", result.error);
         showErrorToast("更新文章失败");
       }
     } else {
       // 创建新文章
-      console.log("创建新文章");
+      logger.info("创建新文章");
       
       // 生成文章标题（从内容中提取或使用默认标题）
       const title = extractTitleFromContent(editorData) || `文章_${new Date().toLocaleDateString()}`;
@@ -215,18 +224,18 @@ async function saveToLocalStorage(editorData) {
       });
       
       if (result.success) {
-        console.log(`新文章已保存: ${result.article.title} (${result.articleId})`);
+        logger.info(`新文章已保存: ${result.article.title} (${result.articleId})`);
         showSuccessToast(`文章《${result.article.title}》已保存`);
         
         // 更新当前编辑的文章ID，以便后续保存时更新而不是新建
         currentEditingArticleId = result.articleId;
       } else {
-        console.error("保存新文章失败:", result.error);
+        logger.error("保存新文章失败:", result.error);
         showErrorToast("保存文章失败");
       }
     }
   } catch (error) {
-    console.error("保存到本地存储时发生错误:", error);
+    logger.error("保存到本地存储时发生错误:", error);
     showErrorToast("保存到本地存储时发生错误");
   }
 }

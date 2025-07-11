@@ -6,6 +6,10 @@ import {
   hidePreviewContainer,
   cleanupPreviewContainer,
 } from "./preview.js";
+import { createLogger } from "../../services/simple-logger.js";
+
+// 创建模块日志器
+const logger = createLogger('SidebarToggle');
 
 /**
  * 创建侧边栏切换开关并定位到目标元素
@@ -56,7 +60,7 @@ export function createSidebarToggle() {
 
   if (!toolbarContainer) {
     const error = `工具栏容器未找到: ${selectorConfig.toolbar}`;
-    console.error("[SidebarToggle]", error);
+    logger.error("[SidebarToggle]", error);
     throw new Error(error);
   }
 

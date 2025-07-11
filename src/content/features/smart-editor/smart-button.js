@@ -1,6 +1,10 @@
 import { createElement } from "../../utils/dom.js";
 import { selectorConfig } from "../../config/index.js";
 import { activateSmartEditor } from "./manager.js";
+import { createLogger } from "../../services/simple-logger.js";
+
+// 创建模块日志器
+const logger = createLogger('SmartButton');
 
 /**
  * 创建智能插入按钮并定位到目标元素
@@ -36,7 +40,7 @@ export function createSmartButton() {
 
   if (!toolbarContainer) {
     const error = `工具栏容器未找到: ${selectorConfig.toolbar}`;
-    console.error("[SmartButton]", error);
+    logger.error("[SmartButton]", error);
     throw new Error(error);
   }
 
@@ -63,6 +67,6 @@ async function handleSmartButtonClick() {
   try {
     await activateSmartEditor();
   } catch (error) {
-    console.error("智能插入按钮点击处理失败:", error);
+    logger.error("智能插入按钮点击处理失败:", error);
   }
 }

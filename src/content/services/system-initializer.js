@@ -2,6 +2,10 @@
 import { initializeStorage } from "../utils/storage/index.js";
 import { configManager } from "./config-manager.js";
 import { styleSyncService } from "./style-sync.js";
+import { createLogger } from './simple-logger.js';
+
+// 创建模块日志器
+const logger = createLogger('SystemInitializer');
 
 /**
  * 初始化应用服务（用户配置、远程样式系统等）
@@ -22,7 +26,7 @@ export async function initializeAppServices(config = {}) {
     
     return true;
   } catch (error) {
-    console.error('FlowEdit应用服务初始化失败:', error);
+    logger.error('FlowEdit应用服务初始化失败:', error);
     return false;
   }
 }
@@ -48,7 +52,7 @@ async function initializeRemoteStyleSystem(config = {}) {
       await styleSyncService.manualSync();
     }
   } catch (error) {
-    console.error('远程样式系统初始化失败:', error);
+    logger.error('远程样式系统初始化失败:', error);
     // 不抛出错误，使用默认样式
   }
 }

@@ -2,6 +2,12 @@
  * 渲染引擎
  * 负责遍历EditorJS blocks，根据block类型获取对应模板，处理变量替换和特殊类型的循环渲染
  */
+
+import { createLogger } from '../../services/simple-logger.js';
+
+// 创建模块日志器
+const logger = createLogger('Renderer');
+
 class Renderer {
   constructor(templateLoader, inlineStyleProcessor) {
     this.templateLoader = templateLoader;
@@ -39,7 +45,7 @@ class Renderer {
    */
   renderBlock(block) {
     if (!block || !block.type) {
-      console.warn("无效的块数据:", block);
+      logger.warn("无效的块数据:", block);
       return "";
     }
 
@@ -64,11 +70,11 @@ class Renderer {
         case "raw":
           return this.renderRaw(data);
         default:
-          console.warn(`未支持的块类型: ${type}`);
+          logger.warn(`未支持的块类型: ${type}`);
           return this.renderGeneric(type, data);
       }
     } catch (error) {
-      console.error(`渲染块失败 (${type}):`, error);
+      logger.error(`渲染块失败 (${type}):`, error);
       return "";
     }
   }

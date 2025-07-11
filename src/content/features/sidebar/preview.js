@@ -3,6 +3,10 @@
 import { createElement, showElement, hideElement } from "../../utils/dom.js";
 import { isSmartEditorActive } from "../../utils/editor.js";
 import { convertToHtml } from "../../utils/parsers/index.js";
+import { createLogger } from "../../services/simple-logger.js";
+
+// 创建模块日志器
+const logger = createLogger('SidebarPreview');
 
 // 全局预览容器实例
 let globalPreviewContainer = null;
@@ -31,7 +35,7 @@ async function loadTemplateAndData() {
 
     return { template: cachedTemplate, testData: cachedTestData };
   } catch (error) {
-    console.error('加载模板或测试数据失败:', error);
+    logger.error('加载模板或测试数据失败:', error);
     return { template: null, testData: null };
   }
 }
@@ -51,7 +55,7 @@ async function generateDefaultPreviewContent() {
     const htmlContent = convertToHtml(testData, template);
     return htmlContent || '<div style="color: #666; padding: 20px; text-align: center;">预览内容生成失败。</div>';
   } catch (error) {
-    console.error('生成预览内容失败:', error);
+    logger.error('生成预览内容失败:', error);
     return '<div style="color: #666; padding: 20px; text-align: center;">预览内容生成失败。</div>';
   }
 }

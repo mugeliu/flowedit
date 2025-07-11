@@ -2,6 +2,12 @@
  * 模板加载器
  * 负责加载JSON配置文件、验证模板格式、提供模板获取接口
  */
+
+import { createLogger } from '../../services/simple-logger.js';
+
+// 创建模块日志器
+const logger = createLogger('TemplateLoader');
+
 class TemplateLoader {
   constructor() {
     this.template = null;
@@ -26,7 +32,7 @@ class TemplateLoader {
         return true;
       }
     } catch (error) {
-      console.error("模板加载失败:", error);
+      logger.error("模板加载失败:", error);
     }
 
     this.template = null;
@@ -69,13 +75,13 @@ class TemplateLoader {
     try {
       this._ensureLoaded();
     } catch (error) {
-      console.error(error.message);
+      logger.error(error.message);
       return null;
     }
 
     const template = this.template.blocks[blockType];
     if (!template) {
-      console.warn(`未找到块类型 ${blockType} 的模板`);
+      logger.warn(`未找到块类型 ${blockType} 的模板`);
       return null;
     }
 
@@ -87,7 +93,7 @@ class TemplateLoader {
 
     // 有子类型但不存在对应模板
     if (subType) {
-      console.warn(`未找到块类型 ${blockType} 的子类型 ${subType} 模板`);
+      logger.warn(`未找到块类型 ${blockType} 的子类型 ${subType} 模板`);
       return null;
     }
 
@@ -104,7 +110,7 @@ class TemplateLoader {
     try {
       this._ensureLoaded();
     } catch (error) {
-      console.error(error.message);
+      logger.error(error.message);
       return null;
     }
 
@@ -120,7 +126,7 @@ class TemplateLoader {
     try {
       this._ensureLoaded();
     } catch (error) {
-      console.error(error.message);
+      logger.error(error.message);
       return null;
     }
 

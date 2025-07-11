@@ -2,6 +2,11 @@
  * 编辑器桥接服务 - 处理与页面编辑器的通信
  */
 
+import { createLogger } from './simple-logger.js';
+
+// 创建模块日志器
+const logger = createLogger('EditorBridge');
+
 /**
  * 注入编辑器桥接脚本到页面
  */
@@ -106,12 +111,12 @@ function getWxData(callback) {
  * @param {function} callback - 脚本注入完成后的回调函数
  */
 function initializeEditorBridge(callback) {
-  console.log("[EditorBridge] 初始化编辑器桥接服务");
+  logger.info("[EditorBridge] 初始化编辑器桥接服务");
   
   const script = document.createElement("script");
   script.src = chrome.runtime.getURL("scripts/page-injector.js");
   script.onload = () => {
-    console.log("[EditorBridge] 桥接脚本注入成功");
+    logger.info("[EditorBridge] 桥接脚本注入成功");
     script.remove();
     // 脚本注入成功后调用回调
     if (callback && typeof callback === 'function') {
@@ -119,7 +124,7 @@ function initializeEditorBridge(callback) {
     }
   };
   script.onerror = () => {
-    console.error("[EditorBridge] 桥接脚本注入失败");
+    logger.error("[EditorBridge] 桥接脚本注入失败");
     // 即使失败也调用回调，让程序继续执行
     if (callback && typeof callback === 'function') {
       callback();

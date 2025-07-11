@@ -3,6 +3,11 @@
  * 负责处理 EditorJS 数据的存储格式转换
  */
 
+import { createLogger } from '../../services/simple-logger.js';
+
+// 创建模块日志器
+const logger = createLogger('ArticleSerializer');
+
 /**
  * 文章元数据接口
  */
@@ -81,7 +86,7 @@ export class ArticleSerializer {
       
       return articleData;
     } catch (error) {
-      console.error('序列化EditorJS数据失败:', error);
+      logger.error('序列化EditorJS数据失败:', error);
       throw new Error('文章数据序列化失败');
     }
   }
@@ -109,7 +114,7 @@ export class ArticleSerializer {
         version: articleData.metadata?.editorVersion || '2.0.0'
       };
     } catch (error) {
-      console.error('反序列化文章数据失败:', error);
+      logger.error('反序列化文章数据失败:', error);
       throw new Error('文章数据反序列化失败');
     }
   }
@@ -319,7 +324,7 @@ export class ArticleSerializer {
       
       return cloned;
     } catch (error) {
-      console.error('克隆文章数据失败:', error);
+      logger.error('克隆文章数据失败:', error);
       throw new Error('文章数据克隆失败');
     }
   }

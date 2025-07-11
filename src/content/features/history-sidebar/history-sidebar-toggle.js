@@ -1,6 +1,10 @@
 // 历史文章侧边栏组件创建和管理
 import { createElement } from "../../utils/dom.js";
 import { createHistorySidebar } from "./history-sidebar.js";
+import { createLogger } from "../../services/simple-logger.js";
+
+// 创建模块日志器
+const logger = createLogger('HistorySidebarToggle');
 
 /**
  * 创建历史文章侧边栏按钮
@@ -89,7 +93,7 @@ export function createHistorySidebarToggle() {
   const sidebar = createHistorySidebar(toggleHistorySidebar);
   document.body.appendChild(sidebar);
 
-  console.log("历史文章侧边栏按钮和侧边栏已成功创建");
+  logger.info("历史文章侧边栏按钮和侧边栏已成功创建");
 
   // 返回清理方法
   return {
@@ -107,7 +111,7 @@ export function createHistorySidebarToggle() {
       // 移除外部点击监听器
       document.removeEventListener("click", handleOutsideClick);
       
-      console.log("历史文章侧边栏组件已清理");
+      logger.info("历史文章侧边栏组件已清理");
     }
   };
 }

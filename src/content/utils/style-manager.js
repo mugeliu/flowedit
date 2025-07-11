@@ -5,6 +5,10 @@
 
 import { styleConfig, BLOCK_THEME_CONFIGS, REMOTE_STYLE_CONFIG, STYLE_VALIDATION_RULES } from '../config/style-config.js';
 import { styleSyncService } from '../services/style-sync.js';
+import { createLogger } from '../services/simple-logger.js';
+
+// 创建模块日志器
+const logger = createLogger('StyleManager');
 
 /**
  * 预设样式配置
@@ -154,7 +158,7 @@ class StyleManager {
       if (cachedStyles) {
         this.mergeStyles(cachedStyles);
         remoteStylesLoaded = true;
-        console.log('使用样式同步服务缓存的样式');
+        logger.info('使用样式同步服务缓存的样式');
         return true;
       }
 
@@ -165,18 +169,18 @@ class StyleManager {
         if (localCached) {
           this.mergeStyles(localCached);
           remoteStylesLoaded = true;
-          console.log('使用本地缓存的远程样式');
+          logger.info('使用本地缓存的远程样式');
           return true;
         }
       }
 
       // 如果都没有，尝试触发样式同步
       if (!this.remoteStyleUrl) {
-        console.warn('远程样式URL未设置，无法同步样式');
+        logger.warn('远程样式URL未设置，无法同步样式');
         return false;
       }
 
-      console.log('触发样式同步...');
+      logger.info('触发样式同步...');
       const syncSuccess = await styleSyncService.manualSync();
       if (syncSuccess) {
         const syncedStyles = await styleSyncService.getCachedStyles();
@@ -187,10 +191,10 @@ class StyleManager {
         }
       }
 
-      console.warn('无法获取远程样式，将使用默认样式');
+      logger.warn('无法获取远程样式，将使用默认样式');
       return false;
     } catch (error) {
-      console.error('加载远程样式失败:', error);
+      logger.error('加载远程样式失败:', error);
       return false;
     }
   }
@@ -328,14 +332,14 @@ class StyleManager {
       if (cachedStyles) {
         this.mergeStyles(cachedStyles);
         remoteStylesLoaded = true;
-        console.log('样式管理器初始化完成，已加载缓存样式');
+        logger.info('样式管理器初始化完成，已加载缓存样式');
       } else {
-        console.log('样式管理器初始化完成，使用默认样式');
+        logger.info('样式管理器初始化完成，使用默认样式');
       }
       
       return true;
     } catch (error) {
-      console.error('样式管理器初始化失败:', error);
+      logger.error('样式管理器初始化失败:', error);
       return false;
     }
   }

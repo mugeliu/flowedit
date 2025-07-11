@@ -3,6 +3,11 @@
  * 负责管理用户的个性化设置、权限和配置同步
  */
 
+import { createLogger } from './simple-logger.js';
+
+// 创建模块日志器
+const logger = createLogger('UserConfigManager');
+
 /**
  * 用户配置管理器类
  */
@@ -35,7 +40,7 @@ class UserConfigManager {
       
       return true;
     } catch (error) {
-      console.error('用户配置管理器初始化失败:', error);
+      logger.error('用户配置管理器初始化失败:', error);
       // 使用默认配置
       this.userConfig = { ...this.defaultConfig };
       return false;
@@ -60,7 +65,7 @@ class UserConfigManager {
       
       return this.isLoggedIn;
     } catch (error) {
-      console.error('检查用户认证状态失败:', error);
+      logger.error('检查用户认证状态失败:', error);
       this.isLoggedIn = false;
       this.userInfo = null;
       return false;
@@ -89,10 +94,10 @@ class UserConfigManager {
       //   return true;
       // }
       
-      console.log('用户登录功能暂未实现');
+      logger.info('用户登录功能暂未实现');
       return false;
     } catch (error) {
-      console.error('用户登录失败:', error);
+      logger.error('用户登录失败:', error);
       return false;
     }
   }
@@ -113,10 +118,10 @@ class UserConfigManager {
       // 清除本地存储的用户数据
       await this.clearLocalUserData();
       
-      console.log('用户已登出');
+      logger.info('用户已登出');
       return true;
     } catch (error) {
-      console.error('用户登出失败:', error);
+      logger.error('用户登出失败:', error);
       return false;
     }
   }
@@ -133,7 +138,7 @@ class UserConfigManager {
         // const remoteConfig = await response.json();
         // this.userConfig = { ...this.defaultConfig, ...remoteConfig };
         
-        console.log('远程配置加载功能暂未实现，使用默认配置');
+        logger.info('远程配置加载功能暂未实现，使用默认配置');
       }
       
       // 从本地存储加载配置
@@ -142,7 +147,7 @@ class UserConfigManager {
       
       return this.userConfig;
     } catch (error) {
-      console.error('加载用户配置失败:', error);
+      logger.error('加载用户配置失败:', error);
       this.userConfig = { ...this.defaultConfig };
       return this.userConfig;
     }
@@ -170,13 +175,13 @@ class UserConfigManager {
         //   body: JSON.stringify(this.userConfig)
         // });
         
-        console.log('远程配置同步功能暂未实现');
+        logger.info('远程配置同步功能暂未实现');
       }
       
-      console.log('用户配置已保存');
+      logger.info('用户配置已保存');
       return true;
     } catch (error) {
-      console.error('保存用户配置失败:', error);
+      logger.error('保存用户配置失败:', error);
       return false;
     }
   }
@@ -212,7 +217,7 @@ class UserConfigManager {
       
       return await this.saveUserConfig(configToSave);
     } catch (error) {
-      console.error('设置用户配置失败:', error);
+      logger.error('设置用户配置失败:', error);
       return false;
     }
   }
@@ -225,10 +230,10 @@ class UserConfigManager {
     try {
       this.userConfig = { ...this.defaultConfig };
       await this.setLocalConfig(this.userConfig);
-      console.log('用户配置已重置为默认值');
+      logger.info('用户配置已重置为默认值');
       return true;
     } catch (error) {
-      console.error('重置用户配置失败:', error);
+      logger.error('重置用户配置失败:', error);
       return false;
     }
   }
@@ -242,7 +247,7 @@ class UserConfigManager {
       const result = await chrome.storage.local.get(['userConfig']);
       return result.userConfig || {};
     } catch (error) {
-      console.error('获取本地配置失败:', error);
+      logger.error('获取本地配置失败:', error);
       return {};
     }
   }
@@ -257,7 +262,7 @@ class UserConfigManager {
       await chrome.storage.local.set({ userConfig: config });
       return true;
     } catch (error) {
-      console.error('设置本地配置失败:', error);
+      logger.error('设置本地配置失败:', error);
       return false;
     }
   }
@@ -271,7 +276,7 @@ class UserConfigManager {
       await chrome.storage.local.remove(['userConfig', 'userInfo']);
       return true;
     } catch (error) {
-      console.error('清除本地用户数据失败:', error);
+      logger.error('清除本地用户数据失败:', error);
       return false;
     }
   }

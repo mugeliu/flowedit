@@ -4,6 +4,10 @@
  */
 
 import { getWxData } from '../services/editor-bridge.js';
+import { createLogger } from '../services/simple-logger.js';
+
+// 创建模块日志器
+const logger = createLogger('WeChatImageTool');
 
 /**
  * 强制清理图片工具UI状态
@@ -54,11 +58,11 @@ function getWxDataAsync() {
     // 获取微信数据
     getWxData((success, data) => {
       if (success) {
-        console.log('微信数据获取成功:', data.data);
-        console.log('获取时间:', data.timestamp);
+        logger.info('微信数据获取成功', data.data);
+        logger.debug('获取时间', data.timestamp);
         resolve(data.data);
       } else {
-        console.error('微信数据获取失败:', data.error);
+        logger.error('微信数据获取失败', data.error);
         reject(new Error(data.error));
       }
     });
@@ -73,11 +77,11 @@ function getWxDataAsync() {
 export async function performWeChatUpload(file) {
   let wechatData;
 
-  console.log("开始执行微信图片上传");
+  logger.info("开始执行微信图片上传");
 
   try {
     wechatData = await getWxDataAsync();
-    console.log("获取到的wx数据:", wechatData);
+    logger.debug("获取到的wx数据", wechatData);
   } catch (error) {
     throw new Error("无法获取wx数据，请确保在微信公众号后台中使用");
   }

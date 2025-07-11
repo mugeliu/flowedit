@@ -3,6 +3,11 @@
  * 导出所有存储相关的工具和服务
  */
 
+import { createLogger } from '../../services/simple-logger.js';
+
+// 创建模块日志器
+const logger = createLogger('StorageIndex');
+
 // 基础存储
 export { 
   BrowserStorage, 
@@ -65,13 +70,13 @@ export async function initializeStorage() {
   try {
     const success = await articleStorageService.initialize();
     if (success) {
-      console.log('存储系统初始化成功');
+      logger.info('存储系统初始化成功');
     } else {
-      console.error('存储系统初始化失败');
+      logger.error('存储系统初始化失败');
     }
     return success;
   } catch (error) {
-    console.error('存储系统初始化异常:', error);
+    logger.error('存储系统初始化异常:', error);
     return false;
   }
 }

@@ -2,6 +2,12 @@
  * 内联样式处理器
  * 负责处理EditorJS中的内联标记，转换为带style的HTML标签
  */
+
+import { createLogger } from '../../services/simple-logger.js';
+
+// 创建模块日志器
+const logger = createLogger('InlineStyleProcessor');
+
 class InlineStyleProcessor {
   constructor(templateLoader) {
     this.templateLoader = templateLoader;
@@ -35,7 +41,7 @@ class InlineStyleProcessor {
    */
   processAnchorTags(text, renderer) {
     if (!renderer) {
-      console.warn("processAnchorTags: renderer 参数是必需的");
+      logger.warn("processAnchorTags: renderer 参数是必需的");
       return text;
     }
 

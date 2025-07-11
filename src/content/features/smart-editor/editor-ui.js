@@ -3,6 +3,10 @@
 
 import { createElement, hideElement, showElement } from "../../utils/dom.js";
 import { selectorConfig } from "../../config/index.js";
+import { createLogger } from "../../services/simple-logger.js";
+
+// 创建模块日志器
+const logger = createLogger('EditorUI');
 
 /**
  * 编辑器UI管理模块
@@ -109,9 +113,9 @@ export function removeEditorPage() {
   const editorPanel = document.getElementById("flow-editor-panel");
   if (editorPanel) {
     editorPanel.remove();
-    console.log("编辑器页面已移除");
+    logger.info("编辑器页面已移除");
   } else {
-    console.warn("未找到编辑器页面元素");
+    logger.warn("未找到编辑器页面元素");
   }
 }
 
@@ -124,7 +128,7 @@ export function removeEditorToolbar(toolbar) {
   // 如果传入了工具栏元素，直接移除
   if (toolbar && toolbar.remove) {
     toolbar.remove();
-    console.log("编辑器工具栏已移除");
+    logger.info("编辑器工具栏已移除");
     return;
   }
 
@@ -132,9 +136,9 @@ export function removeEditorToolbar(toolbar) {
   const controlPanel = document.getElementById("flow-editor-control-panel");
   if (controlPanel) {
     controlPanel.remove();
-    console.log("编辑器工具栏已移除");
+    logger.info("编辑器工具栏已移除");
   } else {
-    console.warn("未找到编辑器工具栏元素");
+    logger.warn("未找到编辑器工具栏元素");
   }
 }
 
@@ -158,17 +162,17 @@ export function initializeEditorUI(options = {}) {
     if (authorArea && authorArea.parentNode) {
       // 插入到 authorArea 的下一个兄弟节点位置
       authorArea.parentNode.insertBefore(editorPage, authorArea.nextSibling);
-      console.log("编辑器页面已插入到作者区域后");
+      logger.info("编辑器页面已插入到作者区域后");
     } else {
-      console.warn("未找到作者区域元素，无法插入编辑器页面");
+      logger.warn("未找到作者区域元素，无法插入编辑器页面");
     }
 
     // 隐藏原编辑器容器
     const success = hideElement(selectorConfig.editorWrapper);
     if (success) {
-      console.log("原编辑器容器已隐藏");
+      logger.info("原编辑器容器已隐藏");
     } else {
-      console.warn("隐藏原编辑器容器失败");
+      logger.warn("隐藏原编辑器容器失败");
     }
 
     // 3. 将工具栏插入到 js_button_area 的兄弟节点
@@ -176,20 +180,20 @@ export function initializeEditorUI(options = {}) {
     if (buttonArea && buttonArea.parentNode) {
       // 插入到 buttonArea 的下一个兄弟节点位置
       buttonArea.parentNode.insertBefore(editorToolbar, buttonArea.nextSibling);
-      console.log("编辑器工具栏已插入到按钮区域后");
+      logger.info("编辑器工具栏已插入到按钮区域后");
     } else {
-      console.warn("未找到按钮区域元素，无法插入编辑器工具栏");
+      logger.warn("未找到按钮区域元素，无法插入编辑器工具栏");
     }
 
     // 隐藏原按钮区域
     const hideButtonSuccess = hideElement(selectorConfig.footerToolbar);
     if (hideButtonSuccess) {
-      console.log("原按钮区域已隐藏");
+      logger.info("原按钮区域已隐藏");
     } else {
-      console.warn("隐藏原按钮区域失败");
+      logger.warn("隐藏原按钮区域失败");
     }
 
-    console.log("编辑器UI初始化完成");
+    logger.info("编辑器UI初始化完成");
 
     // 返回创建的UI元素
     return {
@@ -197,7 +201,7 @@ export function initializeEditorUI(options = {}) {
       editorToolbar,
     };
   } catch (error) {
-    console.error("初始化编辑器UI时发生错误:", error);
+    logger.error("初始化编辑器UI时发生错误:", error);
     return null;
   }
 }
@@ -217,20 +221,20 @@ export function cleanupEditorUI() {
     // 恢复被隐藏的原始元素
     const showEditorSuccess = showElement(selectorConfig.editorWrapper);
     if (showEditorSuccess) {
-      console.log("原编辑器容器已恢复显示");
+      logger.info("原编辑器容器已恢复显示");
     } else {
-      console.warn("恢复原编辑器容器显示失败");
+      logger.warn("恢复原编辑器容器显示失败");
     }
 
     const showButtonSuccess = showElement(selectorConfig.footerToolbar);
     if (showButtonSuccess) {
-      console.log("原按钮区域已恢复显示");
+      logger.info("原按钮区域已恢复显示");
     } else {
-      console.warn("恢复原按钮区域显示失败");
+      logger.warn("恢复原按钮区域显示失败");
     }
 
-    console.log("编辑器UI清理完成");
+    logger.info("编辑器UI清理完成");
   } catch (error) {
-    console.error("清理编辑器UI时发生错误:", error);
+    logger.error("清理编辑器UI时发生错误:", error);
   }
 }

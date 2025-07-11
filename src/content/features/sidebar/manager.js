@@ -1,5 +1,9 @@
 // 侧边栏功能管理器
 import { createSidebarToggle } from "./sidebar-toggle.js";
+import { createLogger } from "../../services/simple-logger.js";
+
+// 创建模块日志器
+const logger = createLogger('SidebarManager');
 
 let sidebarToggle = null;
 
@@ -8,15 +12,15 @@ let sidebarToggle = null;
  */
 export function initializeSidebar() {
   if (sidebarToggle) {
-    console.warn("侧边栏功能已经初始化");
+    logger.warn("侧边栏功能已经初始化");
     return;
   }
 
   try {
     sidebarToggle = createSidebarToggle();
-    console.log("侧边栏功能初始化成功");
+    logger.info("侧边栏功能初始化成功");
   } catch (error) {
-    console.error("侧边栏功能初始化失败:", error);
+    logger.error("侧边栏功能初始化失败:", error);
   }
 }
 
@@ -27,7 +31,7 @@ export function cleanupSidebar() {
   if (sidebarToggle && sidebarToggle.cleanup) {
     sidebarToggle.cleanup();
     sidebarToggle = null;
-    console.log("侧边栏功能已清理");
+    logger.info("侧边栏功能已清理");
   }
 }
 

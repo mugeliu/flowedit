@@ -5,6 +5,10 @@
 
 import { createStorage, StorageType } from "../utils/storage/browser-storage.js";
 import { articleSerializer } from "../utils/storage/article-serializer.js";
+import { createLogger } from './simple-logger.js';
+
+// 创建模块日志器
+const logger = createLogger('ArticleStorageService');
 
 /**
  * 文章状态枚举
@@ -67,10 +71,10 @@ export class ArticleStorageService {
       await this._performMigration();
 
       this.isInitialized = true;
-      console.log('文章存储服务初始化成功');
+      logger.info('文章存储服务初始化成功');
       return true;
     } catch (error) {
-      console.error('文章存储服务初始化失败:', error);
+      logger.error('文章存储服务初始化失败:', error);
       return false;
     }
   }
@@ -109,7 +113,7 @@ export class ArticleStorageService {
           tags: articleData.metadata.tags
         });
 
-        console.log(`文章已保存: ${articleData.title} (${articleData.id})`);
+        logger.info(`文章已保存: ${articleData.title} (${articleData.id})`);
         return {
           success: true,
           articleId: articleData.id,
@@ -119,7 +123,7 @@ export class ArticleStorageService {
         throw new Error('存储文章失败');
       }
     } catch (error) {
-      console.error('保存文章失败:', error);
+      logger.error('保存文章失败:', error);
       return {
         success: false,
         error: error.message
@@ -143,11 +147,11 @@ export class ArticleStorageService {
       if (articleData) {
         return articleData;
       } else {
-        console.warn(`文章不存在: ${articleId}`);
+        logger.warn(`文章不存在: ${articleId}`);
         return null;
       }
     } catch (error) {
-      console.error('获取文章失败:', error);
+      logger.error('获取文章失败:', error);
       return null;
     }
   }
@@ -165,7 +169,7 @@ export class ArticleStorageService {
       }
       return null;
     } catch (error) {
-      console.error('获取文章EditorJS数据失败:', error);
+      logger.error('获取文章EditorJS数据失败:', error);
       return null;
     }
   }
@@ -225,7 +229,7 @@ export class ArticleStorageService {
 
       return articles;
     } catch (error) {
-      console.error('获取文章列表失败:', error);
+      logger.error('获取文章列表失败:', error);
       return [];
     }
   }
@@ -247,13 +251,13 @@ export class ArticleStorageService {
       if (success) {
         // 从索引中移除
         await this._removeFromIndex(articleId);
-        console.log(`文章已删除: ${articleId}`);
+        logger.info(`文章已删除: ${articleId}`);
         return true;
       } else {
         throw new Error('删除文章失败');
       }
     } catch (error) {
-      console.error('删除文章失败:', error);
+      logger.error('删除文章失败:', error);
       return false;
     }
   }
@@ -284,7 +288,7 @@ export class ArticleStorageService {
       // 保存更新后的文章
       return await this.saveArticle(editorData, updatedMetadata);
     } catch (error) {
-      console.error('更新文章失败:', error);
+      logger.error('更新文章失败:', error);
       return {
         success: false,
         error: error.message
@@ -324,7 +328,7 @@ export class ArticleStorageService {
       const success = await this.storage.set(`${this.draftsKey}_${draftData.id}`, draftData);
       
       if (success) {
-        console.log(`草稿已保存: ${draftData.title} (${draftData.id})`);
+        logger.info(`草稿已保存: ${draftData.title} (${draftData.id})`);
         return {
           success: true,
           draftId: draftData.id,
@@ -334,7 +338,7 @@ export class ArticleStorageService {
         throw new Error('存储草稿失败');
       }
     } catch (error) {
-      console.error('保存草稿失败:', error);
+      logger.error('保存草稿失败:', error);
       return {
         success: false,
         error: error.message
@@ -368,7 +372,7 @@ export class ArticleStorageService {
         new Date(b.metadata.updatedAt) - new Date(a.metadata.updatedAt)
       );
     } catch (error) {
-      console.error('获取草稿列表失败:', error);
+      logger.error('获取草稿列表失败:', error);
       return [];
     }
   }
@@ -387,13 +391,13 @@ export class ArticleStorageService {
       const success = await this.storage.remove(`${this.draftsKey}_${draftId}`);
       
       if (success) {
-        console.log(`草稿已删除: ${draftId}`);
+        logger.info(`草稿已删除: ${draftId}`);
         return true;
       } else {
         throw new Error('删除草稿失败');
       }
     } catch (error) {
-      console.error('删除草稿失败:', error);
+      logger.error('删除草稿失败:', error);
       return false;
     }
   }
@@ -420,7 +424,7 @@ export class ArticleStorageService {
         lastUpdated: new Date().toISOString()
       };
     } catch (error) {
-      console.error('获取存储统计信息失败:', error);
+      logger.error('获取存储统计信息失败:', error);
       return {
         articlesCount: 0,
         draftsCount: 0,
@@ -463,10 +467,10 @@ export class ArticleStorageService {
         }
       }
 
-      console.log(`数据清理完成，清理了 ${cleanupCount} 个项目`);
+      logger.info(`数据清理完成，清理了 ${cleanupCount} 个项目`);
       return true;
     } catch (error) {
-      console.error('数据清理失败:', error);
+      logger.error('数据清理失败:', error);
       return false;
     }
   }
@@ -542,7 +546,7 @@ export class ArticleStorageService {
   async _checkStorageLimit() {
     const usage = await this.storage.getUsage();
     if (usage.usage > 0.9) { // 使用量超过90%
-      console.warn('存储使用量过高，建议清理数据');
+      logger.warn('存储使用量过高，建议清理数据');
       await this.cleanup();
     }
   }
@@ -576,7 +580,7 @@ export class ArticleStorageService {
    */
   async _performMigration() {
     // 预留数据迁移逻辑
-    console.log('数据迁移检查完成');
+    logger.info('数据迁移检查完成');
   }
 }
 

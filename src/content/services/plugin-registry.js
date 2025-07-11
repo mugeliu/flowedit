@@ -1,4 +1,10 @@
 // 插件注册服务 - 管理功能模块的统一接口
+import { createLogger } from './simple-logger.js';
+import { createErrorHandler } from './simple-error-handler.js';
+
+// 创建模块日志器和错误处理器
+const logger = createLogger('PluginRegistry');
+const errorHandler = createErrorHandler('PluginRegistry');
 
 /**
  * 插件注册表
@@ -38,7 +44,7 @@ class PluginRegistry {
   async initializePlugin(name) {
     const plugin = this.plugins.get(name);
     if (!plugin) {
-      console.warn(`插件 ${name} 未注册`);
+      logger.warn(`插件 ${name} 未注册`);
       return false;
     }
 
@@ -54,9 +60,10 @@ class PluginRegistry {
 
       await plugin.initialize();
       this.initialized.add(name);
+      logger.info(`插件 ${name} 初始化成功`);
       return true;
     } catch (error) {
-      console.error(`插件 ${name} 初始化失败:`, error);
+      await errorHandler.handle(error);
       return false;
     }
   }
@@ -81,6 +88,11 @@ class PluginRegistry {
       }
     }
 
+    logger.info(`插件初始化结果: 成功 ${results.success.length} 个, 失败 ${results.failed.length} 个`);
+    if (results.failed.length > 0) {
+      logger.warn('初始化失败的插件:', results.failed);
+    }
+
     return results;
   }
 
@@ -92,20 +104,22 @@ class PluginRegistry {
   cleanupPlugin(name) {
     const plugin = this.plugins.get(name);
     if (!plugin) {
-      console.warn(`插件 ${name} 未注册`);
+      logger.warn(`插件 ${name} 未注册`);
       return false;
     }
 
     if (!this.initialized.has(name)) {
+      logger.debug(`插件 ${name} 未初始化，跳过清理`);
       return true;
     }
 
     try {
       plugin.cleanup();
       this.initialized.delete(name);
+      logger.info(`插件 ${name} 清理成功`);
       return true;
     } catch (error) {
-      console.error(`插件 ${name} 清理失败:`, error);
+      errorHandler.handle(error);
       return false;
     }
   }
@@ -130,6 +144,11 @@ class PluginRegistry {
       } else {
         results.failed.push(name);
       }
+    }
+
+    logger.info(`插件清理结果: 成功 ${results.success.length} 个, 失败 ${results.failed.length} 个`);
+    if (results.failed.length > 0) {
+      logger.warn('清理失败的插件:', results.failed);
     }
 
     // 等待一个微任务周期，确保DOM清理完成

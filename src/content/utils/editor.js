@@ -3,9 +3,33 @@ import { editorConfig } from "../config/index.js";
 import { convertToHtml } from "./parsers/index.js";
 import { renderPreviewContent } from "../features/sidebar/preview.js";
 import { callEditorAPI } from "../services/editor-bridge.js";
+import { createLogger } from '../services/simple-logger.js';
+
+// 创建模块日志器
+const logger = createLogger('EditorUtils');
 
 // 全局编辑器状态管理
 let isEditorActive = false;
+
+/**
+ * 初始化 DragDrop 插件
+ * @param {Object} editorInstance - EditorJS 实例
+ */
+function initializeDragDrop(editorInstance) {
+  // 检查 DragDrop 插件是否可用
+  const DragDrop = window.EditorJS?.DragDrop;
+  
+  if (DragDrop) {
+    try {
+      new DragDrop(editorInstance);
+      logger.debug("DragDrop插件初始化成功");
+    } catch (error) {
+      logger.warn("DragDrop插件初始化失败:", error);
+    }
+  } else {
+    logger.debug("DragDrop插件不可用");
+  }
+}
 
 /**
  * 创建通用的编辑器 onReady 处理器
@@ -16,10 +40,6 @@ function createOnReadyHandler(holderElement) {
   return function() {
     // 这里的 this 指向 EditorJS 实例
     const editorInstance = this;
-    
-    if (window.EditorJS.DragDrop) {
-      new window.EditorJS.DragDrop(editorInstance);
-    }
     
     // 1. 初始化时滚动到顶部
     window.scrollTo({ top: 0, behavior: "auto" });
@@ -80,7 +100,7 @@ export async function loadStyleTemplate() {
     const styleTemplate = await templateResponse.json();
     return styleTemplate;
   } catch (error) {
-    console.error("加载样式模板失败:", error);
+    logger.error("加载样式模板失败", error);
     throw error;
   }
 }
@@ -121,16 +141,16 @@ export async function saveToOriginalEditor(editorData, options = {}) {
     return new Promise((resolve) => {
       callEditorAPI(apiName, apiParam, (success, res) => {
         if (success) {
-          console.log(`API ${apiName} 调用成功:`, res);
+          logger.debug(`API ${apiName} 调用成功`, res);
           resolve(true);
         } else {
-          console.error(`API ${apiName} 调用失败:`, res);
+          logger.error(`API ${apiName} 调用失败`, res);
           resolve(false);
         }
       });
     });
   } catch (error) {
-    console.error("保存到原编辑器失败:", error);
+    logger.error("保存到原编辑器失败", error);
     return false;
   }
 }
@@ -143,7 +163,7 @@ export async function saveToOriginalEditor(editorData, options = {}) {
 export async function loadAndInitializeEditor(container) {
   const holderElement = document.getElementById(container);
   if (!holderElement) {
-    throw new Error(`${holderId}元素不存在，请检查DOM结构`);
+    throw new Error(`${container}元素不存在，请检查DOM结构`);
   }
 
   // 解析配置中的工具类引用
@@ -175,11 +195,16 @@ export async function loadAndInitializeEditor(container) {
         const htmlContent = convertToHtml(output, styleTemplate);
         await renderPreviewContent(htmlContent);
       } catch (error) {
-        console.error("预览内容生成失败:", error);
+        logger.error("预览内容生成失败", error);
         await renderPreviewContent("");
       }
     },
-    onReady: createOnReadyHandler(holderElement),
+    onReady: () => {
+      // 在 onReady 中初始化 DragDrop，类似仓库示例
+      initializeDragDrop(editorInstance);
+      // 执行其他 onReady 逻辑
+      createOnReadyHandler(holderElement).call(editorInstance);
+    },
   });
 
   return editorInstance;
@@ -226,11 +251,16 @@ export async function loadAndInitializeEditorWithData(container, initialData = n
         const htmlContent = convertToHtml(output, styleTemplate);
         await renderPreviewContent(htmlContent);
       } catch (error) {
-        console.error("预览内容生成失败:", error);
+        logger.error("预览内容生成失败", error);
         await renderPreviewContent("");
       }
     },
-    onReady: createOnReadyHandler(holderElement),
+    onReady: () => {
+      // 在 onReady 中初始化 DragDrop，类似仓库示例
+      initializeDragDrop(editorInstance);
+      // 执行其他 onReady 逻辑
+      createOnReadyHandler(holderElement).call(editorInstance);
+    },
   };
 
   // 如果有初始数据，添加到配置中
@@ -251,7 +281,7 @@ export async function loadAndInitializeEditorWithData(container, initialData = n
     
     if (editorData && editorData.blocks) {
       editorOptions.data = editorData;
-      console.log("加载初始数据到编辑器:", editorData);
+      logger.debug("加载初始数据到编辑器", editorData);
     }
   }
 
@@ -269,7 +299,7 @@ export function destroyEditor(editor) {
     try {
       editor.destroy();
     } catch (error) {
-      console.warn("编辑器销毁错误:", error);
+      logger.warn("编辑器销毁错误", error);
     }
   }
 }

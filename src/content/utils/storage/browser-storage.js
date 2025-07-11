@@ -3,6 +3,11 @@
  * 支持 localStorage、sessionStorage、chrome.storage
  */
 
+import { createLogger } from '../../services/simple-logger.js';
+
+// 创建模块日志器
+const logger = createLogger('BrowserStorage');
+
 /**
  * 存储类型枚举
  */
@@ -70,7 +75,7 @@ export class BrowserStorage {
    * @param {string} operation - 操作名称
    */
   _handleContextInvalidated(operation) {
-    console.warn(`扩展上下文失效，${operation}操作失败。请刷新页面或重新加载扩展。`);
+    logger.warn(`扩展上下文失效，${operation}操作失败。请刷新页面或重新加载扩展。`);
   }
 
   /**
@@ -102,7 +107,7 @@ export class BrowserStorage {
         this._handleContextInvalidated('获取数据');
         return null;
       }
-      console.error(`获取存储数据失败 (${key}):`, error);
+      logger.error(`获取存储数据失败 (${key}):`, error);
       return null;
     }
   }
@@ -136,7 +141,7 @@ export class BrowserStorage {
         this._handleContextInvalidated('存储数据');
         return false;
       }
-      console.error(`存储数据失败 (${key}):`, error);
+      logger.error(`存储数据失败 (${key}):`, error);
       return false;
     }
   }
@@ -158,7 +163,7 @@ export class BrowserStorage {
       }
       return true;
     } catch (error) {
-      console.error(`删除存储数据失败 (${key}):`, error);
+      logger.error(`删除存储数据失败 (${key}):`, error);
       return false;
     }
   }
@@ -190,7 +195,7 @@ export class BrowserStorage {
       }
       return true;
     } catch (error) {
-      console.error('清除存储数据失败:', error);
+      logger.error('清除存储数据失败:', error);
       return false;
     }
   }
@@ -223,7 +228,7 @@ export class BrowserStorage {
       
       return keys;
     } catch (error) {
-      console.error('获取所有键名失败:', error);
+      logger.error('获取所有键名失败:', error);
       return [];
     }
   }
@@ -270,7 +275,7 @@ export class BrowserStorage {
         };
       }
     } catch (error) {
-      console.error('获取存储使用情况失败:', error);
+      logger.error('获取存储使用情况失败:', error);
       return {
         bytesInUse: 0,
         quota: 0,

@@ -3,6 +3,10 @@ import { createElement } from "../../utils/dom.js";
 import { handleOutsideClick } from "./history-sidebar-toggle.js";
 import { storage } from "../../utils/storage/index.js";
 import { showErrorToast, showSuccessToast } from "../../utils/toast.js";
+import { createLogger } from "../../services/simple-logger.js";
+
+// 创建模块日志器
+const logger = createLogger('HistorySidebar');
 
 /**
  * 显示文章操作对话框
@@ -108,7 +112,7 @@ function showArticleDialog(closeSidebarCallback, article) {
   cancelBtn.addEventListener("click", (e) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log("点击了取消按钮，只关闭弹框");
+    logger.debug("点击了取消按钮，只关闭弹框");
     document.body.removeChild(dialogMask);
   });
 
@@ -116,13 +120,13 @@ function showArticleDialog(closeSidebarCallback, article) {
   insertBtn.addEventListener("click", async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log("点击了插入按钮，准备打开编辑器并插入内容");
+    logger.info("点击了插入按钮，准备打开编辑器并插入内容");
     
     try {
       // 获取文章的完整数据（包含EditorJS数据）
       const articleData = await storage.getArticle(article.id);
       if (articleData) {
-        console.log("准备插入文章数据:", articleData);
+        logger.debug("准备插入文章数据", articleData);
         
         // 关闭对话框
         document.body.removeChild(dialogMask);
@@ -136,7 +140,7 @@ function showArticleDialog(closeSidebarCallback, article) {
         const { getCurrentEditor, deactivateSmartEditor, activateSmartEditor } = smartEditorModule;
         const currentEditor = getCurrentEditor();
         if (currentEditor) {
-          console.log("编辑器已激活，先停用");
+          logger.debug("编辑器已激活，先停用");
           deactivateSmartEditor();
         }
         
@@ -146,14 +150,14 @@ function showArticleDialog(closeSidebarCallback, article) {
         // 激活编辑器并传入文章数据
         await activateSmartEditor(articleData);
         
-        console.log("编辑器已激活并加载文章内容");
+        logger.info("编辑器已激活并加载文章内容");
       } else {
         // 文章数据获取失败，可能是扩展上下文失效
-        console.warn("无法获取文章数据，可能是扩展上下文失效");
+        logger.warn("无法获取文章数据，可能是扩展上下文失效");
         showErrorToast("获取文章失败，请刷新页面重试");
       }
     } catch (error) {
-      console.error("获取文章数据或激活编辑器失败:", error);
+      logger.error("获取文章数据或激活编辑器失败", error);
       
       // 检查是否是扩展上下文失效
       if (error.message && error.message.includes('Extension context invalidated')) {
@@ -169,7 +173,7 @@ function showArticleDialog(closeSidebarCallback, article) {
     if (e.target === dialogMask) {
       e.preventDefault();
       e.stopPropagation();
-      console.log("点击了遮罩层，只关闭弹框");
+      logger.debug("点击了遮罩层，只关闭弹框");
       document.body.removeChild(dialogMask);
     }
   });
@@ -422,7 +426,7 @@ function showDeleteConfirmDialog(article, onConfirm) {
       await onConfirm();
       document.body.removeChild(dialogMask);
     } catch (error) {
-      console.error("删除操作失败:", error);
+      logger.error("删除操作失败", error);
       showErrorToast("删除失败，请重试");
     }
   });
@@ -684,7 +688,7 @@ export function createHistorySidebar(toggleSidebarCallback) {
                     showErrorToast("删除文章失败");
                   }
                 } catch (error) {
-                  console.error("删除文章失败:", error);
+                  logger.error("删除文章失败", error);
                   showErrorToast("删除文章失败");
                 }
               });
@@ -712,7 +716,7 @@ export function createHistorySidebar(toggleSidebarCallback) {
         viewMoreBtn.style.opacity = "0.5";
       }
     } catch (error) {
-      console.error("加载更多文章失败:", error);
+      logger.error("加载更多文章失败", error);
       showErrorToast("加载更多文章失败");
       viewMoreBtn.textContent = "查看更多";
       viewMoreBtn.style.pointerEvents = "auto";
@@ -780,7 +784,7 @@ export function createHistorySidebar(toggleSidebarCallback) {
                     showErrorToast("删除文章失败");
                   }
                 } catch (error) {
-                  console.error("删除文章失败:", error);
+                  logger.error("删除文章失败", error);
                   showErrorToast("删除文章失败");
                 }
               });
@@ -802,7 +806,7 @@ export function createHistorySidebar(toggleSidebarCallback) {
         }
       }
     } catch (error) {
-      console.error("加载文章列表失败:", error);
+      logger.error("加载文章列表失败", error);
       articleListContainer.innerHTML = '';
       articleListContainer.appendChild(createElement("div", {
         innerHTML: `

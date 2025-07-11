@@ -1,5 +1,9 @@
 // 历史文章侧边栏功能管理器
 import { createHistorySidebarToggle } from "./history-sidebar-toggle.js";
+import { createLogger } from "../../services/simple-logger.js";
+
+// 创建模块日志器
+const logger = createLogger('HistorySidebarManager');
 
 let historySidebarToggle = null;
 
@@ -8,15 +12,15 @@ let historySidebarToggle = null;
  */
 export function initializeHistorySidebar() {
   if (historySidebarToggle) {
-    console.warn("历史文章侧边栏功能已经初始化");
+    logger.warn("历史文章侧边栏功能已经初始化");
     return;
   }
 
   try {
     historySidebarToggle = createHistorySidebarToggle();
-    console.log("历史文章侧边栏功能初始化成功");
+    logger.info("历史文章侧边栏功能初始化成功");
   } catch (error) {
-    console.error("历史文章侧边栏功能初始化失败:", error);
+    logger.error("历史文章侧边栏功能初始化失败", error);
   }
 }
 
@@ -27,7 +31,7 @@ export function cleanupHistorySidebar() {
   if (historySidebarToggle && historySidebarToggle.cleanup) {
     historySidebarToggle.cleanup();
     historySidebarToggle = null;
-    console.log("历史文章侧边栏功能已清理");
+    logger.info("历史文章侧边栏功能已清理");
   }
 }
 

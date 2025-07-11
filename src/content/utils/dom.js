@@ -9,6 +9,11 @@
  * @param {string} options.cssText CSS样式文本
  * @returns {HTMLElement}
  */
+
+import { createLogger } from '../services/simple-logger.js';
+
+// 创建模块日志器
+const logger = createLogger('DOMUtils');
 export function createElement(tag, options = {}) {
   const element = document.createElement(tag);
   
@@ -83,7 +88,7 @@ export function safeQuerySelector(selector, parent = document) {
   try {
     return parent.querySelector(selector);
   } catch (error) {
-    console.error(`查询选择器失败: ${selector}`, error);
+    logger.error(`查询选择器失败: ${selector}`, error);
     return null;
   }
 }

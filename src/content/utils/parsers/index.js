@@ -5,6 +5,10 @@
 import TemplateLoader from './TemplateLoader.js';
 import InlineStyleProcessor from './InlineStyleProcessor.js';
 import Renderer from './Renderer.js';
+import { createLogger } from '../../services/simple-logger.js';
+
+// 创建模块日志器
+const logger = createLogger('ParserIndex');
 
 /**
  * Block-to-HTML 转换器主类
@@ -25,7 +29,7 @@ class BlockToHtmlConverter {
   convert(editorData, template) {
     // 数据格式验证
     if (!validateEditorData(editorData)) {
-      console.error('无效的EditorJS数据格式');
+      logger.error('无效的EditorJS数据格式');
       return '';
     }
 
@@ -35,7 +39,7 @@ class BlockToHtmlConverter {
 
     // 模板加载验证
     if (!this.templateLoader.isTemplateLoaded()) {
-      console.error('模板未加载');
+      logger.error('模板未加载');
       return '';
     }
 
