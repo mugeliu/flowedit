@@ -8,9 +8,32 @@ import { createLogger } from '../../services/simple-logger.js';
 // 创建模块日志器
 const logger = createLogger('InlineStyleProcessor');
 
+/**
+ * 正则表达式缓存类
+ */
+class RegexCache {
+  constructor() {
+    this.cache = new Map();
+  }
+  
+  get(pattern, flags = '') {
+    const key = `${pattern}::${flags}`;
+    if (!this.cache.has(key)) {
+      this.cache.set(key, new RegExp(pattern, flags));
+    }
+    return this.cache.get(key);
+  }
+}
+
 class InlineStyleProcessor {
   constructor(templateLoader) {
     this.templateLoader = templateLoader;
+    this.regexCache = new RegexCache();
+    
+    // 预编译常用正则表达式
+    this.tagRegex = this.regexCache.get('<(code|u|mark|i|em|strong|b|sup)(?:\\s[^>]*)?>', 'g');
+    this.anchorRegex = this.regexCache.get('<a([^>]*)>([^<]*)<\\/a>', 'g');
+    this.hrefRegex = this.regexCache.get('href=["\\\'"]([^"\\\'"]*)["\\\'"]');
   }
 
   /**
@@ -23,14 +46,13 @@ class InlineStyleProcessor {
       return text || "";
     }
 
-    // 处理除a标签外的其他标签
-    return text.replace(
-      /<(code|u|mark|i|em|strong|b|sup)(?:\s[^>]*)?>/g,
-      (match, tag) => {
-        const style = this.templateLoader.getInlineStyle(tag);
-        return style ? `<${tag} style="${style}">` : match;
-      }
-    );
+    // 使用预编译的正则表达式，重置lastIndex以确保正确匹配
+    this.tagRegex.lastIndex = 0;
+    
+    return text.replace(this.tagRegex, (match, tag) => {
+      const style = this.templateLoader.getInlineStyle(tag);
+      return style ? `<${tag} style="${style}">` : match;
+    });
   }
 
   /**
@@ -47,44 +69,44 @@ class InlineStyleProcessor {
 
     let linkCounter = renderer.globalLinkCounter;
 
+    // 重置正则表达式的lastIndex
+    this.anchorRegex.lastIndex = 0;
+
     // 处理完整的a标签（包括开始和结束标签）
-    const processedText = text.replace(
-      /<a([^>]*)>([^<]*)<\/a>/g,
-      (match, attributes, content) => {
-        // 提取href属性
-        const hrefMatch = attributes.match(/href=["']([^"']*)["']/);
-        const href = hrefMatch?.[1] || "";
+    const processedText = text.replace(this.anchorRegex, (match, attributes, content) => {
+      // 使用预编译的正则表达式提取href属性
+      const hrefMatch = attributes.match(this.hrefRegex);
+      const href = hrefMatch?.[1] || "";
 
-        // 检查是否为微信公众号链接，如果是则跳过处理
-        if (href.startsWith("https://mp.weixin.qq.com/s/")) {
-          return match; // 保持原样，不处理
-        }
-
-        if (href) {
-          // 检查是否为非标准链接（脚注文字）
-          // 如果href以http://开头但不是标准URL格式，则移除http://前缀
-          let linkText = href;
-          if (href.startsWith("http://") && !this.isValidUrl(href)) {
-            linkText = href.replace(/^http:\/\//, "");
-          }
-          
-          renderer.extractedLinks.push(`[${linkCounter}]: ${linkText}`);
-        }
-
-        // 获取样式并构建标签
-        const aStyle = this.templateLoader.getInlineStyle("a");
-        const supStyle = this.templateLoader.getInlineStyle("sup");
-
-        const spanTag = aStyle ? `<span style="${aStyle}">` : "<span>";
-        const supTag = supStyle
-          ? `<sup style="${supStyle}">[${linkCounter}]</sup>`
-          : `<sup>[${linkCounter}]</sup>`;
-
-        linkCounter++;
-
-        return `${spanTag}${content}${supTag}</span>`;
+      // 检查是否为微信公众号链接，如果是则跳过处理
+      if (href.startsWith("https://mp.weixin.qq.com/s/")) {
+        return match; // 保持原样，不处理
       }
-    );
+
+      if (href) {
+        // 检查是否为非标准链接（脚注文字）
+        // 如果href以http://开头但不是标准URL格式，则移除http://前缀
+        let linkText = href;
+        if (href.startsWith("http://") && !this.isValidUrl(href)) {
+          linkText = href.replace(/^http:\/\//, "");
+        }
+        
+        renderer.extractedLinks.push(`[${linkCounter}]: ${linkText}`);
+      }
+
+      // 获取样式并构建标签
+      const aStyle = this.templateLoader.getInlineStyle("a");
+      const supStyle = this.templateLoader.getInlineStyle("sup");
+
+      const spanTag = aStyle ? `<span style="${aStyle}">` : "<span>";
+      const supTag = supStyle
+        ? `<sup style="${supStyle}">[${linkCounter}]</sup>`
+        : `<sup>[${linkCounter}]</sup>`;
+
+      linkCounter++;
+
+      return `${spanTag}${content}${supTag}</span>`;
+    });
 
     // 更新全局计数器
     renderer.globalLinkCounter = linkCounter;

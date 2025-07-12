@@ -32,7 +32,11 @@
   "host_permissions": ["https://mp.weixin.qq.com/*"],
   "web_accessible_resources": [
     {
-      "resources": ["scripts/page-injector.js", "assets/style-template.json"],
+      "resources": [
+        "scripts/page-injector.js", 
+        "assets/style-template.json",
+        "assets/test-data.json"
+      ],
       "matches": ["https://mp.weixin.qq.com/*"]
     }
   ],

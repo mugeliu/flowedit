@@ -210,8 +210,19 @@ export class ArticleSerializer {
       } else if (block.data?.items) {
         // 处理列表项
         block.data.items.forEach(item => {
-          const text = this._stripHtmlTags(item);
-          totalWords += this._countWords(text);
+          // 支持字符串和对象格式的列表项
+          let text = '';
+          if (typeof item === 'string') {
+            text = item;
+          } else if (item && typeof item === 'object') {
+            // 对象格式的列表项，获取content或text字段
+            text = item.content || item.text || '';
+          }
+          
+          if (text) {
+            const cleanText = this._stripHtmlTags(text);
+            totalWords += this._countWords(cleanText);
+          }
         });
       }
     });
