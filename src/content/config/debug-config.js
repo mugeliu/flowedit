@@ -5,9 +5,10 @@
 
 /**
  * 调试模式配置
- * 设置为 true 开启详细日志，false 关闭调试日志
+ * 设置为 true 开启详细日志和全局错误监听，false 关闭调试功能
+ * 生产环境建议设置为 false
  */
-export const DEBUG_MODE = true;
+export const DEBUG_MODE = false;
 
 /**
  * 强制日志级别 (可选)
@@ -15,7 +16,7 @@ export const DEBUG_MODE = true;
  * 可选值: 'DEBUG', 'INFO', 'WARN', 'ERROR', 'SILENT'
  * 设置为 null 则使用自动检测
  */
-export const FORCE_LOG_LEVEL = "DEBUG";
+export const FORCE_LOG_LEVEL = null;
 
 /**
  * 模块级别的日志控制

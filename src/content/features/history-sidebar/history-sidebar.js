@@ -4,6 +4,7 @@ import { handleOutsideClick } from "./history-sidebar-toggle.js";
 import { storage } from "../../utils/storage/index.js";
 import { showErrorToast, showSuccessToast } from "../../utils/toast.js";
 import { createLogger } from "../../services/simple-logger.js";
+import { getCurrentEditor, activateSmartEditor, deactivateSmartEditor } from "../smart-editor/manager.js";
 
 // 创建模块日志器
 const logger = createLogger('HistorySidebar');
@@ -133,11 +134,7 @@ function showArticleDialog(closeSidebarCallback, article) {
         // 关闭侧边栏
         closeSidebarCallback();
         
-        // 动态导入smart-editor模块
-        const smartEditorModule = await import('../smart-editor/manager.js');
-        
         // 检查编辑器是否已经激活，如果已激活先停用
-        const { getCurrentEditor, deactivateSmartEditor, activateSmartEditor } = smartEditorModule;
         const currentEditor = getCurrentEditor();
         if (currentEditor) {
           logger.debug("编辑器已激活，先停用");

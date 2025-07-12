@@ -1,10 +1,8 @@
 // 插件注册服务 - 管理功能模块的统一接口
 import { createLogger } from './simple-logger.js';
-import { createErrorHandler } from './simple-error-handler.js';
 
-// 创建模块日志器和错误处理器
+// 创建模块日志器
 const logger = createLogger('PluginRegistry');
-const errorHandler = createErrorHandler('PluginRegistry');
 
 /**
  * 插件注册表
@@ -63,7 +61,7 @@ class PluginRegistry {
       logger.info(`插件 ${name} 初始化成功`);
       return true;
     } catch (error) {
-      await errorHandler.handle(error);
+      logger.error(`插件 ${name} 初始化失败:`, error);
       return false;
     }
   }
@@ -119,7 +117,7 @@ class PluginRegistry {
       logger.info(`插件 ${name} 清理成功`);
       return true;
     } catch (error) {
-      errorHandler.handle(error);
+      logger.error(`插件 ${name} 清理失败:`, error);
       return false;
     }
   }

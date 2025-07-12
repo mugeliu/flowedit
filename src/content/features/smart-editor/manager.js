@@ -11,17 +11,15 @@ import { safeQuerySelector } from "../../utils/dom.js";
 import { initializeEditorUI, cleanupEditorUI } from "./editor-ui.js";
 import { createSmartButton } from "./smart-button.js";
 import {
-  enableAdditionObserver,
-  disableAdditionObserver,
+  enableImageMonitor,
+  disableImageMonitor,
 } from "../../services/dom-monitor.js";
 import { storage } from "../../utils/storage/index.js";
 import { showErrorToast, showSuccessToast } from "../../utils/toast.js";
 import { createLogger } from "../../services/simple-logger.js";
-import { createErrorHandler } from "../../services/simple-error-handler.js";
 
 // 创建模块日志器
 const logger = createLogger('SmartEditorManager');
-const errorHandler = createErrorHandler('SmartEditorManager');
 
 let editor = null;
 let uiElements = null;
@@ -97,12 +95,12 @@ export async function activateSmartEditor(initialData = null) {
     // 设置编辑器激活状态
     setEditorActiveState(true);
 
-    // 启用独立监听器
-    enableAdditionObserver();
+    // 启用图片监听器
+    enableImageMonitor();
 
     logger.info("智能编辑器激活成功");
   } catch (error) {
-    errorHandler.handle(error);
+    logger.error('智能编辑器激活失败:', error);
     showErrorToast("智能插入功能启动失败");
     deactivateSmartEditor();
   }
@@ -131,8 +129,8 @@ export function deactivateSmartEditor() {
   // 重置编辑器激活状态
   setEditorActiveState(false);
 
-  // 禁用独立监听器
-  disableAdditionObserver();
+  // 禁用图片监听器
+  disableImageMonitor();
 
   logger.info("智能编辑器已停用");
 }
@@ -208,8 +206,13 @@ async function saveToLocalStorage(editorData) {
         logger.info(`文章已更新: ${result.article.title} (${currentEditingArticleId})`);
         showSuccessToast(`文章《${result.article.title}》已更新`);
       } else {
-        logger.error("更新文章失败:", result.error);
-        showErrorToast("更新文章失败");
+        logger.error("更新文章失败:", result);
+        // 根据错误类型显示不同的提示
+        if (result.error === 'QUOTA_EXCEEDED') {
+          showErrorToast(result.message || "存储空间不足，请清理部分旧文章后重试");
+        } else {
+          showErrorToast(result.message || "更新文章失败");
+        }
       }
     } else {
       // 创建新文章
@@ -230,8 +233,13 @@ async function saveToLocalStorage(editorData) {
         // 更新当前编辑的文章ID，以便后续保存时更新而不是新建
         currentEditingArticleId = result.articleId;
       } else {
-        logger.error("保存新文章失败:", result.error);
-        showErrorToast("保存文章失败");
+        logger.error("保存新文章失败:", result);
+        // 根据错误类型显示不同的提示
+        if (result.error === 'QUOTA_EXCEEDED') {
+          showErrorToast(result.message || "存储空间不足，请清理部分旧文章后重试");
+        } else {
+          showErrorToast(result.message || "保存文章失败");
+        }
       }
     }
   } catch (error) {

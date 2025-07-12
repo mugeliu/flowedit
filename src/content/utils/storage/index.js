@@ -23,43 +23,21 @@ export {
   ArticleMetadata 
 } from './article-serializer.js';
 
-// 延迟导入存储服务，避免循环引用
+// 文章存储服务
 import { 
   ArticleStorageService, 
   articleStorageService, 
   ArticleStatus, 
   SortOrder 
-} from '../../services/article-storage.js';
+} from './article-storage.js';
 
 // 重新导出
-export { ArticleStorageService, articleStorageService, ArticleStatus, SortOrder };
-
-/**
- * 快速访问常用功能
- */
-export const storage = {
-  // 文章操作
-  saveArticle: (...args) => articleStorageService.saveArticle(...args),
-  getArticle: (...args) => articleStorageService.getArticle(...args),
-  getAllArticles: (...args) => articleStorageService.getAllArticles(...args),
-  deleteArticle: (...args) => articleStorageService.deleteArticle(...args),
-  updateArticle: (...args) => articleStorageService.updateArticle(...args),
-  
-  // 草稿操作
-  saveDraft: (...args) => articleStorageService.saveDraft(...args),
-  getDrafts: (...args) => articleStorageService.getDrafts(...args),
-  deleteDraft: (...args) => articleStorageService.deleteDraft(...args),
-  
-  // 工具方法
-  getStats: (...args) => articleStorageService.getStorageStats(...args),
-  cleanup: (...args) => articleStorageService.cleanup(...args),
-  initialize: (...args) => articleStorageService.initialize(...args),
-  
-  // 序列化工具
-  serialize: (...args) => articleSerializer.serialize(...args),
-  deserialize: (...args) => articleSerializer.deserialize(...args),
-  createEmpty: (...args) => articleSerializer.createEmptyArticle(...args),
-  clone: (...args) => articleSerializer.cloneArticle(...args)
+export { 
+  ArticleStorageService, 
+  articleStorageService, 
+  articleStorageService as storage,  // 直接导出为storage别名
+  ArticleStatus, 
+  SortOrder 
 };
 
 /**
@@ -68,6 +46,7 @@ export const storage = {
  */
 export async function initializeStorage() {
   try {
+    // 直接使用已经导入的 articleStorageService
     const success = await articleStorageService.initialize();
     if (success) {
       logger.info('存储系统初始化成功');

@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "flowedit",
+  "name": "FlowEdit",
   "version": "1.0.0",
-  "description": "FlowEdit：增强微信公众平台编辑器体验",
+  "description": "增强微信公众平台编辑器体验，提供现代化的富文本编辑功能",
   "icons": {
     "16": "assets/icons/icon16.png",
     "32": "assets/icons/icon32.png",
@@ -12,7 +12,7 @@
   },
   "action": {
     "default_popup": "popup/popup.html",
-    "default_title": "FlowEdit",
+    "default_title": "FlowEdit - 微信编辑器增强",
     "default_icon": {
       "16": "assets/icons/icon16.png",
       "32": "assets/icons/icon32.png",
@@ -22,23 +22,18 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://mp.weixin.qq.com/cgi-bin/appmsg?*"],
+      "matches": ["https://mp.weixin.qq.com/cgi-bin/appmsg*"],
       "js": ["scripts/editorjs-bundle.js", "content/content.js"],
       "css": ["assets/css/weui.css", "assets/css/flowedit.css"],
       "run_at": "document_end"
     }
   ],
-  "permissions": ["scripting", "storage", "activeTab"],
-  "host_permissions": ["https://mp.weixin.qq.com/cgi-bin/appmsg?*"],
+  "permissions": ["storage"],
+  "host_permissions": ["https://mp.weixin.qq.com/*"],
   "web_accessible_resources": [
     {
-      "resources": [
-        "scripts/*.js",
-        "assets/css/*.css",
-        "assets/style-template.json",
-        "assets/test-data.json"
-      ],
-      "matches": ["<all_urls>"]
+      "resources": ["scripts/page-injector.js", "assets/style-template.json"],
+      "matches": ["https://mp.weixin.qq.com/*"]
     }
   ],
   "background": {

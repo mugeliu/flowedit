@@ -3,9 +3,9 @@
  * 负责EditorJS数据的存储、读取和管理
  */
 
-import { createStorage, StorageType } from "../utils/storage/browser-storage.js";
-import { articleSerializer } from "../utils/storage/article-serializer.js";
-import { createLogger } from './simple-logger.js';
+import { createStorage, StorageType } from "./browser-storage.js";
+import { articleSerializer } from "./article-serializer.js";
+import { createLogger } from '../../services/simple-logger.js';
 
 // 创建模块日志器
 const logger = createLogger('ArticleStorageService');
@@ -67,9 +67,6 @@ export class ArticleStorageService {
       // 初始化索引
       await this._initializeIndex();
 
-      // 执行数据迁移（如果需要）
-      await this._performMigration();
-
       this.isInitialized = true;
       logger.info('文章存储服务初始化成功');
       return true;
@@ -124,9 +121,20 @@ export class ArticleStorageService {
       }
     } catch (error) {
       logger.error('保存文章失败:', error);
+      
+      // 检查是否是存储空间不足
+      if (error.name === 'QuotaExceededError' || error.message?.includes('QUOTA')) {
+        return {
+          success: false,
+          error: 'QUOTA_EXCEEDED',
+          message: '存储空间不足，请清理部分旧文章后重试'
+        };
+      }
+      
       return {
         success: false,
-        error: error.message
+        error: 'SAVE_FAILED',
+        message: error.message || '保存文章失败'
       };
     }
   }
@@ -573,14 +581,6 @@ export class ArticleStorageService {
           return new Date(b.updatedAt) - new Date(a.updatedAt);
       }
     });
-  }
-
-  /**
-   * 执行数据迁移
-   */
-  async _performMigration() {
-    // 预留数据迁移逻辑
-    logger.info('数据迁移检查完成');
   }
 }
 
