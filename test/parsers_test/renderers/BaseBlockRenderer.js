@@ -4,11 +4,15 @@
  * 优化版本：支持占位符条件渲染，使用简化错误处理
  */
 
-import { createLogger } from '../../../services/simple-logger.js';
 import { ParserError } from '../TemplateLoader.js';
 
-// 创建模块日志器
-const logger = createLogger('BaseBlockRenderer');
+// 使用console.log替代日志系统，便于测试
+const logger = {
+  error: (...args) => console.error('[BaseBlockRenderer]', ...args),
+  warn: (...args) => console.warn('[BaseBlockRenderer]', ...args),
+  info: (...args) => console.info('[BaseBlockRenderer]', ...args),
+  debug: (...args) => console.debug('[BaseBlockRenderer]', ...args)
+};
 
 class BaseBlockRenderer {
   constructor(templateLoader, inlineStyleProcessor) {

@@ -4,7 +4,6 @@
  * 优化版本：使用回调机制处理内联样式，与InlineStyleProcessor解耦
  */
 
-import { createLogger } from '../../services/simple-logger.js';
 import { ParserError } from './TemplateLoader.js';
 import BlockRendererRegistry from './BlockRendererRegistry.js';
 
@@ -19,8 +18,13 @@ import DelimiterRenderer from './renderers/DelimiterRenderer.js';
 import RawRenderer from './renderers/RawRenderer.js';
 import GenericRenderer from './renderers/GenericRenderer.js';
 
-// 创建模块日志器
-const logger = createLogger('Renderer');
+// 使用console.log替代日志系统，便于测试
+const logger = {
+  error: (...args) => console.error('[Renderer]', ...args),
+  warn: (...args) => console.warn('[Renderer]', ...args),
+  info: (...args) => console.info('[Renderer]', ...args),
+  debug: (...args) => console.debug('[Renderer]', ...args)
+};
 
 class Renderer {
   constructor(templateLoader, inlineStyleProcessor) {
@@ -134,7 +138,7 @@ class Renderer {
       return this.combineContent(mainContent, globalContent);
     } catch (error) {
       if (error instanceof ParserError) {
-        logger.error('渲染失败:', error.message);
+        logger.error('渲染失败:', error.toString(), error.context);
         throw error;
       }
       throw new ParserError(`Render failed: ${error.message}`);

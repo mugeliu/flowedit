@@ -4,11 +4,6 @@
  * 集成简化的错误处理和模板验证
  */
 
-import { createLogger } from '../../services/simple-logger.js';
-
-// 创建模块日志器
-const logger = createLogger('TemplateLoader');
-
 // 简化的错误处理
 class ParserError extends Error {
   constructor(message) {
@@ -36,6 +31,14 @@ class TemplateValidator {
     return true;
   }
 }
+
+// 使用console.log替代日志系统，便于测试
+const logger = {
+  error: (...args) => console.error('[TemplateLoader]', ...args),
+  warn: (...args) => console.warn('[TemplateLoader]', ...args),
+  info: (...args) => console.info('[TemplateLoader]', ...args),
+  debug: (...args) => console.debug('[TemplateLoader]', ...args)
+};
 
 class TemplateLoader {
   constructor() {

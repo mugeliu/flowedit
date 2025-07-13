@@ -4,11 +4,15 @@
  * 优化版本：解耦与Renderer的直接依赖，使用回调机制
  */
 
-import { createLogger } from '../../services/simple-logger.js';
 import { ParserError } from './TemplateLoader.js';
 
-// 创建模块日志器
-const logger = createLogger('InlineStyleProcessor');
+// 使用console.log替代日志系统，便于测试
+const logger = {
+  error: (...args) => console.error('[InlineStyleProcessor]', ...args),
+  warn: (...args) => console.warn('[InlineStyleProcessor]', ...args),
+  info: (...args) => console.info('[InlineStyleProcessor]', ...args),
+  debug: (...args) => console.debug('[InlineStyleProcessor]', ...args)
+};
 
 /**
  * 正则表达式缓存类

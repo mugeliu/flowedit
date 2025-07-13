@@ -1,15 +1,18 @@
 /**
  * Block-to-HTML 转换器主入口
  * 专为Chrome插件设计的模块化转换器
- * 优化版本：集成错误处理和新的架构
  */
-import TemplateLoader, { ParserError } from './TemplateLoader.js';
+import TemplateLoader from './TemplateLoader.js';
 import InlineStyleProcessor from './InlineStyleProcessor.js';
 import Renderer from './Renderer.js';
-import { createLogger } from '../../services/simple-logger.js';
 
-// 创建模块日志器
-const logger = createLogger('ParserIndex');
+// 使用console.log替代日志系统，便于测试
+const logger = {
+  error: (...args) => console.error('[ParserIndex]', ...args),
+  warn: (...args) => console.warn('[ParserIndex]', ...args),
+  info: (...args) => console.info('[ParserIndex]', ...args),
+  debug: (...args) => console.debug('[ParserIndex]', ...args)
+};
 
 /**
  * Block-to-HTML 转换器主类
@@ -28,30 +31,23 @@ class BlockToHtmlConverter {
    * @returns {string} HTML字符串
    */
   convert(editorData, template) {
-    try {
-      // 数据格式验证
-      if (!validateEditorData(editorData)) {
-        throw new ParserError('无效的EditorJS数据格式');
-      }
-
-      if (template) {
-        this.templateLoader.loadTemplate(template);
-      }
-
-      // 模板加载验证
-      if (!this.templateLoader.isTemplateLoaded()) {
-        throw new ParserError('模板未加载');
-      }
-
-      return this.renderer.render(editorData);
-    } catch (error) {
-      if (error instanceof ParserError) {
-        logger.error('转换失败:', error.message);
-        throw error;
-      }
-      logger.error('转换过程中发生未知错误:', error);
-      throw new ParserError(`转换失败: ${error.message}`);
+    // 数据格式验证
+    if (!validateEditorData(editorData)) {
+      logger.error('无效的EditorJS数据格式');
+      return '';
     }
+
+    if (template) {
+      this.templateLoader.loadTemplate(template);
+    }
+
+    // 模板加载验证
+    if (!this.templateLoader.isTemplateLoaded()) {
+      logger.error('模板未加载');
+      return '';
+    }
+
+    return this.renderer.render(editorData);
   }
 }
 
@@ -79,5 +75,5 @@ function validateEditorData(editorData) {
 }
 
 // ES6 模块导出
-export { BlockToHtmlConverter, convertToHtml, validateEditorData, ParserError };
+export { BlockToHtmlConverter, convertToHtml, validateEditorData };
 export default BlockToHtmlConverter;
