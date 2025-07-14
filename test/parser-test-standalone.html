@@ -206,6 +206,7 @@
         <button id="showSimplePreviewBtn">📝 简单示例预览</button>
         <button id="showFullPreviewBtn">📚 完整示例预览</button>
         <button id="testNewFeaturesBtn">⚡ 新功能测试</button>
+        <button id="testQuoteBtn">💬 测试Quote渲染</button>
         <button id="clearResultsBtn" class="warning">🗑️ 清空结果</button>
     </div>
 
@@ -250,6 +251,7 @@
                 <div class="tab active" id="simple-tab">简单示例</div>
                 <div class="tab" id="full-tab">完整示例</div>
                 <div class="tab" id="new-features-tab">新功能展示</div>
+                <div class="tab" id="html-source-tab">HTML源码</div>
             </div>
             
             <div id="simple-preview" class="tab-content active">
@@ -266,7 +268,15 @@
 
             <div id="new-features" class="tab-content">
                 <div id="new-features-html" class="html-preview">
-                    点击"新功能测试"查看占位符条件渲染等新特性
+                    点击"新功能测试"或"测试Quote渲染"查看占位符条件渲染等新特性
+                </div>
+            </div>
+
+            <div id="html-source" class="tab-content">
+                <div id="html-source-content" class="console-output" style="max-height: 500px; white-space: pre-wrap;">
+                    点击上方按钮生成HTML源码
+                    
+提示：生成预览后，点击此标签可查看格式化的HTML源代码
                 </div>
             </div>
         </div>
@@ -616,6 +626,86 @@
                     return `<p style="color: red;">转换出错: ${error.message}</p>`;
                 }
             }
+
+            async getQuoteTestResult() {
+                try {
+                    if (!testData) await loadTestData();
+                    if (!styleTemplate) await loadStyleTemplate();
+                    
+                    const templateLoader = new TemplateLoader();
+                    templateLoader.loadTemplate(styleTemplate);
+                    const inlineStyleProcessor = new InlineStyleProcessor(templateLoader);
+                    const renderer = new Renderer(templateLoader, inlineStyleProcessor);
+                    
+                    // 创建专门的quote测试数据
+                    const quoteTestData = {
+                        time: Date.now(),
+                        blocks: [
+                            {
+                                "id": "quote-test-1",
+                                "type": "header",
+                                "data": {
+                                    "text": "Quote 渲染测试",
+                                    "level": 2
+                                }
+                            },
+                            {
+                                "id": "quote-test-2",
+                                "type": "paragraph",
+                                "data": {
+                                    "text": "以下展示了不同类型的quote块，特别关注caption字段的样式处理："
+                                }
+                            },
+                            {
+                                "id": "quote-test-3",
+                                "type": "quote",
+                                "data": {
+                                    "text": "这是flowedit的Quote内容",
+                                    "caption": "来自flowedit",
+                                    "alignment": "left"
+                                }
+                            },
+                            {
+                                "id": "quote-test-4",
+                                "type": "quote",
+                                "data": {
+                                    "text": "这是一个没有caption的quote块",
+                                    "alignment": "left"
+                                }
+                            },
+                            {
+                                "id": "quote-test-5",
+                                "type": "quote",
+                                "data": {
+                                    "text": "The unexamined life is not worth living.",
+                                    "caption": "Socrates",
+                                    "alignment": "left"
+                                }
+                            },
+                            {
+                                "id": "quote-test-6",
+                                "type": "paragraph",
+                                "data": {
+                                    "text": "注意观察：有caption的quote会在底部显示样式化的引用来源，而没有caption的quote则不会显示。这展示了{{?caption}}占位符条件渲染的工作效果。"
+                                }
+                            }
+                        ],
+                        version: testData.version
+                    };
+                    
+                    const result = renderer.render(quoteTestData);
+                    
+                    // 添加调试信息到控制台
+                    console.log('\n🎯 Quote渲染测试详情:');
+                    console.log('测试的quote数据:', quoteTestData.blocks.filter(b => b.type === 'quote'));
+                    console.log('渲染结果长度:', result.length);
+                    
+                    return result;
+                } catch (error) {
+                    console.error('获取Quote测试结果出错:', error);
+                    return `<p style="color: red;">Quote测试出错: ${error.message}</p>`;
+                }
+            }
         }
 
         // ===================================
@@ -692,6 +782,7 @@
                     const tester = currentTester || new OptimizedParserTester();
                     const html = await tester.getSimpleResult();
                     document.getElementById('simple-html').innerHTML = html;
+                    updateHtmlSource(html);
                     switchPreviewTab('simple-preview');
                     showStatus('✅ 简单示例预览已生成', 'success');
                 } catch (error) {
@@ -707,6 +798,7 @@
                     const tester = currentTester || new OptimizedParserTester();
                     const html = await tester.getFullResult();
                     document.getElementById('full-html').innerHTML = html;
+                    updateHtmlSource(html);
                     switchPreviewTab('full-preview');
                     showStatus('✅ 完整示例预览已生成', 'success');
                 } catch (error) {
@@ -722,6 +814,7 @@
                     const tester = currentTester || new OptimizedParserTester();
                     const html = await tester.getNewFeaturesResult();
                     document.getElementById('new-features-html').innerHTML = html;
+                    updateHtmlSource(html);
                     switchPreviewTab('new-features');
                     showStatus('✅ 新功能测试完成', 'success');
                 } catch (error) {
@@ -730,12 +823,29 @@
                     showStatus('❌ 新功能测试失败', 'error');
                 }
             });
+
+            document.getElementById('testQuoteBtn').addEventListener('click', async function() {
+                try {
+                    showStatus('测试Quote渲染...', 'info');
+                    const tester = currentTester || new OptimizedParserTester();
+                    const html = await tester.getQuoteTestResult();
+                    document.getElementById('new-features-html').innerHTML = html;
+                    updateHtmlSource(html);
+                    switchPreviewTab('new-features');
+                    showStatus('✅ Quote渲染测试完成，请查看caption样式处理', 'success');
+                } catch (error) {
+                    console.error('Quote测试失败:', error);
+                    document.getElementById('new-features-html').innerHTML = `<p style="color: red;">Quote测试失败: ${error.message}</p>`;
+                    showStatus('❌ Quote测试失败', 'error');
+                }
+            });
             
             document.getElementById('clearResultsBtn').addEventListener('click', function() {
                 clearConsole();
                 document.getElementById('simple-html').innerHTML = '点击上方按钮查看预览';
                 document.getElementById('full-html').innerHTML = '点击上方按钮查看预览';
-                document.getElementById('new-features-html').innerHTML = '点击"新功能测试"查看占位符条件渲染等新特性';
+                document.getElementById('new-features-html').innerHTML = '点击"新功能测试"或"测试Quote渲染"查看占位符条件渲染等新特性';
+                document.getElementById('html-source-content').textContent = '点击上方按钮生成HTML源码\n\n提示：生成预览后，点击此标签可查看格式化的HTML源代码';
                 document.getElementById('stats').style.display = 'none';
                 showStatus('✅ 结果已清空', 'success');
             });
@@ -752,6 +862,10 @@
             document.getElementById('new-features-tab').addEventListener('click', function() {
                 switchPreviewTab('new-features');
             });
+
+            document.getElementById('html-source-tab').addEventListener('click', function() {
+                switchPreviewTab('html-source');
+            });
         });
         
         function switchPreviewTab(tabId) {
@@ -766,7 +880,52 @@
                 document.getElementById('full-tab').classList.add('active');
             } else if (tabId === 'new-features') {
                 document.getElementById('new-features-tab').classList.add('active');
+            } else if (tabId === 'html-source') {
+                document.getElementById('html-source-tab').classList.add('active');
             }
+        }
+
+        // 更新HTML源码显示
+        function updateHtmlSource(html) {
+            if (html) {
+                const formattedHtml = formatHtml(html);
+                document.getElementById('html-source-content').textContent = formattedHtml;
+            }
+        }
+
+        // 格式化HTML源码
+        function formatHtml(html) {
+            // 简单的HTML格式化
+            let formatted = html;
+            
+            // 添加换行符
+            formatted = formatted.replace(/></g, '>\n<');
+            
+            // 添加缩进
+            const lines = formatted.split('\n');
+            let indent = 0;
+            const indentSize = 2;
+            
+            const formattedLines = lines.map(line => {
+                const trimmed = line.trim();
+                if (!trimmed) return '';
+                
+                // 检查是否是结束标签
+                if (trimmed.match(/^<\/\w+>/)) {
+                    indent = Math.max(0, indent - indentSize);
+                }
+                
+                const indentedLine = ' '.repeat(indent) + trimmed;
+                
+                // 检查是否是开始标签（非自闭合）
+                if (trimmed.match(/^<\w+[^>]*>/) && !trimmed.match(/\/>$/)) {
+                    indent += indentSize;
+                }
+                
+                return indentedLine;
+            });
+            
+            return formattedLines.join('\n');
         }
         
         // 辅助函数

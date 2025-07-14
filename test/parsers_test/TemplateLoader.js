@@ -127,8 +127,11 @@ class TemplateLoader {
       return null;
     }
 
-    // 无子类型：List返回整个对象，其他返回首个值
-    return blockType === "List" ? template : Object.values(template)[0] || null;
+    // 无子类型：List和有optional配置的块返回整个对象，其他返回首个值
+    if (blockType === "List" || template.optional) {
+      return template;
+    }
+    return Object.values(template)[0] || null;
   }
 
   /**
