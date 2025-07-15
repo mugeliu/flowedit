@@ -1,6 +1,18 @@
 (function () {
+  // 检查登录状态
+  const uin = window.wx?.uin;
+  if (!uin || uin === "0") {
+    console.warn("[editor-bridge] 用户未登录，无法使用编辑器 API");
+    return;
+  }
+  
+  // 检查 API 是否存在
   if (!window.__MP_Editor_JSAPI__) {
-    console.warn("[editor-bridge] __MP_Editor_JSAPI__ 不存在");
+    if (uin && uin !== "0") {
+      console.error("[editor-bridge] 用户已登录但 __MP_Editor_JSAPI__ 不存在，可能存在错误");
+    } else {
+      console.warn("[editor-bridge] __MP_Editor_JSAPI__ 不存在");
+    }
     return;
   }
 
