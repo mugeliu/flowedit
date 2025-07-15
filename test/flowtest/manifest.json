@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "FlowTest Popup",
+  "version": "1.0",
+  "description": "A test extension for the popup.",
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": "icon16.png"
+  },
+  "icons": {
+    "16": "icon16.png"
+  }
+}
