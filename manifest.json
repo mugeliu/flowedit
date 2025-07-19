@@ -24,12 +24,13 @@
     {
       "matches": ["https://mp.weixin.qq.com/cgi-bin/appmsg*"],
       "js": ["scripts/editorjs-bundle.js", "content/content.js"],
-      "css": ["assets/css/weui.css", "assets/css/flowedit.css"],
+      "css": ["assets/css/weui.css", "assets/css/content.css"],
       "run_at": "document_end"
     }
   ],
   "permissions": ["storage"],
   "host_permissions": ["https://mp.weixin.qq.com/*"],
+  "options_page": "options/options.html",
   "web_accessible_resources": [
     {
       "resources": [
