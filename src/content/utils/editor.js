@@ -1,9 +1,9 @@
 // 编辑器相关工具函数
 import { editorConfig } from "../config/index.js";
-import { convertToHtml } from "./parsers/index.js";
+import { convertToHtml } from "../../shared/services/parsers/index.js";
 import { renderPreviewContent } from "../features/sidebar/preview.js";
 import { callEditorAPI } from "../services/editor-bridge.js";
-import { createLogger } from '../services/simple-logger.js';
+import { createLogger } from "../../shared/services/logger.js";
 
 // 创建模块日志器
 const logger = createLogger('EditorUtils');
@@ -94,11 +94,33 @@ function createOnReadyHandler(holderElement) {
  */
 export async function loadStyleTemplate() {
   try {
-    const templateResponse = await fetch(
-      chrome.runtime.getURL("assets/style-template.json")
-    );
-    const styleTemplate = await templateResponse.json();
-    return styleTemplate;
+    logger.info('获取当前模板用于内容渲染');
+    
+    // 直接从存储读取当前模板
+    const result = await chrome.storage.local.get(['currentTemplate', 'currentTemplateId']);
+    
+    if (result.currentTemplate) {
+      logger.info(`使用模板: ${result.currentTemplateId}`);
+      return result.currentTemplate;
+    }
+    
+    // 降级处理：如果存储中没有模板，加载默认模板
+    logger.warn('存储中没有模板，加载默认模板');
+    const response = await fetch(chrome.runtime.getURL("assets/templates/default.json"));
+    
+    if (!response.ok) {
+      throw new Error(`加载默认模板失败: ${response.status}`);
+    }
+    
+    const defaultTemplate = await response.json();
+    
+    // 存储默认模板到storage，避免下次再次加载
+    await chrome.storage.local.set({
+      currentTemplateId: 'default',
+      currentTemplate: defaultTemplate
+    });
+    
+    return defaultTemplate;
   } catch (error) {
     logger.error("加载样式模板失败", error);
     throw error;

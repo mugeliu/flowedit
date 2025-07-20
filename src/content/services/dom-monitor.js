@@ -12,7 +12,7 @@
 
 import { pluginRegistry } from "./plugin-registry.js";
 import { getCurrentEditor } from "../features/smart-editor/manager.js";
-import { createLogger } from './simple-logger.js';
+import { createLogger } from "../../shared/services/logger.js";
 
 // 创建模块日志器
 const logger = createLogger('DOMWatcher');

@@ -13,8 +13,9 @@ import {
   initializeEditorBridge,
   callEditorAPI,
 } from "./services/editor-bridge.js";
-import { createLogger } from './services/simple-logger.js';
-import { DEBUG_MODE } from './config/debug-config.js';
+import { createLogger } from '../shared/services/logger.js';
+import { DEBUG_MODE } from '../shared/config/debug-config.js';
+import { initializeDefaultTemplate } from './services/template-initializer.js';
 
 // 创建模块日志器
 const logger = createLogger('Main');
@@ -63,7 +64,10 @@ async function initializePluginFeatures() {
  * 主入口函数 - 专注于插件启动和初始化
  */
 async function main() {
-  // 初始化应用服务（用户配置、远程样式系统等 - 预留后期实现）
+  // 1. 首先初始化默认模板
+  await initializeDefaultTemplate();
+  
+  // 2. 初始化应用服务（用户配置、远程样式系统等 - 预留后期实现）
   try {
     await initializeAppServices();
   } catch (error) {

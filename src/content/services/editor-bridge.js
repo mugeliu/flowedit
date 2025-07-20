@@ -2,7 +2,7 @@
  * 编辑器桥接服务 - 处理与页面编辑器的通信
  */
 
-import { createLogger } from './simple-logger.js';
+import { createLogger } from "../../shared/services/logger.js";
 
 // 创建模块日志器
 const logger = createLogger('EditorBridge');

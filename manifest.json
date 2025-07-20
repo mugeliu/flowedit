@@ -35,7 +35,8 @@
     {
       "resources": [
         "scripts/page-injector.js", 
-        "assets/style-template.json",
+        "scripts/editorjs-bundle.js",
+        "assets/templates/default.json",
         "assets/test-data.json"
       ],
       "matches": ["https://mp.weixin.qq.com/*"]

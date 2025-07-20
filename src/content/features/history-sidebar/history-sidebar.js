@@ -1,9 +1,9 @@
 // 历史文章侧边栏主体组件
 import { createElement } from "../../utils/dom.js";
 import { handleOutsideClick } from "./history-sidebar-toggle.js";
-import { storage } from "../../utils/storage/index.js";
+import { storage } from "../../../shared/services/storage/index.js";
 import { showErrorToast, showSuccessToast } from "../../utils/toast.js";
-import { createLogger } from "../../services/simple-logger.js";
+import { createLogger } from "../../../shared/services/logger.js";
 import { getCurrentEditor, activateSmartEditor, deactivateSmartEditor } from "../smart-editor/manager.js";
 
 // 创建模块日志器

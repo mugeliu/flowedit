@@ -1,6 +1,6 @@
 // 侧边栏功能管理器
 import { createSidebarToggle } from "./sidebar-toggle.js";
-import { createLogger } from "../../services/simple-logger.js";
+import { createLogger } from "../../../shared/services/logger.js";
 
 // 创建模块日志器
 const logger = createLogger('SidebarManager');

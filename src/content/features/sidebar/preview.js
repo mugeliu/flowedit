@@ -2,8 +2,9 @@
 
 import { createElement, showElement, hideElement } from "../../utils/dom.js";
 import { isSmartEditorActive } from "../../utils/editor.js";
-import { convertToHtml } from "../../utils/parsers/index.js";
-import { createLogger } from "../../services/simple-logger.js";
+import { convertToHtml } from "../../../shared/services/parsers/index.js";
+import { createLogger } from "../../../shared/services/logger.js";
+import { TemplateManager } from "../../../shared/services/template-manager.js";
 
 // 创建模块日志器
 const logger = createLogger('SidebarPreview');
@@ -11,32 +12,43 @@ const logger = createLogger('SidebarPreview');
 // 全局预览容器实例
 let globalPreviewContainer = null;
 
-// 缓存的模板和测试数据
-let cachedTemplate = null;
+// 缓存的测试数据
 let cachedTestData = null;
+
+// 模板管理器实例
+const templateManager = new TemplateManager();
 
 /**
  * 异步加载模板和测试数据
  * @returns {Promise<{template: Object, testData: Object}>} 加载的模板和测试数据
  */
 async function loadTemplateAndData() {
-  if (cachedTemplate && cachedTestData) {
-    return { template: cachedTemplate, testData: cachedTestData };
-  }
-
   try {
-    // 加载模板文件
-    const templateResponse = await fetch(chrome.runtime.getURL('assets/style-template.json'));
-    cachedTemplate = await templateResponse.json();
+    // 获取当前模板
+    const currentTemplate = await templateManager.getCurrentTemplate();
+    const templateData = currentTemplate.data || await templateManager.loadTemplate(currentTemplate.id);
 
-    // 加载测试数据文件
-    const testDataResponse = await fetch(chrome.runtime.getURL('assets/test-data.json'));
-    cachedTestData = await testDataResponse.json();
+    // 加载测试数据文件（如果已缓存则使用缓存）
+    if (!cachedTestData) {
+      const testDataResponse = await fetch(chrome.runtime.getURL('assets/test-data.json'));
+      cachedTestData = await testDataResponse.json();
+    }
 
-    return { template: cachedTemplate, testData: cachedTestData };
+    return { template: templateData, testData: cachedTestData };
   } catch (error) {
     logger.error('加载模板或测试数据失败:', error);
-    return { template: null, testData: null };
+    // 返回默认数据作为fallback
+    return { 
+      template: null, 
+      testData: {
+        blocks: [
+          {
+            type: "paragraph",
+            data: { text: "预览功能暂时不可用，请检查模板配置。" }
+          }
+        ]
+      }
+    };
   }
 }
 

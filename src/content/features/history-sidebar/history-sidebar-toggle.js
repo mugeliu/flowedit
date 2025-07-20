@@ -1,7 +1,7 @@
 // 历史文章侧边栏组件创建和管理
 import { createElement } from "../../utils/dom.js";
 import { createHistorySidebar } from "./history-sidebar.js";
-import { createLogger } from "../../services/simple-logger.js";
+import { createLogger } from "../../../shared/services/logger.js";
 
 // 创建模块日志器
 const logger = createLogger('HistorySidebarToggle');

@@ -1,5 +1,5 @@
 // 插件注册服务 - 管理功能模块的统一接口
-import { createLogger } from './simple-logger.js';
+import { createLogger } from "../../shared/services/logger.js";
 
 // 创建模块日志器
 const logger = createLogger('PluginRegistry');

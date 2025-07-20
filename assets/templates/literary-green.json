@@ -1,0 +1,62 @@
+{
+  "id": "literary-green",
+  "name": "文艺绿色主题",
+  "description": "清新雅致的绿色主题，诗意盎然，适合文学艺术类内容",
+  "category": "文艺风格",
+  "author": "FlowEdit Team",
+  "version": "1.0.0",
+  "inlineStyles": {
+    "strong": "font-weight: 700; color: rgb(5, 120, 73);",
+    "b": "font-weight: 700; color: rgb(5, 120, 73);",
+    "em": "font-style: italic; color: rgb(34, 154, 96); font-weight: 500; letter-spacing: 0.6px; position: relative;",
+    "i": "font-style: italic; color: rgb(34, 154, 96); font-weight: 500; letter-spacing: 0.6px; position: relative;",
+    "u": "text-decoration: underline; text-decoration-color: rgb(52, 211, 153); text-underline-offset: 4px; text-decoration-thickness: 1.5px; text-decoration-style: wavy;",
+    "code": "font-family: '方正兰亭黑', 'Source Code Pro', monospace; font-size: 0.9em; background: rgba(52, 211, 153, 0.08); color: rgb(6, 95, 70); padding: 0.3em 0.6em; border-radius: 8px; border: 1px dashed rgba(52, 211, 153, 0.3); font-weight: 500; letter-spacing: 0.5px;",
+    "mark": "background: rgba(167, 243, 208, 0.6); padding: 0.2em 0.5em; border-radius: 6px; color: rgb(6, 95, 70); box-shadow: 0 1px 3px rgba(52, 211, 153, 0.2);",
+    "a": "color: rgb(34, 154, 96); text-decoration: underline; text-decoration-color: rgba(52, 211, 153, 0.5); text-underline-offset: 3px; transition: all 0.2s ease;",
+    "sup": "color: rgb(52, 211, 153); font-size: 0.65em; margin-left: 0.3em; font-style: italic;"
+  },
+  "globalStyles": {
+    "container": "<section style='box-sizing: border-box; margin: 0px; padding: 30px 25px; font-size: 16px; line-height: 1.8; color: rgb(6, 95, 70); font-family: \"方正书宋\", \"Times New Roman\", \"Noto Serif CJK SC\", serif; letter-spacing: 1.2px; background: radial-gradient(ellipse at top, rgba(167, 243, 208, 0.15) 0%, rgba(240, 253, 244, 0.8) 70%); border: 2px solid rgba(52, 211, 153, 0.1); border-radius: 20px; position: relative;'>{{content}}</section>",
+    "references": "<section style='margin-top: 3em; padding: 25px; background: rgba(240, 253, 244, 0.8); border: 1px solid rgba(52, 211, 153, 0.2); border-radius: 15px; font-family: \"方正书宋\", serif; box-shadow: 0 4px 12px rgba(52, 211, 153, 0.1);'><h4 style='margin: 0 0 20px 0; font-size: 16px; font-weight: 600; color: rgb(5, 120, 73); text-align: center; position: relative; padding-bottom: 12px;'><span style='background: rgba(240, 253, 244, 0.8); padding: 0 15px; position: relative; z-index: 1;'>📚 延伸阅读</span><hr style='position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: rgba(52, 211, 153, 0.3); border: none; z-index: 0;' /></h4><div style='font-size: 14px; line-height: 1.7; color: rgb(21, 128, 61); text-align: justify;'>{{links}}</div></section>"
+  },
+  "blocks": {
+    "paragraph": "<p style='font-size: 16px; color: rgb(21, 128, 61); letter-spacing: 0.8px; margin: 0 0 20px 0; line-height: 2; font-family: \"方正书宋\", \"Noto Serif CJK SC\", serif; text-align: justify; font-weight: 400; text-indent: 2em; position: relative;'>{{text}}</p>",
+    "header": {
+      "h1": "<section style='text-align: center; margin: 3em 0 2.5em 0; position: relative;'><h1 style='font-size: 28px; font-weight: 700; line-height: 1.4; color: rgb(5, 120, 73); font-family: \"方正兰亭黑\", \"Noto Sans CJK SC\", sans-serif; margin: 0; letter-spacing: 2px; position: relative; display: inline-block; padding: 20px 40px; background: rgba(240, 253, 244, 0.9); border-radius: 25px; box-shadow: 0 6px 20px rgba(52, 211, 153, 0.2);'><span style='position: absolute; top: -8px; left: -8px; color: rgb(52, 211, 153); font-size: 16px;'>🌿</span><span style='position: absolute; bottom: -8px; right: -8px; color: rgb(52, 211, 153); font-size: 16px;'>🌿</span>{{text}}</h1></section>",
+      "h2": "<section style='margin: 2.5em 0 1.8em 0; position: relative;'><h2 style='font-size: 22px; font-weight: 600; line-height: 1.5; color: rgb(6, 95, 70); font-family: \"方正兰亭黑\", \"Noto Sans CJK SC\", sans-serif; margin: 0; letter-spacing: 1px; padding: 15px 25px 15px 20px; background: linear-gradient(135deg, rgba(167, 243, 208, 0.3) 0%, rgba(240, 253, 244, 0.8) 100%); border-left: 6px solid rgb(52, 211, 153); border-radius: 0 15px 15px 0; position: relative;'><span style='position: absolute; left: -3px; top: 22px; color: rgb(52, 211, 153); font-size: 12px;'>●</span>{{text}}</h2></section>",
+      "h3": "<section style='margin: 2em 0 1.5em 0;'><h3 style='font-size: 19px; font-weight: 600; line-height: 1.5; color: rgb(21, 128, 61); font-family: \"方正兰亭黑\", \"Noto Sans CJK SC\", sans-serif; margin: 0; letter-spacing: 0.8px; text-align: center; position: relative; padding: 12px 0; display: inline-block; width: 100%;'><span style='background: rgba(240, 253, 244, 0.8); padding: 0 20px; position: relative; z-index: 1;'>{{text}}</span><hr style='position: absolute; top: 50%; left: 10%; right: 10%; height: 2px; background: linear-gradient(90deg, transparent 0%, rgba(52, 211, 153, 0.5) 20%, rgba(52, 211, 153, 0.8) 50%, rgba(52, 211, 153, 0.5) 80%, transparent 100%); border: none; z-index: 0; border-radius: 1px;' /></h3></section>"
+    },
+    "quote": {
+      "template": "<section style='border: none; background: rgba(240, 253, 244, 0.6); padding: 25px 30px; border-radius: 15px; box-shadow: inset 0 0 0 1px rgba(52, 211, 153, 0.2), 0 4px 12px rgba(52, 211, 153, 0.1); margin: 2em 0; font-family: \"方正楷体\", \"KaiTi\", serif; position: relative; overflow: hidden;'><span style='position: absolute; top: 10px; left: 15px; color: rgba(52, 211, 153, 0.3); font-size: 48px; line-height: 1; font-family: serif;'>&ldquo;</span><span style='position: absolute; bottom: 10px; right: 15px; color: rgba(52, 211, 153, 0.3); font-size: 48px; line-height: 1; font-family: serif;'>&rdquo;</span><p style='margin: 0 0 15px 0; color: rgb(21, 128, 61); font-style: italic; font-size: 17px; line-height: 2; font-weight: 400; text-align: center; letter-spacing: 1px; position: relative; z-index: 1;'>{{text}}</p>{{?caption}}</section>",
+      "optional": {
+        "caption": "<footer style='text-align: center; font-size: 14px; color: rgb(34, 154, 96); font-style: italic; margin-top: 15px; font-weight: 500; position: relative; z-index: 1;'>— {{value}} —</footer>"
+      }
+    },
+    "delimiter": "<section style='display: flex; justify-content: center; align-items: center; margin: 3em 0; position: relative;'><span style='color: rgb(52, 211, 153); font-size: 20px; margin: 0 15px;'>🍃</span><hr style='flex: 1; height: 1px; background: linear-gradient(90deg, transparent 0%, rgba(52, 211, 153, 0.2) 20%, rgba(52, 211, 153, 0.6) 50%, rgba(52, 211, 153, 0.2) 80%, transparent 100%); border: none;' /><span style='color: rgb(52, 211, 153); font-size: 20px; margin: 0 15px;'>🍂</span></section>",
+    "image": {
+      "template": "<figure style='margin: 2em 0; padding: 0; max-width: 100%; line-height: 0; display: block; text-align: center; position: relative;'><span style='position: absolute; top: -10px; left: 48%; color: rgb(52, 211, 153); font-size: 20px; z-index: 1;'>🌸</span><img src='{{url}}' alt='{{alt}}' style='max-width: 100%; border-radius: 15px; box-shadow: 0 8px 25px rgba(52, 211, 153, 0.25); border: 3px solid rgba(240, 253, 244, 0.8);' />{{?caption}}</figure>",
+      "optional": {
+        "caption": "<figcaption style='margin-top: 15px; font-size: 14px; color: rgb(34, 154, 96); font-style: italic; line-height: 1.6; text-align: center; font-family: \"方正楷体\", \"KaiTi\", serif; letter-spacing: 0.5px;'>{{value}}</figcaption>"
+      }
+    },
+    "code": "<section style='font-family: \"方正兰亭黑\", \"Source Code Pro\", monospace; font-size: 14px; line-height: 1.7; margin: 25px 0; color: rgb(6, 95, 70); background: rgba(240, 253, 244, 0.8); text-align: left; overflow-x: auto; border: 2px dashed rgba(52, 211, 153, 0.3); border-radius: 12px; box-shadow: 0 4px 12px rgba(52, 211, 153, 0.1); position: relative;'><span style='position: absolute; top: -12px; left: 20px; background: rgba(240, 253, 244, 0.9); color: rgb(34, 154, 96); font-size: 12px; padding: 4px 12px; border-radius: 6px; font-weight: 600;'>代码片段</span><pre style='padding: 25px 20px 20px; margin: 0; white-space: pre-wrap; overflow-wrap: break-word;'><code>{{code}}</code></pre></section>",
+    "List": {
+      "ordered": {
+        "wrapper": "<ol style='list-style: none; margin: 20px 0; padding-left: 30px; color: rgb(21, 128, 61); counter-reset: custom-counter;'>{{items}}</ol>",
+        "item": "<li style='padding: 10px 0; line-height: 2; font-size: 16px; position: relative; counter-increment: custom-counter; padding-left: 35px;'><span style='position: absolute; left: 0; top: 10px; background: rgb(52, 211, 153); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600;'>{{counter}}</span>{{content}}</li>"
+      },
+      "unordered": {
+        "wrapper": "<ul style='list-style: none; margin: 20px 0; padding-left: 25px; color: rgb(21, 128, 61);'>{{items}}</ul>",
+        "item": "<li style='padding: 10px 0; line-height: 2; font-size: 16px; position: relative; padding-left: 30px;'><span style='position: absolute; left: 0; top: 16px; color: rgb(52, 211, 153); font-size: 16px;'>🌱</span>{{content}}</li>"
+      },
+      "checklist": {
+        "wrapper": "<ul style='list-style: none; margin: 20px 0; padding-left: 10px;'>{{items}}</ul>",
+        "item": "<li style='padding: 10px 0; line-height: 2; display: flex; align-items: flex-start; font-size: 16px;'><span style='margin-right: 15px; margin-top: 3px; font-size: 20px;'>{{checkbox}}</span><span style='color: rgb(21, 128, 61);'>{{content}}</span></li>",
+        "checked": "🌿",
+        "unchecked": "🌾"
+      }
+    },
+    "raw": "{{html}}"
+  }
+}

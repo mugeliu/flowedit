@@ -6,7 +6,7 @@ import {
   hidePreviewContainer,
   cleanupPreviewContainer,
 } from "./preview.js";
-import { createLogger } from "../../services/simple-logger.js";
+import { createLogger } from "../../../shared/services/logger.js";
 
 // 创建模块日志器
 const logger = createLogger('SidebarToggle');
