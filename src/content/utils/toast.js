@@ -1,11 +1,7 @@
 /**
- * WeUI Toast 组件工具
- * 提供统一的消息提示功能
+ * Toast 消息提示工具 - 简化版本
  */
 
-/**
- * Toast 类型枚举
- */
 export const ToastType = {
   SUCCESS: 'success',
   ERROR: 'error', 
@@ -14,208 +10,118 @@ export const ToastType = {
   INFO: 'info'
 };
 
-/**
- * 当前活动的Toast实例
- */
+// 图标配置
+const TOAST_CONFIG = {
+  [ToastType.SUCCESS]: { icon: '✓', color: '#52c41a' },
+  [ToastType.ERROR]: { icon: '✗', color: '#ff4d4f' },
+  [ToastType.WARNING]: { icon: '⚠', color: '#faad14' },
+  [ToastType.LOADING]: { icon: '⏳', color: '#1677ff', spin: true },
+  [ToastType.INFO]: { icon: 'ℹ', color: '#1677ff' }
+};
+
+// 样式常量
+const STYLES = {
+  container: `position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10001; 
+             background: rgba(0, 0, 0, 0.8); border-radius: 8px; padding: 24px 20px; min-width: 120px; 
+             max-width: 280px; text-align: center; color: #ffffff; font-size: 14px; line-height: 1.4; 
+             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); opacity: 0; transition: opacity 0.3s ease;`,
+  icon: `margin-bottom: 8px; font-size: 24px; line-height: 1;`,
+  text: `word-wrap: break-word; word-break: break-all;`,
+  mask: `position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 10000;`
+};
+
 let currentToast = null;
 
+// 确保旋转动画
+function ensureSpinAnimation() {
+  if (!document.getElementById('toast-spin-animation')) {
+    const style = document.createElement('style');
+    style.id = 'toast-spin-animation';
+    style.textContent = '@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }';
+    document.head.appendChild(style);
+  }
+}
+
+// 创建Toast元素
+function createToast(message, type) {
+  const config = TOAST_CONFIG[type] || TOAST_CONFIG[ToastType.INFO];
+  
+  // 容器
+  const container = document.createElement('div');
+  container.className = 'weui-toast';
+  container.style.cssText = STYLES.container;
+
+  // 图标
+  const icon = document.createElement('div');
+  icon.className = 'weui-toast__icon';
+  icon.style.cssText = STYLES.icon + `color: ${config.color};`;
+  icon.innerHTML = config.icon;
+  
+  if (config.spin) {
+    ensureSpinAnimation();
+    icon.style.animation = 'spin 1s linear infinite';
+  }
+
+  // 文本
+  const text = document.createElement('div');
+  text.className = 'weui-toast__text';
+  text.textContent = message;
+  text.style.cssText = STYLES.text;
+
+  container.appendChild(icon);
+  container.appendChild(text);
+  return container;
+}
+
 /**
- * 显示Toast消息
- * @param {string} message - 消息内容
- * @param {string} type - Toast类型
- * @param {number} duration - 显示时长(毫秒)，loading类型默认不自动关闭
- * @param {Object} options - 额外选项
+ * 显示Toast
  */
 export function showToast(message, type = ToastType.INFO, duration = 3000, options = {}) {
-  // 如果有正在显示的Toast，先移除
-  if (currentToast) {
-    hideToast();
-  }
+  if (currentToast) hideToast();
 
-  // 创建Toast容器
-  const toastContainer = document.createElement('div');
-  toastContainer.className = 'weui-toast';
-  toastContainer.style.cssText = `
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 10001;
-    background: rgba(0, 0, 0, 0.8);
-    border-radius: 8px;
-    padding: 24px 20px;
-    min-width: 120px;
-    max-width: 280px;
-    text-align: center;
-    color: #ffffff;
-    font-size: 14px;
-    line-height: 1.4;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  `;
+  const container = createToast(message, type);
+  let mask = null;
 
-  // 创建图标元素
-  const iconElement = document.createElement('div');
-  iconElement.className = 'weui-toast__icon';
-  iconElement.style.cssText = `
-    margin-bottom: 8px;
-    font-size: 24px;
-    line-height: 1;
-  `;
-
-  // 根据类型设置图标
-  switch (type) {
-    case ToastType.SUCCESS:
-      iconElement.innerHTML = '✓';
-      iconElement.style.color = '#52c41a';
-      break;
-    case ToastType.ERROR:
-      iconElement.innerHTML = '✗';
-      iconElement.style.color = '#ff4d4f';
-      break;
-    case ToastType.WARNING:
-      iconElement.innerHTML = '⚠';
-      iconElement.style.color = '#faad14';
-      break;
-    case ToastType.LOADING:
-      iconElement.innerHTML = '⏳';
-      iconElement.style.color = '#1677ff';
-      // 添加旋转动画
-      iconElement.style.animation = 'spin 1s linear infinite';
-      // 创建旋转动画
-      if (!document.getElementById('toast-spin-animation')) {
-        const style = document.createElement('style');
-        style.id = 'toast-spin-animation';
-        style.textContent = `
-          @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-          }
-        `;
-        document.head.appendChild(style);
-      }
-      break;
-    case ToastType.INFO:
-    default:
-      iconElement.innerHTML = 'ℹ';
-      iconElement.style.color = '#1677ff';
-      break;
-  }
-
-  // 创建文字元素
-  const textElement = document.createElement('div');
-  textElement.className = 'weui-toast__text';
-  textElement.textContent = message;
-  textElement.style.cssText = `
-    word-wrap: break-word;
-    word-break: break-all;
-  `;
-
-  // 组装Toast
-  toastContainer.appendChild(iconElement);
-  toastContainer.appendChild(textElement);
-
-  // 创建遮罩层（可选）
+  // 遮罩
   if (options.mask) {
-    const maskElement = document.createElement('div');
-    maskElement.className = 'weui-mask_transparent';
-    maskElement.style.cssText = `
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      z-index: 10000;
-    `;
-    document.body.appendChild(maskElement);
-    currentToast = { container: toastContainer, mask: maskElement };
-  } else {
-    currentToast = { container: toastContainer, mask: null };
+    mask = document.createElement('div');
+    mask.style.cssText = STYLES.mask;
+    document.body.appendChild(mask);
   }
 
-  // 添加到页面
-  document.body.appendChild(toastContainer);
+  currentToast = { container, mask };
+  document.body.appendChild(container);
 
-  // 显示动画
-  setTimeout(() => {
-    toastContainer.style.opacity = '1';
-  }, 10);
+  // 显示
+  setTimeout(() => container.style.opacity = '1', 10);
 
-  // 自动隐藏（loading类型除外）
+  // 自动隐藏
   if (type !== ToastType.LOADING && duration > 0) {
-    setTimeout(() => {
-      hideToast();
-    }, duration);
+    setTimeout(hideToast, duration);
   }
 
   return currentToast;
 }
 
 /**
- * 隐藏当前Toast
+ * 隐藏Toast
  */
 export function hideToast() {
   if (!currentToast) return;
 
   const { container, mask } = currentToast;
-
-  // 隐藏动画
   container.style.opacity = '0';
   
   setTimeout(() => {
-    // 移除元素
-    if (container.parentNode) {
-      container.parentNode.removeChild(container);
-    }
-    if (mask && mask.parentNode) {
-      mask.parentNode.removeChild(mask);
-    }
+    container.remove();
+    mask?.remove();
     currentToast = null;
   }, 300);
 }
 
-/**
- * 显示成功Toast
- * @param {string} message - 消息内容
- * @param {number} duration - 显示时长
- */
-export function showSuccessToast(message, duration = 2000) {
-  return showToast(message, ToastType.SUCCESS, duration);
-}
-
-/**
- * 显示错误Toast
- * @param {string} message - 消息内容
- * @param {number} duration - 显示时长
- */
-export function showErrorToast(message, duration = 3000) {
-  return showToast(message, ToastType.ERROR, duration);
-}
-
-/**
- * 显示警告Toast
- * @param {string} message - 消息内容
- * @param {number} duration - 显示时长
- */
-export function showWarningToast(message, duration = 3000) {
-  return showToast(message, ToastType.WARNING, duration);
-}
-
-/**
- * 显示加载Toast
- * @param {string} message - 消息内容
- * @param {Object} options - 选项
- */
-export function showLoadingToast(message = '加载中...', options = {}) {
-  return showToast(message, ToastType.LOADING, 0, { mask: true, ...options });
-}
-
-/**
- * 显示信息Toast
- * @param {string} message - 消息内容
- * @param {number} duration - 显示时长
- */
-export function showInfoToast(message, duration = 3000) {
-  return showToast(message, ToastType.INFO, duration);
-}
+// 便捷方法
+export const showSuccessToast = (message, duration = 2000) => showToast(message, ToastType.SUCCESS, duration);
+export const showErrorToast = (message, duration = 3000) => showToast(message, ToastType.ERROR, duration);
+export const showWarningToast = (message, duration = 3000) => showToast(message, ToastType.WARNING, duration);
+export const showInfoToast = (message, duration = 3000) => showToast(message, ToastType.INFO, duration);
+export const showLoadingToast = (message = '加载中...', options = {}) => showToast(message, ToastType.LOADING, 0, { mask: true, ...options });

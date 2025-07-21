@@ -1,5 +1,4 @@
 // 智能编辑器功能管理器
-import { selectorConfig } from "../../config/index.js";
 import {
   saveToOriginalEditor,
   loadAndInitializeEditor,
@@ -63,7 +62,7 @@ export async function activateSmartEditor(initialData = null) {
     logger.info("创建新文章");
   }
 
-  const ueditor = safeQuerySelector(selectorConfig.editorContent);
+  const ueditor = safeQuerySelector('div[contenteditable="true"].ProseMirror');
   if (!ueditor) {
     showErrorToast("找不到编辑器容器");
     return;
@@ -75,6 +74,7 @@ export async function activateSmartEditor(initialData = null) {
       callbacks: {
         onSave: saveContent,
         onCancel: deactivateSmartEditor,
+        onInsert: insertContent,
       },
     });
 
@@ -151,6 +151,50 @@ export function cleanupSmartEditor() {
 }
 
 /**
+ * 插入编辑器内容到微信编辑器
+ */
+async function insertContent() {
+  if (!editor) {
+    showErrorToast("编辑器未初始化");
+    return;
+  }
+
+  try {
+    const outputData = await editor.save();
+    
+    // 检查是否有内容
+    if (!outputData.blocks || outputData.blocks.length === 0) {
+      showErrorToast("没有内容可以插入");
+      return;
+    }
+
+    // 使用现有的 saveToOriginalEditor 函数，但改为插入API
+    const success = await saveToOriginalEditor(outputData, {
+      apiName: "mp_editor_insert_html",
+      apiParam: {
+        isSelect: false
+      },
+      contentField: "html",
+    });
+
+    if (success) {
+      logger.info("内容插入成功");
+      showSuccessToast("内容已插入到微信编辑器");
+      
+      // 插入成功后关闭编辑器，回到原始页面
+      deactivateSmartEditor();
+    } else {
+      logger.error("内容插入失败");
+      showErrorToast("插入内容失败");
+    }
+    
+  } catch (error) {
+    logger.error("插入内容时发生错误:", error);
+    showErrorToast("插入内容失败");
+  }
+}
+
+/**
  * 保存编辑器内容
  * @param {Object} options 保存选项
  */
@@ -187,90 +231,43 @@ async function saveContent(options = {}) {
 }
 
 /**
- * 保存到本地存储
+ * 保存编辑器内容到本地存储（使用共享的storage服务）
  * @param {Object} editorData - EditorJS数据
  */
 async function saveToLocalStorage(editorData) {
   try {
     logger.info("正在保存文章到本地存储...");
     
-    if (currentEditingArticleId) {
-      // 更新现有文章
-      logger.info("更新现有文章:", currentEditingArticleId);
+    const result = await storage.saveOrUpdateArticle(editorData, {
+      articleId: currentEditingArticleId,
+      status: 'published'
+    });
+    
+    if (result.success) {
+      const action = currentEditingArticleId ? '更新' : '保存';
+      const articleTitle = result.article.title;
       
-      const result = await storage.updateArticle(currentEditingArticleId, editorData, {
-        status: 'published' // 标记为已发布
-      });
+      logger.info(`文章已${action}: ${articleTitle} (${result.articleId || currentEditingArticleId})`);
+      showSuccessToast(`文章《${articleTitle}》已${action}`);
       
-      if (result.success) {
-        logger.info(`文章已更新: ${result.article.title} (${currentEditingArticleId})`);
-        showSuccessToast(`文章《${result.article.title}》已更新`);
-      } else {
-        logger.error("更新文章失败:", result);
-        // 根据错误类型显示不同的提示
-        if (result.error === 'QUOTA_EXCEEDED') {
-          showErrorToast(result.message || "存储空间不足，请清理部分旧文章后重试");
-        } else {
-          showErrorToast(result.message || "更新文章失败");
-        }
+      // 更新当前编辑的文章ID，以便后续保存时更新而不是新建
+      if (!currentEditingArticleId && result.articleId) {
+        currentEditingArticleId = result.articleId;
       }
     } else {
-      // 创建新文章
-      logger.info("创建新文章");
+      logger.error("保存文章失败:", result);
       
-      // 生成文章标题（从内容中提取或使用默认标题）
-      const title = extractTitleFromContent(editorData) || `文章_${new Date().toLocaleDateString()}`;
-      
-      const result = await storage.saveArticle(editorData, {
-        title: title,
-        status: 'published' // 标记为已发布
-      });
-      
-      if (result.success) {
-        logger.info(`新文章已保存: ${result.article.title} (${result.articleId})`);
-        showSuccessToast(`文章《${result.article.title}》已保存`);
-        
-        // 更新当前编辑的文章ID，以便后续保存时更新而不是新建
-        currentEditingArticleId = result.articleId;
+      // 根据错误类型显示不同的提示
+      if (result.error === 'QUOTA_EXCEEDED') {
+        showErrorToast(result.message || "存储空间不足，请清理部分旧文章后重试");
       } else {
-        logger.error("保存新文章失败:", result);
-        // 根据错误类型显示不同的提示
-        if (result.error === 'QUOTA_EXCEEDED') {
-          showErrorToast(result.message || "存储空间不足，请清理部分旧文章后重试");
-        } else {
-          showErrorToast(result.message || "保存文章失败");
-        }
+        showErrorToast(result.message || "保存文章失败");
       }
     }
   } catch (error) {
     logger.error("保存到本地存储时发生错误:", error);
     showErrorToast("保存到本地存储时发生错误");
   }
-}
-
-/**
- * 从EditorJS内容中提取标题
- * @param {Object} editorData - EditorJS数据
- * @returns {string|null} 提取的标题
- */
-function extractTitleFromContent(editorData) {
-  if (!editorData.blocks || editorData.blocks.length === 0) {
-    return null;
-  }
-  
-  // 查找第一个header或paragraph块作为标题
-  const titleBlock = editorData.blocks.find(block => 
-    ['header', 'paragraph'].includes(block.type) && 
-    block.data?.text?.trim()
-  );
-  
-  if (titleBlock) {
-    // 移除HTML标签并截断
-    const title = titleBlock.data.text.replace(/<[^>]*>/g, '').trim();
-    return title.length > 50 ? title.substring(0, 50) + '...' : title;
-  }
-  
-  return null;
 }
 
 /**

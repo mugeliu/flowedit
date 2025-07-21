@@ -1,5 +1,4 @@
 import { createElement } from "../../utils/dom.js";
-import { selectorConfig } from "../../config/index.js";
 import { activateSmartEditor } from "./manager.js";
 import { createLogger } from "../../../shared/services/logger.js";
 
@@ -36,10 +35,10 @@ export function createSmartButton() {
   btn.addEventListener("click", handleSmartButtonClick);
 
   // 查找工具栏容器作为插入目标
-  const toolbarContainer = document.getElementById(selectorConfig.toolbar);
+  const toolbarContainer = document.getElementById("js_toolbar_0");
 
   if (!toolbarContainer) {
-    const error = `工具栏容器未找到: ${selectorConfig.toolbar}`;
+    const error = `工具栏容器未找到: js_toolbar_0`;
     logger.error("[SmartButton]", error);
     throw new Error(error);
   }

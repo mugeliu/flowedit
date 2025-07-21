@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react'
 import { Button } from '../shared/components/ui/button'
 import { Card, CardContent } from '../shared/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../shared/components/ui/select'
+import { Toaster } from '../shared/components/ui/sonner'
 import { Settings, Palette } from 'lucide-react'
+import { toast } from 'sonner'
 import { TemplateManager } from '../shared/services/template-manager.js'
 import { createLogger } from '../shared/services/logger.js'
 
@@ -68,8 +70,10 @@ function App() {
       
       const template = localTemplates.find(t => t.id === newTemplateId)
       logger.info(`模板切换成功: ${template?.name || newTemplateId}`)
+      toast.success(`模板已切换至: ${template?.name || newTemplateId}`)
     } catch (error) {
       logger.error('模板切换失败:', error)
+      toast.error('模板切换失败')
     }
   }
 
@@ -81,6 +85,7 @@ function App() {
 
   return (
     <div className="p-3 w-64 bg-background">
+      <Toaster />
       <Card className="border-0 shadow-none">
         <CardContent className="p-4 space-y-4">
           {/* 二维码区域 */}

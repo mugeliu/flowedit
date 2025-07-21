@@ -3,6 +3,7 @@ import { Button } from '../../shared/components/ui/button'
 import { Save, Download, Eye, Upload } from 'lucide-react'
 import { SidebarTrigger } from '../../shared/components/ui/sidebar'
 import { createLogger } from '../../shared/services/logger.js'
+import { storage } from '../../shared/services/storage/index.js'
 
 const logger = createLogger('EditorPageSettings')
 
@@ -26,6 +27,7 @@ export function EditorPageSettings() {
             holder: editorRef.current,
             autofocus: true,
             placeholder: '开始编写内容...',
+            logLevel: 'WARN',
             tools: {
               paragraph: {
                 class: Paragraph,
@@ -52,6 +54,7 @@ export function EditorPageSettings() {
                 inlineToolbar: true,
                 config: {
                   defaultStyle: 'unordered',
+                  maxLevel: 5,
                 },
               },
               delimiter: { 
@@ -78,6 +81,7 @@ export function EditorPageSettings() {
                   placeholder: '输入HTML代码...'
                 }
               }
+              // 注意：options页面不包含image工具，因为不需要微信上传功能
             },
             onChange: (api, event) => {
               logger.debug('内容已更改', event)
@@ -122,16 +126,52 @@ export function EditorPageSettings() {
   const handleSave = async () => {
     try {
       if (editorInstance.current && editorInstance.current.save) {
-        const data = await editorInstance.current.save()
-        logger.info('保存文章数据:', data)
-        // 这里可以调用你的storage服务保存数据
-        // await storage.saveArticle(data, { title: '新文章', timestamp: Date.now() })
+        const editorData = await editorInstance.current.save()
+        logger.info('开始保存文章数据:', editorData)
+        
+        // 使用共享的storage服务保存文章
+        const result = await storage.saveOrUpdateArticle(editorData, {
+          status: 'draft' // Options页面保存为草稿
+        })
+        
+        if (result.success) {
+          logger.info(`文章已保存: ${result.article.title}`)
+          // 这里可以添加成功提示UI，比如toast
+          alert(`草稿《${result.article.title}》已保存`) // 临时使用alert，后续可改为更好的UI
+        } else {
+          logger.error('保存失败:', result)
+          alert('保存失败: ' + (result.message || '未知错误'))
+        }
       } else {
         logger.info('使用简化模式保存')
-        // fallback保存逻辑
+        // fallback保存逻辑 - 获取contenteditable内容
+        const titleElement = document.querySelector('[contenteditable="true"]') as HTMLElement
+        if (titleElement) {
+          const content = titleElement.innerHTML
+          // 简化保存逻辑，将HTML内容转换为简单的EditorJS格式
+          const simpleEditorData = {
+            blocks: [{
+              type: 'paragraph',
+              data: {
+                text: content || '空内容'
+              }
+            }]
+          }
+          
+          const result = await storage.saveOrUpdateArticle(simpleEditorData, {
+            status: 'draft'
+          })
+          
+          if (result.success) {
+            alert(`草稿《${result.article.title}》已保存`)
+          } else {
+            alert('保存失败: ' + (result.message || '未知错误'))
+          }
+        }
       }
     } catch (error) {
       logger.error('保存失败:', error)
+      alert('保存时发生错误: ' + error.message)
     }
   }
 

@@ -1,5 +1,4 @@
 // 侧边栏切换开关组件
-import { selectorConfig } from "../../config/index.js";
 import { createElement, hideElement, showElement } from "../../utils/dom.js";
 import {
   showPreviewContainer,
@@ -56,10 +55,10 @@ export function createSidebarToggle() {
   switchInput.addEventListener("change", handleSidebarToggle);
 
   // 查找工具栏容器作为插入目标
-  const toolbarContainer = document.getElementById(selectorConfig.toolbar);
+  const toolbarContainer = document.getElementById("js_toolbar_0");
 
   if (!toolbarContainer) {
-    const error = `工具栏容器未找到: ${selectorConfig.toolbar}`;
+    const error = `工具栏容器未找到: js_toolbar_0`;
     logger.error("[SidebarToggle]", error);
     throw new Error(error);
   }
@@ -75,7 +74,7 @@ export function createSidebarToggle() {
     // 清理预览容器
     cleanupPreviewContainer();
     // 恢复侧边栏显示状态，确保重新初始化时处于默认状态
-    const sidebarElement = document.getElementById(selectorConfig.sidebar);
+    const sidebarElement = document.getElementById("js_mp_sidemenu");
     if (sidebarElement) {
       showElement(sidebarElement);
     }
@@ -93,7 +92,7 @@ export function createSidebarToggle() {
  */
 export async function handleSidebarToggle(event) {
   // 获取侧边栏元素
-  const sidebar = document.getElementById(selectorConfig.sidebar);
+  const sidebar = document.getElementById("js_mp_sidemenu");
 
   if (sidebar && event && event.currentTarget) {
     const switchInput = event.currentTarget;

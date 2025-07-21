@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { SidebarProvider, SidebarInset, SidebarTrigger } from '../shared/components/ui/sidebar'
+import { Toaster } from '../shared/components/ui/sonner'
 import { AppSidebar } from './components/app-sidebar'
 import { OverviewSettings } from './components/overview-settings'
 import { EditorPageSettings } from './components/editor-page-settings'
@@ -56,6 +57,7 @@ function App() {
 
   return (
     <SidebarProvider>
+      <Toaster />
       <div className="flex h-screen w-full">
         <AppSidebar 
           activeSection={activeSection} 

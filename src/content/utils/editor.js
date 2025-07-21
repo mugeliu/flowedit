@@ -1,35 +1,152 @@
 // 编辑器相关工具函数
-import { editorConfig } from "../config/index.js";
 import { convertToHtml } from "../../shared/services/parsers/index.js";
 import { renderPreviewContent } from "../features/sidebar/preview.js";
 import { callEditorAPI } from "../services/editor-bridge.js";
 import { createLogger } from "../../shared/services/logger.js";
+import { createWeChatImageUploader } from "../tools/custom-wechat-image-tool.js";
 
 // 创建模块日志器
 const logger = createLogger('EditorUtils');
 
-// 全局编辑器状态管理
-let isEditorActive = false;
+// ===========================================
+// 内联的EditorJS配置
+// ===========================================
 
 /**
- * 初始化 DragDrop 插件
- * @param {Object} editorInstance - EditorJS 实例
+ * 标题工具图标资源
  */
-function initializeDragDrop(editorInstance) {
-  // 检查 DragDrop 插件是否可用
-  const DragDrop = window.EditorJS?.DragDrop;
-  
-  if (DragDrop) {
+const EDITOR_ICONS = {
+  h1: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M6 7L6 12M6 17L6 12M6 12L12 12M12 7V12M12 17L12 12"/>
+    <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M19 17V10.2135C19 10.1287 18.9011 10.0824 18.836 10.1367L16 12.5"/>
+  </svg>`,
+  h2: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M6 7L6 12M6 17L6 12M6 12L12 12M12 7V12M12 17L12 12"/>
+    <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M16 11C16 10 19 9.5 19 12C19 13.9771 16.0684 13.9997 16.0012 16.8981C15.9999 16.9533 16.0448 17 16.1 17L19.3 17"/>
+  </svg>`,
+  h3: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M6 7L6 12M6 17L6 12M6 12L12 12M12 7V12M12 17L12 12"/>
+    <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M16 11C16 10.5 16.8323 10 17.6 10C18.3677 10 19.5 10.311 19.5 11.5C19.5 12.5315 18.7474 12.9022 18.548 12.9823C18.5378 12.9864 18.5395 13.0047 18.5503 13.0063C18.8115 13.0456 20 13.3065 20 14.8C20 16 19.5 17 17.8 17C17.8 17 16 17 16 16.3"/>
+  </svg>`
+};
+
+/**
+ * EditorJS配置（优化版本 - 直接引用工具类）
+ */
+const createEditorConfiguration = () => ({
+  // 基础设置
+  placeholder: "开始编写内容...",
+  autofocus: true,
+  minHeight: 500,
+  logLevel: "WARN",
+
+  // 工具配置 - 直接引用工具类
+  tools: {
+    paragraph: {
+      class: window.EditorJS.Paragraph,
+      inlineToolbar: true,
+    },
+    header: {
+      class: window.EditorJS.Header,
+      config: {
+        levels: [1, 2, 3],
+        defaultLevel: 1,
+        placeholder: "请输入标题",
+      },
+      toolbox: [
+        { title: "标题 1", icon: EDITOR_ICONS.h1, data: { level: 1 } },
+        { title: "标题 2", icon: EDITOR_ICONS.h2, data: { level: 2 } },
+        { title: "标题 3", icon: EDITOR_ICONS.h3, data: { level: 3 } },
+      ],
+    },
+    quote: {
+      class: window.EditorJS.Quote,
+      inlineToolbar: true,
+      config: {
+        quotePlaceholder: "输入引用内容",
+        captionPlaceholder: "引用来源",
+      },
+    },
+    image: {
+      class: window.EditorJS.ImageTool,
+      config: {
+        types: "image/gif,image/jpeg,image/jpg,image/png,image/svg,image/webp",
+        captionPlaceholder: "图片描述",
+        buttonContent: "选择图片或素材库插入",
+        features: {
+          caption: true,
+          withBorder: true,
+          withBackground: true,
+          stretched: true,
+        },
+        uploader: createWeChatImageUploader(),
+      },
+    },
+    list: {
+      class: window.EditorJS.List,
+      inlineToolbar: true,
+      config: {
+        defaultStyle: "unordered",
+        maxLevel: 5,
+      },
+    },
+    delimiter: { class: window.EditorJS.Delimiter },
+    raw: { class: window.EditorJS.Raw },
+    code: { class: window.EditorJS.Code },
+    marker: { class: window.EditorJS.Marker },
+    inlineCode: { class: window.EditorJS.InlineCode },
+    underline: { class: window.EditorJS.Underline },
+  },
+});
+
+/**
+ * 创建通用的onChange处理器
+ * @returns {Function} onChange处理器函数
+ */
+function createEditorOnChangeHandler() {
+  return async (editorAPI, changeEvent) => {
     try {
-      new DragDrop(editorInstance);
-      logger.debug("DragDrop插件初始化成功");
+      const savedEditorData = await editorAPI.saver.save();
+      const currentStyleTemplate = await loadStyleTemplate();
+      const htmlContentForPreview = convertToHtml(savedEditorData, currentStyleTemplate);
+      await renderPreviewContent(htmlContentForPreview);
     } catch (error) {
-      logger.warn("DragDrop插件初始化失败:", error);
+      logger.error("预览内容生成失败", error);
+      await renderPreviewContent("");
     }
-  } else {
-    logger.debug("DragDrop插件不可用");
-  }
+  };
 }
+
+
+/**
+ * 标准化初始数据格式
+ * @param {Object|null} rawInitialData - 原始初始数据
+ * @returns {Object|null} 标准化的EditorJS数据格式
+ */
+function normalizeInitialEditorData(rawInitialData) {
+  if (!rawInitialData) return null;
+  
+  // 检查各种可能的数据结构并返回标准格式
+  if (rawInitialData.content?.blocks) {
+    // 文章存储格式：{ content: { blocks: [...] } }
+    return rawInitialData.content;
+  }
+  
+  if (rawInitialData.editorData?.blocks) {
+    // 直接传入的EditorJS格式：{ editorData: { blocks: [...] } }
+    return rawInitialData.editorData;
+  }
+  
+  if (rawInitialData.blocks) {
+    // 直接EditorJS格式：{ blocks: [...] }
+    return rawInitialData;
+  }
+  
+  return null;
+}
+
+// 全局编辑器状态管理
+let isEditorActive = false;
 
 /**
  * 创建通用的编辑器 onReady 处理器
@@ -128,210 +245,128 @@ export async function loadStyleTemplate() {
 }
 
 /**
- * 将EditorJS数据保存到原编辑器
- * @param {Array} blocks - EditorJS块数据
- * @param {Object} options - 保存选项
- * @param {string} options.targetSelector - 目标编辑器选择器
- * @param {boolean} options.append - 是否追加内容
- * @param {string} options.insertPosition - 插入位置 ('start', 'end', 'cursor')
- * @param {Object} options.styleOptions - 样式选项
- * @param {boolean} options.usePreloadedStyles - 是否使用预加载的样式
- * @param {string} options.apiName - API名称
- * @param {Object} options.apiParam - API参数对象，会将htmlContent注入到指定字段
- * @param {string} options.contentField - HTML内容在apiParam中的字段名，默认为 'content'
+ * 将EditorJS数据保存到微信编辑器
+ * @param {Object} editorDataToSave - EditorJS数据对象
+ * @param {Object} saveOptions - 保存选项
+ * @param {string} saveOptions.apiName - API名称
+ * @param {Object} saveOptions.apiParam - API参数对象
+ * @param {string} saveOptions.contentField - HTML内容字段名，默认为'content'
  * @returns {Promise<boolean>} 保存是否成功
  */
-export async function saveToOriginalEditor(editorData, options = {}) {
+export async function saveToOriginalEditor(editorDataToSave, saveOptions = {}) {
   try {
-    // 加载样式模板
-    const styleTemplate = await loadStyleTemplate();
+    // 加载当前样式模板
+    const currentStyleTemplate = await loadStyleTemplate();
 
-    // 使用HTML解析器生成HTML内容
-    const htmlContent = convertToHtml(editorData, styleTemplate);
+    // 生成HTML内容
+    const generatedHTMLContent = convertToHtml(editorDataToSave, currentStyleTemplate);
 
-    // 从options中获取API配置
-    const apiName = options.apiName || "mp_editor_set_content";
-    const contentField = options.contentField || "content";
+    // 提取API配置
+    const weChatAPIName = saveOptions.apiName || "mp_editor_set_content";
+    const htmlContentFieldName = saveOptions.contentField || "content";
 
-    // 构建API参数，将HTML内容注入到指定字段
-    const apiParam = {
-      ...options.apiParam,
-      [contentField]: htmlContent,
+    // 构建API调用参数
+    const apiCallParameters = {
+      ...saveOptions.apiParam,
+      [htmlContentFieldName]: generatedHTMLContent,
     };
 
-    // 使用编辑器桥接服务调用API
+    // 调用微信编辑器API
     return new Promise((resolve) => {
-      callEditorAPI(apiName, apiParam, (success, res) => {
-        if (success) {
-          logger.debug(`API ${apiName} 调用成功`, res);
+      callEditorAPI(weChatAPIName, apiCallParameters, (isSuccessful, apiResponse) => {
+        if (isSuccessful) {
+          logger.debug(`API ${weChatAPIName} 调用成功`, apiResponse);
           resolve(true);
         } else {
-          logger.error(`API ${apiName} 调用失败`, res);
+          logger.error(`API ${weChatAPIName} 调用失败`, apiResponse);
           resolve(false);
         }
       });
     });
   } catch (error) {
-    logger.error("保存到原编辑器失败", error);
+    logger.error("保存到微信编辑器失败", error);
     return false;
   }
 }
 
 /**
- * 加载并初始化编辑器
- * @param {string} container 编辑器容器ID或元素
+ * 统一的编辑器初始化函数（合并了两个原有函数）
+ * @param {string} containerElementId - 编辑器容器ID
+ * @param {Object|null} initialDataForEditor - 初始数据（可选）
  * @returns {Promise<Object>} EditorJS实例
  */
-export async function loadAndInitializeEditor(container) {
-  const holderElement = document.getElementById(container);
-  if (!holderElement) {
-    throw new Error(`${container}元素不存在，请检查DOM结构`);
+export async function initializeEditor(containerElementId, initialDataForEditor = null) {
+  const containerElement = document.getElementById(containerElementId);
+  if (!containerElement) {
+    throw new Error(`容器元素 '${containerElementId}' 不存在，请检查DOM结构`);
   }
 
-  // 解析配置中的工具类引用
-  const resolvedTools = {};
-  for (const [toolName, toolConfig] of Object.entries(editorConfig.tools)) {
-    if (typeof toolConfig.class === "string") {
-      // 将字符串类名解析为实际的类引用
-      resolvedTools[toolName] = {
-        ...toolConfig,
-        class: EditorJS[toolConfig.class],
-      };
-    } else {
-      resolvedTools[toolName] = toolConfig;
-    }
+  // 获取基础配置
+  const baseEditorConfig = createEditorConfiguration();
+  
+  // 构建最终配置
+  const finalEditorConfiguration = {
+    holder: containerElement,
+    ...baseEditorConfig,
+    onChange: createEditorOnChangeHandler(),
+    // onReady 将在创建实例后设置
+  };
+
+  // 如果提供了初始数据，则添加到配置中
+  const normalizedInitialData = normalizeInitialEditorData(initialDataForEditor);
+  if (normalizedInitialData?.blocks) {
+    finalEditorConfiguration.data = normalizedInitialData;
+    logger.debug("加载初始数据到编辑器", normalizedInitialData);
   }
 
-  const editorInstance = new EditorJS({
-    holder: holderElement,
-    placeholder: editorConfig.placeholder,
-    autofocus: editorConfig.autofocus,
-    minHeight: editorConfig.minHeight,
-    logLevel: editorConfig.logLevel,
-    tools: resolvedTools,
-    onChange: async (api, event) => {
+  // 创建编辑器实例
+  const editorInstance = new EditorJS(finalEditorConfiguration);
+
+  // 按照官方文档的方法，在创建实例后设置 onReady
+  editorInstance.isReady.then(() => {
+    // 按照官方文档的标准用法初始化DragDrop
+    if (window.EditorJS?.DragDrop) {
       try {
-        const output = await api.saver.save();
-        // 加载样式模板并生成HTML预览
-        const styleTemplate = await loadStyleTemplate();
-        const htmlContent = convertToHtml(output, styleTemplate);
-        await renderPreviewContent(htmlContent);
+        new window.EditorJS.DragDrop(editorInstance);
+        logger.debug("DragDrop插件初始化成功");
       } catch (error) {
-        logger.error("预览内容生成失败", error);
-        await renderPreviewContent("");
+        logger.debug("DragDrop插件初始化失败:", error?.message || error);
       }
-    },
-    onReady: () => {
-      // 在 onReady 中初始化 DragDrop，类似仓库示例
-      initializeDragDrop(editorInstance);
-      // 执行其他 onReady 逻辑
-      createOnReadyHandler(holderElement).call(editorInstance);
-    },
+    }
+    
+    // 执行其他onReady逻辑（滚动处理等）
+    createOnReadyHandler(containerElement).call(editorInstance);
+  }).catch((error) => {
+    logger.error("编辑器初始化失败:", error);
   });
 
   return editorInstance;
 }
 
-/**
- * 加载并初始化编辑器（支持初始数据）
- * @param {string} container 编辑器容器ID或元素
- * @param {Object} initialData 初始EditorJS数据
- * @returns {Promise<Object>} EditorJS实例
- */
-export async function loadAndInitializeEditorWithData(container, initialData = null) {
-  const holderElement = document.getElementById(container);
-  if (!holderElement) {
-    throw new Error(`${container}元素不存在，请检查DOM结构`);
-  }
-
-  // 解析配置中的工具类引用
-  const resolvedTools = {};
-  for (const [toolName, toolConfig] of Object.entries(editorConfig.tools)) {
-    if (typeof toolConfig.class === "string") {
-      // 将字符串类名解析为实际的类引用
-      resolvedTools[toolName] = {
-        ...toolConfig,
-        class: EditorJS[toolConfig.class],
-      };
-    } else {
-      resolvedTools[toolName] = toolConfig;
-    }
-  }
-
-  const editorOptions = {
-    holder: holderElement,
-    placeholder: editorConfig.placeholder,
-    autofocus: editorConfig.autofocus,
-    minHeight: editorConfig.minHeight,
-    logLevel: editorConfig.logLevel,
-    tools: resolvedTools,
-    onChange: async (api, event) => {
-      try {
-        const output = await api.saver.save();
-        // 加载样式模板并生成HTML预览
-        const styleTemplate = await loadStyleTemplate();
-        const htmlContent = convertToHtml(output, styleTemplate);
-        await renderPreviewContent(htmlContent);
-      } catch (error) {
-        logger.error("预览内容生成失败", error);
-        await renderPreviewContent("");
-      }
-    },
-    onReady: () => {
-      // 在 onReady 中初始化 DragDrop，类似仓库示例
-      initializeDragDrop(editorInstance);
-      // 执行其他 onReady 逻辑
-      createOnReadyHandler(holderElement).call(editorInstance);
-    },
-  };
-
-  // 如果有初始数据，添加到配置中
-  if (initialData) {
-    // 检查不同的数据结构
-    let editorData = null;
-    
-    if (initialData.content && initialData.content.blocks) {
-      // 文章存储格式：{ content: { blocks: [...] } }
-      editorData = initialData.content;
-    } else if (initialData.editorData && initialData.editorData.blocks) {
-      // 直接传入的EditorJS格式：{ editorData: { blocks: [...] } }
-      editorData = initialData.editorData;
-    } else if (initialData.blocks) {
-      // 直接EditorJS格式：{ blocks: [...] }
-      editorData = initialData;
-    }
-    
-    if (editorData && editorData.blocks) {
-      editorOptions.data = editorData;
-      logger.debug("加载初始数据到编辑器", editorData);
-    }
-  }
-
-  const editorInstance = new EditorJS(editorOptions);
-
-  return editorInstance;
-}
+// 为了保持向后兼容，提供别名函数
+export const loadAndInitializeEditor = initializeEditor;
+export const loadAndInitializeEditorWithData = initializeEditor;
 
 /**
- * 销毁编辑器实例
- * @param {Object} editor EditorJS实例
+ * 销毁编辑器实例并清理资源
+ * @param {Object} editorInstanceToDestroy - EditorJS实例
  */
-export function destroyEditor(editor) {
-  if (editor) {
+export function destroyEditor(editorInstanceToDestroy) {
+  if (editorInstanceToDestroy) {
     try {
-      editor.destroy();
+      editorInstanceToDestroy.destroy();
     } catch (error) {
-      logger.warn("编辑器销毁错误", error);
+      logger.warn("编辑器销毁时发生错误", error);
     }
   }
 }
 
 /**
- * 设置编辑器激活状态
- * @param {boolean} active 是否激活
+ * 设置智能编辑器的激活状态
+ * @param {boolean} isActive - 是否激活
  */
-export function setEditorActiveState(active) {
-  isEditorActive = active;
+export function setEditorActiveState(isActive) {
+  isEditorActive = isActive;
 }
 
 /**

@@ -3,20 +3,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../..
 import { Button } from '../../shared/components/ui/button'
 import { History, Search, Filter, Eye, Edit, Trash2, Download, FileText, Clock, RefreshCw } from 'lucide-react'
 import { createLogger } from '../../shared/services/logger.js'
+import { storage } from '../../shared/services/storage/index.js'
 // import { ArticlePreview } from './article-preview'
 
 const logger = createLogger('HistorySettings')
-
-// Import storage service  
-const importStorage = async () => {
-  try {
-    const module = await import('../../shared/services/storage/index.js')
-    return module.storage
-  } catch (error) {
-    logger.error('Failed to import storage service:', error)
-    return null
-  }
-}
 
 interface Article {
   id: string
@@ -42,12 +32,11 @@ export function HistorySettings() {
   // Initialize storage service
   useEffect(() => {
     const initStorage = async () => {
-      const storageService = await importStorage()
-      if (storageService) {
-        setStorage(storageService)
-        await loadArticles(storageService)
-      } else {
-        logger.error('Failed to initialize storage service')
+      try {
+        setStorage(storage)
+        await loadArticles(storage)
+      } catch (error) {
+        logger.error('Failed to initialize storage service:', error)
         setLoading(false)
       }
     }

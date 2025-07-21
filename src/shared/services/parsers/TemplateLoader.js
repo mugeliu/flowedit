@@ -65,7 +65,7 @@ class TemplateLoader {
 
       this.template = template;
       this.isLoaded = true;
-      logger.info(`模板加载成功: ${template.theme || 'unknown'}`);
+      logger.info(`模板加载成功: ${template.id || template.name || 'unknown'}`);
       return true;
     } catch (error) {
       this.template = null;

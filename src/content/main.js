@@ -13,12 +13,11 @@ import {
   initializeEditorBridge,
   callEditorAPI,
 } from "./services/editor-bridge.js";
-import { createLogger } from '../shared/services/logger.js';
-import { DEBUG_MODE } from '../shared/config/debug-config.js';
-import { initializeDefaultTemplate } from './services/template-initializer.js';
+import { createLogger } from "../shared/services/logger.js";
+import { initializeDefaultTemplate } from "./services/template-initializer.js";
 
 // 创建模块日志器
-const logger = createLogger('Main');
+const logger = createLogger("Main");
 
 // 注册功能模块插件
 pluginRegistry.register("smart-editor", smartEditorPlugin);
@@ -43,7 +42,9 @@ async function initializePluginFeatures() {
             // 初始化所有功能模块
             const initResults = await pluginRegistry.initializeAll();
             if (initResults.failed.length > 0) {
-              logger.warn(`初始化失败的功能模块: ${initResults.failed.join(", ")}`);
+              logger.warn(
+                `初始化失败的功能模块: ${initResults.failed.join(", ")}`
+              );
             }
             // 启动DOM监听服务（监听插件组件是否被页面更新移除）
             initializeDOMWatcher();
@@ -51,12 +52,12 @@ async function initializePluginFeatures() {
             logger.error("编辑器未就绪，跳过插件初始化", { success, res });
           }
         } catch (error) {
-          logger.error('插件初始化失败:', error);
+          logger.error("插件初始化失败:", error);
         }
       });
     });
   } catch (error) {
-    logger.error('初始化插件功能模块失败:', error);
+    logger.error("初始化插件功能模块失败:", error);
   }
 }
 
@@ -66,12 +67,12 @@ async function initializePluginFeatures() {
 async function main() {
   // 1. 首先初始化默认模板
   await initializeDefaultTemplate();
-  
+
   // 2. 初始化应用服务（用户配置、远程样式系统等 - 预留后期实现）
   try {
     await initializeAppServices();
   } catch (error) {
-    logger.error('初始化插件功能模块失败:', error);
+    logger.error("初始化插件功能模块失败:", error);
     logger.warn("应用服务初始化失败，使用默认配置继续执行");
     // 继续执行，使用默认配置
   }
@@ -80,7 +81,7 @@ async function main() {
   try {
     await initializePluginFeatures();
   } catch (error) {
-    logger.error('初始化插件功能模块失败:', error);
+    logger.error("初始化插件功能模块失败:", error);
   }
 }
 
@@ -89,38 +90,7 @@ window.addEventListener("beforeunload", () => {
   cleanupDOMWatcher();
 });
 
-// 设置全局错误监听（仅在开发/调试模式下启用）
-// 检查两种调试模式：配置文件设置 或 运行时localStorage设置
-const isDebugMode = DEBUG_MODE || localStorage.getItem('flowedit_debug') === 'true';
-
-if (isDebugMode) {
-  logger.info('调试模式：已启用全局错误监听');
-  
-  window.addEventListener('unhandledrejection', (event) => {
-    // Promise错误通常没有filename，但我们可以检查错误堆栈
-    const errorStack = event.reason?.stack || '';
-    if (errorStack.includes('chrome-extension://') || errorStack.includes('flowedit')) {
-      logger.error('未处理的Promise错误:', event.reason);
-    }
-    // 阻止默认行为（防止控制台重复显示）
-    event.preventDefault();
-  });
-
-  window.addEventListener('error', (event) => {
-    // 只处理来自扩展的错误
-    if (event.filename && event.filename.includes('chrome-extension://')) {
-      logger.error('JavaScript运行时错误:', event.message, {
-        filename: event.filename,
-        line: event.lineno,
-        column: event.colno,
-        error: event.error
-      });
-    }
-    // 不阻止事件传播，让页面自己处理自己的错误
-  });
-}
-
 // 启动应用
 main().catch((error) => {
-  logger.error('应用启动失败:', error);
+  logger.error("应用启动失败:", error);
 });

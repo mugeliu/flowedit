@@ -2,7 +2,6 @@
 // 此文件用于统一管理编辑器界面和控制栏的创建、移除等操作
 
 import { createElement, hideElement, showElement } from "../../utils/dom.js";
-import { selectorConfig } from "../../config/index.js";
 import { createLogger } from "../../../shared/services/logger.js";
 
 // 创建模块日志器
@@ -52,12 +51,13 @@ export function createEditorPage() {
  * @param {Object} callbacks 回调函数对象
  * @param {Function} callbacks.onSave 保存回调函数
  * @param {Function} callbacks.onCancel 取消回调函数
+ * @param {Function} callbacks.onInsert 插入回调函数
  * @param {Function} callbacks.onPreview 预览回调函数
  * @returns {HTMLElement} 返回创建的工具栏元素
  */
 
 export function createEditorToolbar(callbacks = {}) {
-  const { onSave, onCancel } = callbacks;
+  const { onSave, onCancel, onInsert } = callbacks;
 
   const controlBar = createElement("div", {
     id: "flow-editor-control-panel",
@@ -95,10 +95,21 @@ export function createEditorToolbar(callbacks = {}) {
     cancelButton.addEventListener("click", onCancel);
   }
 
+  // 创建插入按钮，使用WeUI信息按钮样式
+  const insertButton = createElement("button", {
+    role: "button",
+    className: "weui-btn weui-btn_warn weui-btn_medium",
+    textContent: "插入",
+  });
+  if (onInsert) {
+    insertButton.addEventListener("click", onInsert);
+  }
+
 
   // 将按钮添加到面板
   controlBar.appendChild(placeholderDiv);
   controlBar.appendChild(toolbarContainer);
+  toolbarContainer.appendChild(insertButton);
   toolbarContainer.appendChild(saveButton);
   toolbarContainer.appendChild(cancelButton);
 
@@ -158,7 +169,7 @@ export function initializeEditorUI(options = {}) {
     const editorToolbar = createEditorToolbar(callbacks);
 
     // 2. 将编辑器页面插入到 js_author_area 的兄弟节点
-    const authorArea = document.getElementById(selectorConfig.authorArea);
+    const authorArea = document.getElementById("js_author_area");
     if (authorArea && authorArea.parentNode) {
       // 插入到 authorArea 的下一个兄弟节点位置
       authorArea.parentNode.insertBefore(editorPage, authorArea.nextSibling);
@@ -168,7 +179,7 @@ export function initializeEditorUI(options = {}) {
     }
 
     // 隐藏原编辑器容器
-    const success = hideElement(selectorConfig.editorWrapper);
+    const success = hideElement("edui1_iframeholder");
     if (success) {
       logger.info("原编辑器容器已隐藏");
     } else {
@@ -176,7 +187,7 @@ export function initializeEditorUI(options = {}) {
     }
 
     // 3. 将工具栏插入到 js_button_area 的兄弟节点
-    const buttonArea = document.getElementById(selectorConfig.footerToolbar);
+    const buttonArea = document.getElementById("js_button_area");
     if (buttonArea && buttonArea.parentNode) {
       // 插入到 buttonArea 的下一个兄弟节点位置
       buttonArea.parentNode.insertBefore(editorToolbar, buttonArea.nextSibling);
@@ -186,7 +197,7 @@ export function initializeEditorUI(options = {}) {
     }
 
     // 隐藏原按钮区域
-    const hideButtonSuccess = hideElement(selectorConfig.footerToolbar);
+    const hideButtonSuccess = hideElement("js_button_area");
     if (hideButtonSuccess) {
       logger.info("原按钮区域已隐藏");
     } else {
@@ -219,14 +230,14 @@ export function cleanupEditorUI() {
     removeEditorToolbar();
 
     // 恢复被隐藏的原始元素
-    const showEditorSuccess = showElement(selectorConfig.editorWrapper);
+    const showEditorSuccess = showElement("edui1_iframeholder");
     if (showEditorSuccess) {
       logger.info("原编辑器容器已恢复显示");
     } else {
       logger.warn("恢复原编辑器容器显示失败");
     }
 
-    const showButtonSuccess = showElement(selectorConfig.footerToolbar);
+    const showButtonSuccess = showElement("js_button_area");
     if (showButtonSuccess) {
       logger.info("原按钮区域已恢复显示");
     } else {

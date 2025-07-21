@@ -483,6 +483,62 @@ export class ArticleStorageService {
     }
   }
 
+  /**
+   * 从EditorJS数据中提取标题
+   * @param {Object} editorData - EditorJS数据
+   * @returns {string|null} 提取的标题
+   */
+  extractTitleFromContent(editorData) {
+    if (!editorData?.blocks || editorData.blocks.length === 0) {
+      return null;
+    }
+    
+    // 查找第一个header或paragraph块作为标题
+    const titleBlock = editorData.blocks.find(block => 
+      ['header', 'paragraph'].includes(block.type) && 
+      block.data?.text?.trim()
+    );
+    
+    if (titleBlock) {
+      // 移除HTML标签并截断
+      const title = titleBlock.data.text.replace(/<[^>]*>/g, '').trim();
+      return title.length > 50 ? title.substring(0, 50) + '...' : title;
+    }
+    
+    return null;
+  }
+
+  /**
+   * 智能保存文章（新建或更新）
+   * @param {Object} editorData - EditorJS数据
+   * @param {Object} options - 保存选项
+   * @param {string|null} options.articleId - 文章ID，如果为null则创建新文章
+   * @param {string} options.status - 文章状态，默认为'published'
+   * @param {string|null} options.title - 自定义标题，如果为null则自动提取
+   * @returns {Promise<Object>} 保存结果
+   */
+  async saveOrUpdateArticle(editorData, options = {}) {
+    const { articleId = null, status = ArticleStatus.PUBLISHED, title = null } = options;
+
+    try {
+      if (articleId) {
+        // 更新现有文章
+        return await this.updateArticle(articleId, editorData, { status });
+      } else {
+        // 创建新文章
+        const generatedTitle = title || this.extractTitleFromContent(editorData) || `文章_${new Date().toLocaleDateString()}`;
+        return await this.saveArticle(editorData, { title: generatedTitle, status });
+      }
+    } catch (error) {
+      logger.error('智能保存文章失败:', error);
+      return {
+        success: false,
+        error: 'SAVE_ERROR',
+        message: '保存文章失败'
+      };
+    }
+  }
+
   // 私有方法
 
   /**
