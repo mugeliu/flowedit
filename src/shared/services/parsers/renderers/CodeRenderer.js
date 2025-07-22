@@ -8,11 +8,11 @@ class CodeRenderer extends BaseBlockRenderer {
     return 'code';
   }
 
-  render(data, renderer) {
+  async render(data, renderer) {
     // 将代码中的换行符转换为 <br> 标签
     const processedCode = this.escapeHtml(data.code || '').replace(/\n/g, '<br>');
     
-    return this.renderWithTemplate('code', {
+    return await this.renderWithTemplate('code', {
       code: processedCode,
       language: data.language || ''
     });

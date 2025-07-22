@@ -3,7 +3,7 @@
  * 优化版本：简化嵌套模板处理，通过递归复用配置
  */
 import BaseBlockRenderer from './BaseBlockRenderer.js';
-import { ParserError } from '../TemplateLoader.js';
+import { ParserError } from '../utils.js';
 
 class ListRenderer extends BaseBlockRenderer {
   getType() {
@@ -17,21 +17,21 @@ class ListRenderer extends BaseBlockRenderer {
    * @param {number} depth - 嵌套深度，用于样式控制
    * @returns {string} 渲染后的HTML
    */
-  render(data, renderer, depth = 0) {
+  async render(data, renderer, depth = 0) {
     try {
       const style = data.style || 'unordered';
       const items = data.items || [];
       
       // 获取列表模板配置
-      const listTemplate = this.getListTemplate(style);
+      const listTemplate = await this.getListTemplate(style);
       if (!listTemplate) {
         throw new ParserError(`List template for style: ${style}`);
       }
 
       // 渲染所有列表项
-      const renderedItems = items
-        .map(item => this.renderItem(item, style, listTemplate, renderer, depth))
-        .join('');
+      const renderedItems = (await Promise.all(
+        items.map(item => this.renderItem(item, style, listTemplate, renderer, depth))
+      )).join('');
 
       // 应用包装器模板
       return this.applyWrapper(renderedItems, listTemplate, depth);
@@ -46,11 +46,18 @@ class ListRenderer extends BaseBlockRenderer {
   /**
    * 获取列表模板配置
    * @param {string} style - 列表样式
-   * @returns {Object} 列表模板配置
+   * @returns {Promise<Object>} 列表模板配置
    */
-  getListTemplate(style) {
-    const template = this.templateLoader.getBlockTemplate('List');
-    return template?.[style] || template?.['list']?.[style];
+  async getListTemplate(style) {
+    // 先尝试 'List'（大写），这是模板中的实际键名
+    const template = await this.templateLoader.getBlockTemplate('List');
+    if (template && template[style]) {
+      return template[style];
+    }
+    
+    // 回退：尝试 'list'（小写）作为备选
+    const listTemplate = await this.templateLoader.getBlockTemplate('list');
+    return listTemplate?.[style] || null;
   }
 
   /**
@@ -62,15 +69,15 @@ class ListRenderer extends BaseBlockRenderer {
    * @param {number} depth - 嵌套深度
    * @returns {string} HTML字符串
    */
-  renderItem(item, style, listTemplate, renderer, depth) {
+  async renderItem(item, style, listTemplate, renderer, depth) {
     const itemData = typeof item === 'string' ? { content: item } : item;
-    const content = renderer.processInlineStyles(itemData.content || itemData.text || '');
+    const content = await renderer.processInlineStyles(itemData.content || itemData.text || '');
     
     // 处理嵌套列表
     let nestedContent = '';
     if (itemData.items?.length > 0) {
       // 递归渲染嵌套列表，增加深度
-      nestedContent = this.render(
+      nestedContent = await this.render(
         { style, items: itemData.items }, 
         renderer, 
         depth + 1

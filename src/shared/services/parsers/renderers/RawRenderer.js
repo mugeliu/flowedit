@@ -8,8 +8,8 @@ class RawRenderer extends BaseBlockRenderer {
     return 'raw';
   }
 
-  render(data, renderer) {
-    return this.renderWithTemplate('raw', { html: data.html || '' }) ||
+  async render(data, renderer) {
+    return (await this.renderWithTemplate('raw', { html: data.html || '' })) ||
            data.html ||
            '';
   }

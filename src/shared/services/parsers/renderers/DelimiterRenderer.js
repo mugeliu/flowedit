@@ -8,8 +8,8 @@ class DelimiterRenderer extends BaseBlockRenderer {
     return 'delimiter';
   }
 
-  render(data, renderer) {
-    return this.renderWithTemplate('delimiter', {}) || '<hr>';
+  async render(data, renderer) {
+    return (await this.renderWithTemplate('delimiter', {})) || '<hr>';
   }
 }
 

@@ -8,9 +8,9 @@ class ParagraphRenderer extends BaseBlockRenderer {
     return 'paragraph';
   }
 
-  render(data, renderer) {
-    return this.renderWithTemplate('paragraph', {
-      text: this.processInlineStyles(data.text || '', renderer)
+  async render(data, renderer) {
+    return await this.renderWithTemplate('paragraph', {
+      text: await this.processInlineStyles(data.text || '', renderer)
     });
   }
 }

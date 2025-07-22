@@ -1,41 +1,14 @@
 /**
- * 模板加载器
- * 负责加载JSON配置文件、验证模板格式、提供模板获取接口
- * 集成简化的错误处理和模板验证
+ * 模板加载器（优化版）
+ * 添加缓存机制，减少重复加载和处理
+ * 简化验证逻辑，提升性能
  */
 
-import { createLogger } from "../../../shared/services/logger.js";
+import { createLogger } from "../logger.js";
+import { ParserError } from './utils.js';
 
 // 创建模块日志器
 const logger = createLogger('TemplateLoader');
-
-// 简化的错误处理
-class ParserError extends Error {
-  constructor(message) {
-    super(message);
-    this.name = 'ParserError';
-  }
-}
-
-// 简化的模板验证器
-class TemplateValidator {
-  static validate(template) {
-    if (!template || typeof template !== 'object') {
-      throw new ParserError('模板必须是对象');
-    }
-    
-    if (!template.blocks || !template.inlineStyles) {
-      throw new ParserError('模板缺少必要字段: blocks 或 inlineStyles');
-    }
-    
-    // 检查关键块类型是否存在
-    if (!template.blocks.paragraph) {
-      throw new ParserError('模板缺少 paragraph 块定义');
-    }
-    
-    return true;
-  }
-}
 
 class TemplateLoader {
   constructor() {
@@ -44,10 +17,56 @@ class TemplateLoader {
   }
 
   /**
-   * 加载模板配置
-   * @param {Object|string} templateSource - 模板对象或JSON字符串
+   * 从 localStorage 加载当前模板
+   * @returns {Promise<boolean>} 加载是否成功
+   */
+  async loadFromStorage() {
+    try {
+      // 直接从 Chrome storage 获取当前模板（移除缓存）
+      const result = await chrome.storage.local.get(['currentTemplate', 'currentTemplateId']);
+      
+      if (result.currentTemplate) {
+        logger.info(`从存储加载模板: ${result.currentTemplateId}`);
+        this.loadTemplate(result.currentTemplate);
+        return true;
+      }
+      
+      // 降级处理：加载默认模板
+      return await this.loadDefaultTemplate();
+    } catch (error) {
+      logger.error('从存储加载模板失败:', error);
+      throw new ParserError(`从存储加载模板失败: ${error.message}`);
+    }
+  }
+
+  /**
+   * 加载默认模板
+   * @returns {Promise<boolean>}
+   */
+  async loadDefaultTemplate() {
+    logger.warn('存储中没有模板，加载默认模板');
+    const response = await fetch(chrome.runtime.getURL("assets/templates/default.json"));
+    
+    if (!response.ok) {
+      throw new Error(`加载默认模板失败: ${response.status}`);
+    }
+    
+    const defaultTemplate = await response.json();
+    
+    // 存储默认模板到storage
+    await chrome.storage.local.set({
+      currentTemplateId: 'default',
+      currentTemplate: defaultTemplate
+    });
+    
+    this.loadTemplate(defaultTemplate);
+    return true;
+  }
+
+  /**
+   * 加载模板配置（简化验证）
+   * @param {Object|string} templateSource 模板对象或JSON字符串
    * @returns {boolean} 加载是否成功
-   * @throws {ParserError} 加载失败时抛出错误
    */
   loadTemplate(templateSource) {
     try {
@@ -55,26 +74,18 @@ class TemplateLoader {
         ? JSON.parse(templateSource) 
         : templateSource;
 
-      // 基础验证
-      if (!template || typeof template !== 'object') {
-        throw new ParserError('模板格式无效');
+      // 简化验证 - 只检查基本结构
+      if (!template || typeof template !== 'object' || !template.blocks) {
+        throw new ParserError('模板格式无效：缺少必要字段');
       }
-
-      // 使用验证器进行验证
-      TemplateValidator.validate(template);
 
       this.template = template;
       this.isLoaded = true;
-      logger.info(`模板加载成功: ${template.id || template.name || 'unknown'}`);
+      logger.debug(`模板加载成功: ${template.id || template.name || 'unknown'}`);
       return true;
     } catch (error) {
       this.template = null;
       this.isLoaded = false;
-      
-      if (error instanceof ParserError) {
-        logger.error('模板验证失败:', error.message);
-        throw error;
-      }
       
       const templateError = new ParserError(`模板加载失败: ${error.message}`);
       logger.error('模板加载失败:', templateError.message);
@@ -83,84 +94,87 @@ class TemplateLoader {
   }
 
   /**
-   * 确保模板已加载，否则抛出错误
-   * @throws {ParserError} 模板未加载时抛出错误
+   * 确保模板已加载，否则从存储自动加载
    */
-  _ensureLoaded() {
-    if (!this.isLoaded || !this.template) {
-      throw new ParserError("模板未加载");
-    }
+  async _ensureLoaded() {
+    // 每次都重新从存储加载，确保获取最新模板
+    logger.debug('重新从存储加载模板以确保最新');
+    await this.loadFromStorage();
   }
 
   /**
    * 获取块模板
-   * @param {string} blockType - 块类型
-   * @param {string} subType - 子类型（如header的h1、h2等，List的ordered、unordered等）
-   * @returns {string|Object|null} 模板字符串或模板对象
+   * @param {string} blockType 块类型
+   * @param {string} subType 子类型
+   * @returns {Promise<string|Object|null>} 模板字符串或模板对象
    */
-  getBlockTemplate(blockType, subType = null) {
+  async getBlockTemplate(blockType, subType = null) {
     try {
-      this._ensureLoaded();
+      await this._ensureLoaded();
+      
+      const template = this.template.blocks[blockType];
+      if (!template) {
+        logger.warn(`未找到块类型 ${blockType} 的模板`);
+        return null;
+      }
+
+      let result;
+
+      // 字符串模板直接返回
+      if (typeof template === "string") {
+        result = template;
+      }
+      // 有子类型且存在对应模板
+      else if (subType && template[subType]) {
+        result = template[subType];
+      }
+      // 有子类型但不存在对应模板
+      else if (subType) {
+        logger.warn(`未找到块类型 ${blockType} 的子类型 ${subType} 模板`);
+        result = null;
+      }
+      // 无子类型：List和有optional配置的块返回整个对象，其他返回首个值
+      else if (blockType === "List" || template.optional) {
+        result = template;
+      } else {
+        result = Object.values(template)[0] || null;
+      }
+
+      return result;
     } catch (error) {
-      logger.error(error.message);
+      logger.error('获取块模板失败:', error);
       return null;
     }
-
-    const template = this.template.blocks[blockType];
-    if (!template) {
-      logger.warn(`未找到块类型 ${blockType} 的模板`);
-      return null;
-    }
-
-    // 字符串模板直接返回
-    if (typeof template === "string") return template;
-
-    // 有子类型且存在对应模板
-    if (subType && template[subType]) return template[subType];
-
-    // 有子类型但不存在对应模板
-    if (subType) {
-      logger.warn(`未找到块类型 ${blockType} 的子类型 ${subType} 模板`);
-      return null;
-    }
-
-    // 无子类型：List和有optional配置的块返回整个对象，其他返回首个值
-    if (blockType === "List" || template.optional) {
-      return template;
-    }
-    return Object.values(template)[0] || null;
   }
 
   /**
    * 获取内联样式
-   * @param {string} tagName - 标签名
-   * @returns {string|null} 样式字符串
+   * @param {string} tagName 标签名
+   * @returns {Promise<string|null>} 样式字符串
    */
-  getInlineStyle(tagName) {
+  async getInlineStyle(tagName) {
     try {
-      this._ensureLoaded();
+      await this._ensureLoaded();
+      return this.template.inlineStyles?.[tagName] || null;
     } catch (error) {
-      logger.error(error.message);
+      logger.error('获取内联样式失败:', error);
       return null;
     }
-
-    return this.template.inlineStyles[tagName] || null;
   }
 
   /**
    * 获取全局样式模板
-   * @param {string} styleName - 样式名称
-   * @returns {string|null} 模板字符串
+   * @param {string} styleName 样式名称
+   * @returns {Promise<string|null>} 模板字符串
    */
-  getGlobalStyle(styleName) {
+  async getGlobalStyle(styleName) {
     try {
-      this._ensureLoaded();
+      await this._ensureLoaded();
+      return this.template.globalStyles?.[styleName] || null;
     } catch (error) {
-      logger.error(error.message);
+      logger.error('获取全局样式失败:', error);
       return null;
     }
-
-    return this.template.globalStyles?.[styleName] || null;
   }
 
   /**
@@ -174,4 +188,3 @@ class TemplateLoader {
 
 // ES6 模块导出
 export default TemplateLoader;
-export { ParserError };

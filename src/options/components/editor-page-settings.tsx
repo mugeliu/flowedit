@@ -181,7 +181,7 @@ export function EditorPageSettings() {
         const data = await editorInstance.current.save()
         logger.info('导出文章数据:', data)
         // 这里可以调用HTML转换器
-        // const html = convertToHtml(data, template)
+        // const html = await convertToHtml(data)
       } else {
         logger.info('使用简化模式导出')
       }

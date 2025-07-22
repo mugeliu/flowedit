@@ -3,7 +3,7 @@ import { convertToHtml } from "../../shared/services/parsers/index.js";
 import { renderPreviewContent } from "../features/sidebar/preview.js";
 import { callEditorAPI } from "../services/editor-bridge.js";
 import { createLogger } from "../../shared/services/logger.js";
-import { createWeChatImageUploader } from "../tools/custom-wechat-image-tool.js";
+import { createWeChatImageUploader } from "./custom-wechat-image-tool.js";
 
 // 创建模块日志器
 const logger = createLogger('EditorUtils');
@@ -107,8 +107,7 @@ function createEditorOnChangeHandler() {
   return async (editorAPI, changeEvent) => {
     try {
       const savedEditorData = await editorAPI.saver.save();
-      const currentStyleTemplate = await loadStyleTemplate();
-      const htmlContentForPreview = convertToHtml(savedEditorData, currentStyleTemplate);
+      const htmlContentForPreview = await convertToHtml(savedEditorData);
       await renderPreviewContent(htmlContentForPreview);
     } catch (error) {
       logger.error("预览内容生成失败", error);
@@ -255,11 +254,8 @@ export async function loadStyleTemplate() {
  */
 export async function saveToOriginalEditor(editorDataToSave, saveOptions = {}) {
   try {
-    // 加载当前样式模板
-    const currentStyleTemplate = await loadStyleTemplate();
-
-    // 生成HTML内容
-    const generatedHTMLContent = convertToHtml(editorDataToSave, currentStyleTemplate);
+    // 生成HTML内容（parsers内部处理模板加载）
+    const generatedHTMLContent = await convertToHtml(editorDataToSave);
 
     // 提取API配置
     const weChatAPIName = saveOptions.apiName || "mp_editor_set_content";

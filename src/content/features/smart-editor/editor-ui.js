@@ -95,10 +95,10 @@ export function createEditorToolbar(callbacks = {}) {
     cancelButton.addEventListener("click", onCancel);
   }
 
-  // 创建插入按钮，使用WeUI信息按钮样式
+  // 创建插入按钮，使用与取消按钮一致的默认样式
   const insertButton = createElement("button", {
     role: "button",
-    className: "weui-btn weui-btn_warn weui-btn_medium",
+    className: "weui-btn weui-btn_default weui-btn_medium",
     textContent: "插入",
   });
   if (onInsert) {
@@ -106,11 +106,11 @@ export function createEditorToolbar(callbacks = {}) {
   }
 
 
-  // 将按钮添加到面板
+  // 将按钮添加到面板，顺序：保存 → 插入 → 取消
   controlBar.appendChild(placeholderDiv);
   controlBar.appendChild(toolbarContainer);
-  toolbarContainer.appendChild(insertButton);
   toolbarContainer.appendChild(saveButton);
+  toolbarContainer.appendChild(insertButton);
   toolbarContainer.appendChild(cancelButton);
 
   return controlBar;

@@ -9,14 +9,14 @@ class GenericRenderer extends BaseBlockRenderer {
     return 'generic';
   }
 
-  render(data, renderer, blockType) {
+  async render(data, renderer, blockType) {
     // 处理文本字段
     const processedData = { ...data };
     if (data.text) {
-      processedData.text = this.processInlineStyles(data.text, renderer);
+      processedData.text = await this.processInlineStyles(data.text, renderer);
     }
 
-    return this.renderWithTemplate(blockType, processedData);
+    return await this.renderWithTemplate(blockType, processedData);
   }
 }
 

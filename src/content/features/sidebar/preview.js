@@ -64,7 +64,7 @@ async function generateDefaultPreviewContent() {
   }
 
   try {
-    const htmlContent = convertToHtml(testData, template);
+    const htmlContent = await convertToHtml(testData);
     return htmlContent || '<div style="color: #666; padding: 20px; text-align: center;">预览内容生成失败。</div>';
   } catch (error) {
     logger.error('生成预览内容失败:', error);
@@ -80,8 +80,22 @@ function createPreviewContainer() {
   // 创建主容器
   const mainContainer = createElement("div", {
     className:
-      "weui-desktop-layout__main__hd main_hd appmsg_edit_mod default appmsg_preview_area scrollbar-macosx",
+      "weui-desktop-layout__main__hd main_hd appmsg_edit_mod default appmsg_preview_area",
+    cssText: `
+      overflow-y: auto;
+      scrollbar-width: none; /* Firefox */
+      -ms-overflow-style: none; /* IE and Edge */
+    `,
   });
+
+  // 完全隐藏所有浏览器的滚动条
+  const style = document.createElement('style');
+  style.textContent = `
+    .appmsg_preview_area::-webkit-scrollbar {
+      display: none; /* Chrome/Safari/Edge 完全隐藏滚动条 */
+    }
+  `;
+  document.head.appendChild(style);
 
   // 创建内容区域
   const contentSection = createElement("div", {
