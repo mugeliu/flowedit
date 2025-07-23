@@ -6,53 +6,53 @@
   "author": "FlowEdit Team",
   "version": "1.0.0",
   "inlineStyles": {
-    "strong": "font-weight: 700; color: rgb(17, 24, 39);",
-    "b": "font-weight: 700; color: rgb(17, 24, 39);",
-    "em": "font-style: italic; color: rgb(75, 85, 99); font-weight: 500; letter-spacing: 0.3px;",
-    "i": "font-style: italic; color: rgb(75, 85, 99); font-weight: 500; letter-spacing: 0.3px;",
-    "u": "text-decoration: underline; text-decoration-color: rgb(107, 114, 128); text-underline-offset: 3px; text-decoration-thickness: 1px;",
-    "code": "font-family: 'SF Mono', 'Monaco', 'Menlo', monospace; font-size: 0.9em; background: rgb(243, 244, 246); color: rgb(55, 65, 81); padding: 0.2em 0.5em; border-radius: 4px; border: 1px solid rgb(229, 231, 235); font-weight: 500;",
-    "mark": "background: rgb(254, 249, 195); padding: 0.1em 0.3em; border-radius: 2px;",
-    "a": "color: rgb(59, 130, 246); text-decoration: underline; text-decoration-color: rgba(59, 130, 246, 0.5); text-underline-offset: 2px;",
-    "sup": "color: rgb(107, 114, 128); font-size: 0.75em; margin-left: 0.15em;"
+    "strong": "font-weight: 700; color: rgb(17, 24, 39); letter-spacing: 0.5px;",
+    "b": "font-weight: 700; color: rgb(17, 24, 39); letter-spacing: 0.5px;",
+    "em": "font-style: italic; color: rgb(75, 85, 99); font-weight: 500; letter-spacing: 0.8px;",
+    "i": "font-style: italic; color: rgb(75, 85, 99); font-weight: 500; letter-spacing: 0.8px;",
+    "u": "text-decoration: underline; text-decoration-color: rgb(107, 114, 128); text-underline-offset: 4px; text-decoration-thickness: 1.5px;",
+    "code": "font-family: 'SF Mono', 'Consolas', '等线', monospace; font-size: 0.88em; background: rgb(248, 250, 252); color: rgb(51, 65, 85); padding: 0.25em 0.6em; border-radius: 6px; border: 1px solid rgb(226, 232, 240); font-weight: 500; letter-spacing: 0.3px;",
+    "mark": "background: rgba(254, 240, 138, 0.4); padding: 0.15em 0.4em; border-radius: 4px; letter-spacing: 0.3px;",
+    "a": "color: rgb(59, 130, 246); text-decoration: underline; text-decoration-color: rgba(59, 130, 246, 0.6); text-underline-offset: 3px; letter-spacing: 0.3px;",
+    "sup": "color: rgb(107, 114, 128); font-size: 0.72em; margin-left: 0.2em; font-weight: 500;"
   },
   "globalStyles": {
-    "container": "<section style='box-sizing: border-box; margin: 0px; padding: 24px 20px; font-size: 16px; line-height: 1.6; color: rgb(31, 41, 55); font-family: \"SF Pro Text\", -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif; letter-spacing: 0.3px; background: rgb(255, 255, 255); border: 1px solid rgb(229, 231, 235);'>{{content}}</section>",
-    "references": "<section style='margin-top: 2.5em; padding: 20px; background: rgb(249, 250, 251); border: 1px solid rgb(229, 231, 235); border-radius: 6px; font-family: \"SF Pro Text\", -apple-system, sans-serif;'><h4 style='margin: 0 0 16px 0; font-size: 15px; font-weight: 600; color: rgb(55, 65, 81); text-transform: uppercase; letter-spacing: 0.5px;'>参考文献</h4><div style='font-size: 14px; line-height: 1.5; color: rgb(75, 85, 99);'>{{links}}</div></section>"
+    "container": "<section style='box-sizing: border-box; margin: 0px; padding: 32px 28px; font-size: 16px; line-height: 1.8; color: rgb(31, 41, 55); font-family: \"PingFang SC\", \"Microsoft YaHei\", \"SF Pro Text\", -apple-system, BlinkMacSystemFont, sans-serif; letter-spacing: 0.6px; background: rgb(255, 255, 255); border: 1px solid rgb(229, 231, 235); border-radius: 8px; max-width: 100%; word-break: break-word;'>{{content}}</section>",
+    "references": "<section style='margin-top: 3em; padding: 24px 28px; background: rgb(249, 250, 251); border: 1px solid rgb(229, 231, 235); border-radius: 8px; font-family: \"PingFang SC\", \"Microsoft YaHei\", -apple-system, sans-serif;'><h4 style='margin: 0 0 20px 0; font-size: 16px; font-weight: 600; color: rgb(55, 65, 81); letter-spacing: 1px; text-align: center; position: relative; padding-bottom: 12px;'><span style='background: rgb(249, 250, 251); padding: 0 16px; position: relative; z-index: 1;'>参考文献</span><hr style='position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: rgb(203, 213, 225); border: none; z-index: 0;' /></h4><div style='font-size: 14px; line-height: 1.7; color: rgb(75, 85, 99); letter-spacing: 0.3px;'>{{links}}</div></section>"
   },
   "blocks": {
-    "paragraph": "<p style='font-size: 16px; color: rgb(55, 65, 81); letter-spacing: 0.2px; margin: 0 0 16px 0; line-height: 1.75; font-family: \"SF Pro Text\", -apple-system, BlinkMacSystemFont, sans-serif; text-align: justify; font-weight: 400;'>{{text}}</p>",
+    "paragraph": "<p style='font-size: 16px; color: rgb(55, 65, 81); letter-spacing: 0.6px; margin: 0 0 20px 0; line-height: 1.8; font-family: \"PingFang SC\", \"Microsoft YaHei\", -apple-system, BlinkMacSystemFont, sans-serif; text-align: justify; font-weight: 400; text-indent: 2em; word-break: break-word;'>{{text}}</p>",
     "header": {
-      "h1": "<section style='text-align: center; margin: 2.5em 0 2em 0;'><h1 style='font-size: 28px; font-weight: 700; line-height: 1.2; color: rgb(17, 24, 39); font-family: \"SF Pro Display\", -apple-system, sans-serif; margin: 0; letter-spacing: -0.5px; border-bottom: 3px solid rgb(17, 24, 39); padding-bottom: 12px; display: inline-block;'>{{text}}</h1></section>",
-      "h2": "<section style='margin: 2em 0 1.5em 0;'><h2 style='font-size: 22px; font-weight: 600; line-height: 1.3; color: rgb(31, 41, 55); font-family: \"SF Pro Display\", -apple-system, sans-serif; margin: 0; letter-spacing: -0.2px; padding-left: 16px; border-left: 4px solid rgb(17, 24, 39);'>{{text}}</h2></section>",
-      "h3": "<section style='margin: 1.8em 0 1.2em 0;'><h3 style='font-size: 18px; font-weight: 600; line-height: 1.4; color: rgb(55, 65, 81); font-family: \"SF Pro Display\", -apple-system, sans-serif; margin: 0; letter-spacing: 0px; padding-bottom: 8px; border-bottom: 1px solid rgb(229, 231, 235);'>{{text}}</h3></section>"
+      "h1": "<section style='text-align: center; margin: 3em 0 2.5em 0;'><h1 style='font-size: 28px; font-weight: 700; line-height: 1.3; color: rgb(17, 24, 39); font-family: \"PingFang SC\", \"Microsoft YaHei\", -apple-system, sans-serif; margin: 0; letter-spacing: 1px; padding: 16px 24px 16px 24px; background: rgb(248, 250, 252); border-radius: 8px; border: 2px solid rgb(17, 24, 39); display: inline-block; position: relative;'>{{text}}</h1></section>",
+      "h2": "<section style='margin: 2.5em 0 1.8em 0;'><h2 style='font-size: 22px; font-weight: 600; line-height: 1.4; color: rgb(31, 41, 55); font-family: \"PingFang SC\", \"Microsoft YaHei\", -apple-system, sans-serif; margin: 0; letter-spacing: 0.5px; padding: 12px 20px; background: rgb(248, 250, 252); border-left: 5px solid rgb(17, 24, 39); border-radius: 0 6px 6px 0;'>{{text}}</h2></section>",
+      "h3": "<section style='margin: 2em 0 1.5em 0;'><h3 style='font-size: 18px; font-weight: 600; line-height: 1.5; color: rgb(55, 65, 81); font-family: \"PingFang SC\", \"Microsoft YaHei\", -apple-system, sans-serif; margin: 0; letter-spacing: 0.3px; padding: 8px 0 12px 0; border-bottom: 2px solid rgb(203, 213, 225); position: relative;'>{{text}}</h3></section>"
     },
     "quote": {
-      "template": "<section style='border-left: 3px solid rgb(107, 114, 128); background: rgb(249, 250, 251); padding: 20px 24px; margin: 1.5em 0; font-family: \"SF Pro Text\", -apple-system, sans-serif;'><p style='margin: 0 0 8px 0; color: rgb(75, 85, 99); font-style: italic; font-size: 16px; line-height: 1.6; font-weight: 400;'>{{text}}</p>{{?caption}}</section>",
+      "template": "<section style='border-left: 4px solid rgb(107, 114, 128); background: rgb(249, 250, 251); padding: 24px 28px; margin: 2em 0; font-family: \"PingFang SC\", \"Microsoft YaHei\", -apple-system, sans-serif; border-radius: 0 8px 8px 0;'><p style='margin: 0 0 12px 0; color: rgb(75, 85, 99); font-style: italic; font-size: 16px; line-height: 1.8; font-weight: 400; letter-spacing: 0.5px; text-align: justify;'>{{text}}</p>{{?caption}}</section>",
       "optional": {
-        "caption": "<footer style='text-align: right; font-size: 14px; color: rgb(107, 114, 128); font-weight: 500; margin-top: 12px;'>— {{value}}</footer>"
+        "caption": "<footer style='text-align: right; font-size: 14px; color: rgb(107, 114, 128); font-weight: 500; margin-top: 16px; letter-spacing: 0.3px;'>— {{value}}</footer>"
       }
     },
-    "delimiter": "<section style='display: flex; justify-content: center; margin: 3em 0;'><hr style='width: 60%; height: 1px; background: rgb(229, 231, 235); border: none;' /></section>",
+    "delimiter": "<section style='display: flex; justify-content: center; align-items: center; margin: 3em 0;'><hr style='flex: 1; height: 1px; background: linear-gradient(90deg, transparent 0%, rgb(203, 213, 225) 20%, rgb(156, 163, 175) 50%, rgb(203, 213, 225) 80%, transparent 100%); border: none; max-width: 60%;' /></section>",
     "image": {
-      "template": "<figure style='margin: 1.5em 0; padding: 0; max-width: 100%; line-height: 0; display: block; text-align: center;'><img src='{{url}}' alt='{{alt}}' style='max-width: 100%; border-radius: 6px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);' />{{?caption}}</figure>",
+      "template": "<figure style='margin: 2em 0; padding: 0; max-width: 100%; line-height: 0; display: block; text-align: center;'><img src='{{url}}' alt='{{alt}}' style='max-width: 100%; border-radius: 8px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12); border: 1px solid rgb(229, 231, 235);' />{{?caption}}</figure>",
       "optional": {
-        "caption": "<figcaption style='margin-top: 12px; font-size: 14px; color: rgb(107, 114, 128); font-style: italic; line-height: 1.4; font-weight: 400;'>{{value}}</figcaption>"
+        "caption": "<figcaption style='margin-top: 16px; font-size: 14px; color: rgb(107, 114, 128); font-style: italic; line-height: 1.6; font-weight: 400; letter-spacing: 0.3px; text-align: center;'>{{value}}</figcaption>"
       }
     },
-    "code": "<section style='font-family: \"SF Mono\", Monaco, Menlo, monospace; font-size: 14px; line-height: 1.5; margin: 20px 0; color: rgb(55, 65, 81); background: rgb(249, 250, 251); text-align: left; overflow-x: auto; border: 1px solid rgb(229, 231, 235); border-radius: 6px;'><pre style='padding: 20px; margin: 0; white-space: pre-wrap; overflow-wrap: break-word;'><code>{{code}}</code></pre></section>",
+    "code": "<section style='font-family: \"SF Mono\", \"Consolas\", \"等线\", Monaco, monospace; font-size: 14px; line-height: 1.6; margin: 24px 0; color: rgb(55, 65, 81); background: rgb(248, 250, 252); text-align: left; overflow-x: auto; border: 1px solid rgb(203, 213, 225); border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);'><pre style='padding: 24px; margin: 0; white-space: pre-wrap; overflow-wrap: break-word; letter-spacing: 0.3px;'><code>{{code}}</code></pre></section>",
     "List": {
       "ordered": {
-        "wrapper": "<ol style='list-style: decimal; margin: 16px 0; padding-left: 24px; color: rgb(55, 65, 81);'>{{items}}</ol>",
-        "item": "<li style='padding: 6px 0; line-height: 1.6; font-size: 16px;'>{{content}}</li>"
+        "wrapper": "<ol style='list-style: decimal; margin: 20px 0; padding-left: 28px; color: rgb(55, 65, 81);'>{{items}}</ol>",
+        "item": "<li style='padding: 8px 0; line-height: 1.8; font-size: 16px; letter-spacing: 0.4px;'>{{content}}</li>"
       },
       "unordered": {
-        "wrapper": "<ul style='list-style: disc; margin: 16px 0; padding-left: 24px; color: rgb(55, 65, 81);'>{{items}}</ul>",
-        "item": "<li style='padding: 6px 0; line-height: 1.6; font-size: 16px;'>{{content}}</li>"
+        "wrapper": "<ul style='list-style: disc; margin: 20px 0; padding-left: 28px; color: rgb(55, 65, 81);'>{{items}}</ul>",
+        "item": "<li style='padding: 8px 0; line-height: 1.8; font-size: 16px; letter-spacing: 0.4px;'>{{content}}</li>"
       },
       "checklist": {
-        "wrapper": "<ul style='list-style: none; margin: 16px 0; padding-left: 8px;'>{{items}}</ul>",
-        "item": "<li style='padding: 6px 0; line-height: 1.6; display: flex; align-items: flex-start; font-size: 16px;'><span style='margin-right: 8px; margin-top: 2px; font-size: 16px; color: rgb(107, 114, 128);'>{{checkbox}}</span><span style='color: rgb(55, 65, 81);'>{{content}}</span></li>",
+        "wrapper": "<ul style='list-style: none; margin: 20px 0; padding-left: 12px;'>{{items}}</ul>",
+        "item": "<li style='padding: 8px 0; line-height: 1.8; display: flex; align-items: flex-start; font-size: 16px;'><span style='margin-right: 12px; margin-top: 3px; font-size: 16px; color: rgb(107, 114, 128);'>{{checkbox}}</span><span style='color: rgb(55, 65, 81); letter-spacing: 0.4px;'>{{content}}</span></li>",
         "checked": "✓",
         "unchecked": "○"
       }
