@@ -10,7 +10,11 @@ export class TemplateManager {
       'default.json',
       'business-minimal.json', 
       'warm-orange.json',
-      'literary-green.json'
+      'literary-green.json',
+      'abstract-illustration.json',
+      'diffused-gradient.json',
+      'ultra-bold-typography.json',
+      'handcraft-texture.json'
     ];
   }
 

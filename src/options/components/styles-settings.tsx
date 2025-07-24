@@ -80,8 +80,16 @@ export function StylesSettings() {
         return 'from-orange-50 to-orange-100 text-orange-700'
       case 'literary-green':
         return 'from-green-50 to-green-100 text-green-700'
-      default:
+      case 'abstract-illustration':
+        return 'from-purple-50 to-purple-100 text-purple-700'
+      case 'diffused-gradient':
         return 'from-blue-50 to-blue-100 text-blue-700'
+      case 'ultra-bold-typography':
+        return 'from-red-50 to-red-100 text-red-700'
+      case 'handcraft-texture':
+        return 'from-amber-50 to-amber-100 text-amber-700'
+      default:
+        return 'from-slate-50 to-slate-100 text-slate-700'
     }
   }
 

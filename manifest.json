@@ -37,6 +37,13 @@
         "scripts/page-injector.js", 
         "scripts/editorjs-bundle.js",
         "assets/templates/default.json",
+        "assets/templates/business-minimal.json",
+        "assets/templates/warm-orange.json",
+        "assets/templates/literary-green.json",
+        "assets/templates/abstract-illustration.json",
+        "assets/templates/diffused-gradient.json",
+        "assets/templates/ultra-bold-typography.json",
+        "assets/templates/handcraft-texture.json",
         "assets/test-data.json"
       ],
       "matches": ["https://mp.weixin.qq.com/*"]

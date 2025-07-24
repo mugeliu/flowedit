@@ -49,15 +49,13 @@ class ListRenderer extends BaseBlockRenderer {
    * @returns {Promise<Object>} 列表模板配置
    */
   async getListTemplate(style) {
-    // 先尝试 'List'（大写），这是模板中的实际键名
-    const template = await this.templateLoader.getBlockTemplate('List');
+    // 使用统一的小写 'list' 键名
+    const template = await this.templateLoader.getBlockTemplate('list');
     if (template && template[style]) {
       return template[style];
     }
     
-    // 回退：尝试 'list'（小写）作为备选
-    const listTemplate = await this.templateLoader.getBlockTemplate('list');
-    return listTemplate?.[style] || null;
+    return null;
   }
 
   /**

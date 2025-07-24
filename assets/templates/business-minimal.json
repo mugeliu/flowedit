@@ -1,60 +1,60 @@
 {
   "id": "business-minimal",
-  "name": "简约商务主题",
-  "description": "经典黑白灰配色，专业商务风格，简洁而不失格调",
-  "category": "商务风格",
+  "name": "极简主义主题",
+  "description": "纯粹的极简美学，去除一切多余装饰，专注于内容本身的力量",
+  "category": "极简主义",
   "author": "FlowEdit Team",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "inlineStyles": {
-    "strong": "font-weight: 700; color: rgb(17, 24, 39); letter-spacing: 0.5px;",
-    "b": "font-weight: 700; color: rgb(17, 24, 39); letter-spacing: 0.5px;",
-    "em": "font-style: italic; color: rgb(75, 85, 99); font-weight: 500; letter-spacing: 0.8px;",
-    "i": "font-style: italic; color: rgb(75, 85, 99); font-weight: 500; letter-spacing: 0.8px;",
-    "u": "text-decoration: underline; text-decoration-color: rgb(107, 114, 128); text-underline-offset: 4px; text-decoration-thickness: 1.5px;",
-    "code": "font-family: 'SF Mono', 'Consolas', '等线', monospace; font-size: 0.88em; background: rgb(248, 250, 252); color: rgb(51, 65, 85); padding: 0.25em 0.6em; border-radius: 6px; border: 1px solid rgb(226, 232, 240); font-weight: 500; letter-spacing: 0.3px;",
-    "mark": "background: rgba(254, 240, 138, 0.4); padding: 0.15em 0.4em; border-radius: 4px; letter-spacing: 0.3px;",
-    "a": "color: rgb(59, 130, 246); text-decoration: underline; text-decoration-color: rgba(59, 130, 246, 0.6); text-underline-offset: 3px; letter-spacing: 0.3px;",
-    "sup": "color: rgb(107, 114, 128); font-size: 0.72em; margin-left: 0.2em; font-weight: 500;"
+    "strong": "font-weight: 600; color: #000000; padding: 0.05em 0.1em;",
+    "b": "font-weight: 600; color: #000000; padding: 0.05em 0.1em;",
+    "em": "font-style: italic; color: #666666; padding: 0.05em 0.1em;",
+    "i": "font-style: italic; color: #666666; padding: 0.05em 0.1em;",
+    "u": "text-decoration: underline; text-decoration-color: #000000; text-underline-offset: 0.15em; text-decoration-thickness: 0.05em;",
+    "code": "font-family: 'SF Mono', 'Monaco', 'Menlo', monospace; font-size: 0.85em; background: #f8f8f8; color: #000000; padding: 0.2em 0.4em; border-radius: 0.2em;",
+    "mark": "background: #000000; color: #ffffff; padding: 0.15em 0.25em; border-radius: 0.15em;",
+    "a": "color: #000000; text-decoration: underline; text-decoration-thickness: 0.05em; text-underline-offset: 0.15em; padding: 0.05em 0.1em;",
+    "sup": "color: #999999; font-size: 0.7em; vertical-align: super;"
   },
   "globalStyles": {
-    "container": "<section style='box-sizing: border-box; margin: 0px; padding: 32px 28px; font-size: 16px; line-height: 1.8; color: rgb(31, 41, 55); font-family: \"PingFang SC\", \"Microsoft YaHei\", \"SF Pro Text\", -apple-system, BlinkMacSystemFont, sans-serif; letter-spacing: 0.6px; background: rgb(255, 255, 255); border: 1px solid rgb(229, 231, 235); border-radius: 8px; max-width: 100%; word-break: break-word;'>{{content}}</section>",
-    "references": "<section style='margin-top: 3em; padding: 24px 28px; background: rgb(249, 250, 251); border: 1px solid rgb(229, 231, 235); border-radius: 8px; font-family: \"PingFang SC\", \"Microsoft YaHei\", -apple-system, sans-serif;'><h4 style='margin: 0 0 20px 0; font-size: 16px; font-weight: 600; color: rgb(55, 65, 81); letter-spacing: 1px; text-align: center; position: relative; padding-bottom: 12px;'><span style='background: rgb(249, 250, 251); padding: 0 16px; position: relative; z-index: 1;'>参考文献</span><hr style='position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: rgb(203, 213, 225); border: none; z-index: 0;' /></h4><div style='font-size: 14px; line-height: 1.7; color: rgb(75, 85, 99); letter-spacing: 0.3px;'>{{links}}</div></section>"
+    "container": "<section style='max-width: 100%; margin: 0 auto; padding: 2em 1em; font-size: 16px; line-height: 1.65; color: #000000; font-family: -apple-system, BlinkMacSystemFont, \"Helvetica Neue\", \"PingFang SC\", \"Hiragino Sans GB\", Arial, sans-serif; background: #ffffff;'>{{content}}</section>",
+    "references": "<section style='margin-top: 2.5em; padding-top: 1.5em; border-top: 1px solid #000000; font-family: inherit;'><h4 style='margin: 0 0 0.8em 0; font-size: 0.85em; font-weight: 600; color: #000000; text-transform: uppercase; letter-spacing: 0.08em;'>参考资料</h4><section style='font-size: 0.8em; line-height: 1.5; color: #666666;'>{{links}}</section></section>"
   },
   "blocks": {
-    "paragraph": "<p style='font-size: 16px; color: rgb(55, 65, 81); letter-spacing: 0.6px; margin: 0 0 20px 0; line-height: 1.8; font-family: \"PingFang SC\", \"Microsoft YaHei\", -apple-system, BlinkMacSystemFont, sans-serif; text-align: justify; font-weight: 400; text-indent: 2em; word-break: break-word;'>{{text}}</p>",
+    "paragraph": "<p style='font-size: 1em; color: #000000; margin: 0 0 1.3em 0; line-height: 1.65; font-family: inherit; text-align: left; font-weight: 400;'>{{text}}</p>",
     "header": {
-      "h1": "<section style='text-align: center; margin: 3em 0 2.5em 0;'><h1 style='font-size: 28px; font-weight: 700; line-height: 1.3; color: rgb(17, 24, 39); font-family: \"PingFang SC\", \"Microsoft YaHei\", -apple-system, sans-serif; margin: 0; letter-spacing: 1px; padding: 16px 24px 16px 24px; background: rgb(248, 250, 252); border-radius: 8px; border: 2px solid rgb(17, 24, 39); display: inline-block; position: relative;'>{{text}}</h1></section>",
-      "h2": "<section style='margin: 2.5em 0 1.8em 0;'><h2 style='font-size: 22px; font-weight: 600; line-height: 1.4; color: rgb(31, 41, 55); font-family: \"PingFang SC\", \"Microsoft YaHei\", -apple-system, sans-serif; margin: 0; letter-spacing: 0.5px; padding: 12px 20px; background: rgb(248, 250, 252); border-left: 5px solid rgb(17, 24, 39); border-radius: 0 6px 6px 0;'>{{text}}</h2></section>",
-      "h3": "<section style='margin: 2em 0 1.5em 0;'><h3 style='font-size: 18px; font-weight: 600; line-height: 1.5; color: rgb(55, 65, 81); font-family: \"PingFang SC\", \"Microsoft YaHei\", -apple-system, sans-serif; margin: 0; letter-spacing: 0.3px; padding: 8px 0 12px 0; border-bottom: 2px solid rgb(203, 213, 225); position: relative;'>{{text}}</h3></section>"
+      "h1": "<h1 style='font-size: 1.6em; font-weight: 300; line-height: 1.2; color: #000000; font-family: inherit; margin: 1.4em 0 1em 0; letter-spacing: -0.01em;'>{{text}}</h1>",
+      "h2": "<h2 style='font-size: 1.35em; font-weight: 400; line-height: 1.25; color: #000000; font-family: inherit; margin: 1.3em 0 0.7em 0; letter-spacing: -0.008em;'>{{text}}</h2>",
+      "h3": "<h3 style='font-size: 1.15em; font-weight: 500; line-height: 1.3; color: #000000; font-family: inherit; margin: 1.1em 0 0.5em 0;'>{{text}}</h3>"
     },
     "quote": {
-      "template": "<section style='border-left: 4px solid rgb(107, 114, 128); background: rgb(249, 250, 251); padding: 24px 28px; margin: 2em 0; font-family: \"PingFang SC\", \"Microsoft YaHei\", -apple-system, sans-serif; border-radius: 0 8px 8px 0;'><p style='margin: 0 0 12px 0; color: rgb(75, 85, 99); font-style: italic; font-size: 16px; line-height: 1.8; font-weight: 400; letter-spacing: 0.5px; text-align: justify;'>{{text}}</p>{{?caption}}</section>",
+      "template": "<section style='margin: 1.2em 0; padding: 1.2em 0; border-left: 2px solid #000000; padding-left: 1em; font-family: inherit;'><p style='margin: 0 0 0.6em 0; color: #000000; font-style: italic; font-size: 1em; line-height: 1.45; font-weight: 300;'>{{text}}</p>{{?caption}}</section>",
       "optional": {
-        "caption": "<footer style='text-align: right; font-size: 14px; color: rgb(107, 114, 128); font-weight: 500; margin-top: 16px; letter-spacing: 0.3px;'>— {{value}}</footer>"
+        "caption": "<p style='font-size: 0.8em; color: #666666; font-style: normal; margin: 0; font-weight: 400;'>— {{value}}</p>"
       }
     },
-    "delimiter": "<section style='display: flex; justify-content: center; align-items: center; margin: 3em 0;'><hr style='flex: 1; height: 1px; background: linear-gradient(90deg, transparent 0%, rgb(203, 213, 225) 20%, rgb(156, 163, 175) 50%, rgb(203, 213, 225) 80%, transparent 100%); border: none; max-width: 60%;' /></section>",
+    "delimiter": "<section style='margin: 1.8em 0; text-align: center;'><span style='display: inline-block; width: 2em; height: 1px; background: #000000;'></span></section>",
     "image": {
-      "template": "<figure style='margin: 2em 0; padding: 0; max-width: 100%; line-height: 0; display: block; text-align: center;'><img src='{{url}}' alt='{{alt}}' style='max-width: 100%; border-radius: 8px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12); border: 1px solid rgb(229, 231, 235);' />{{?caption}}</figure>",
+      "template": "<section style='margin: 1.8em 0; text-align: center;'><img src='{{url}}' alt='{{alt}}' style='max-width: 100%; display: block; margin: 0 auto;' />{{?caption}}</section>",
       "optional": {
-        "caption": "<figcaption style='margin-top: 16px; font-size: 14px; color: rgb(107, 114, 128); font-style: italic; line-height: 1.6; font-weight: 400; letter-spacing: 0.3px; text-align: center;'>{{value}}</figcaption>"
+        "caption": "<p style='margin: 0.6em 0 0 0; font-size: 0.75em; color: #666666; font-style: italic; line-height: 1.35; text-align: center;'>{{value}}</p>"
       }
     },
-    "code": "<section style='font-family: \"SF Mono\", \"Consolas\", \"等线\", Monaco, monospace; font-size: 14px; line-height: 1.6; margin: 24px 0; color: rgb(55, 65, 81); background: rgb(248, 250, 252); text-align: left; overflow-x: auto; border: 1px solid rgb(203, 213, 225); border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);'><pre style='padding: 24px; margin: 0; white-space: pre-wrap; overflow-wrap: break-word; letter-spacing: 0.3px;'><code>{{code}}</code></pre></section>",
-    "List": {
+    "code": "<section style='margin: 1.2em 0; background: #f8f8f8; padding: 1em; font-family: \"SF Mono\", \"Monaco\", \"Menlo\", monospace; font-size: 0.8em; line-height: 1.35; color: #000000; overflow-x: auto; border-radius: 0.25em;'><span style='font-family: inherit; background: transparent; color: inherit;'>{{code}}</span></section>",
+    "list": {
       "ordered": {
-        "wrapper": "<ol style='list-style: decimal; margin: 20px 0; padding-left: 28px; color: rgb(55, 65, 81);'>{{items}}</ol>",
-        "item": "<li style='padding: 8px 0; line-height: 1.8; font-size: 16px; letter-spacing: 0.4px;'>{{content}}</li>"
+        "wrapper": "<ol style='margin: 1em 0; padding-left: 1.2em; list-style: decimal; color: #000000;'>{{items}}</ol>",
+        "item": "<li style='padding: 0.35em 0; line-height: 1.6; font-size: 1em; margin-bottom: 0.15em;'>{{content}}</li>"
       },
       "unordered": {
-        "wrapper": "<ul style='list-style: disc; margin: 20px 0; padding-left: 28px; color: rgb(55, 65, 81);'>{{items}}</ul>",
-        "item": "<li style='padding: 8px 0; line-height: 1.8; font-size: 16px; letter-spacing: 0.4px;'>{{content}}</li>"
+        "wrapper": "<ul style='margin: 1em 0; padding-left: 1.2em; list-style: disc; color: #000000;'>{{items}}</ul>",
+        "item": "<li style='padding: 0.35em 0; line-height: 1.6; font-size: 1em; margin-bottom: 0.15em;'>{{content}}</li>"
       },
       "checklist": {
-        "wrapper": "<ul style='list-style: none; margin: 20px 0; padding-left: 12px;'>{{items}}</ul>",
-        "item": "<li style='padding: 8px 0; line-height: 1.8; display: flex; align-items: flex-start; font-size: 16px;'><span style='margin-right: 12px; margin-top: 3px; font-size: 16px; color: rgb(107, 114, 128);'>{{checkbox}}</span><span style='color: rgb(55, 65, 81); letter-spacing: 0.4px;'>{{content}}</span></li>",
+        "wrapper": "<ul style='margin: 1em 0; padding-left: 0; list-style: none;'>{{items}}</ul>",
+        "item": "<li style='padding: 0.35em 0; line-height: 1.6; display: flex; align-items: flex-start; color: #000000; margin-bottom: 0.15em;'><span style='margin-right: 0.5em; margin-top: 0.05em; width: 0.8em; height: 0.8em; border: 1px solid #000000; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 0.6em; border-radius: 0.1em;'>{{checkbox}}</span><span style='flex: 1;'>{{content}}</span></li>",
         "checked": "✓",
-        "unchecked": "○"
+        "unchecked": ""
       }
     },
     "raw": "{{html}}"

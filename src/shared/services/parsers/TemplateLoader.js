@@ -133,8 +133,8 @@ class TemplateLoader {
         logger.warn(`未找到块类型 ${blockType} 的子类型 ${subType} 模板`);
         result = null;
       }
-      // 无子类型：List和有optional配置的块返回整个对象，其他返回首个值
-      else if (blockType === "List" || template.optional) {
+      // 无子类型：list和有optional配置的块返回整个对象，其他返回首个值
+      else if (blockType === "list" || template.optional) {
         result = template;
       } else {
         result = Object.values(template)[0] || null;

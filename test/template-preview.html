@@ -277,7 +277,7 @@
         // 加载所有模板
         async function loadTemplates() {
             try {
-                const templateFiles = ['default.json', 'business-minimal.json', 'literary-green.json', 'warm-orange.json'];
+                const templateFiles = ['default.json', 'business-minimal.json', 'literary-green.json', 'warm-orange.json', 'abstract-illustration.json', 'diffused-gradient.json', 'ultra-bold-typography.json', 'handcraft-texture.json'];
                 
                 templateSelect.innerHTML = '<option value="">请选择模板...</option>';
                 
@@ -286,6 +286,8 @@
                         const response = await fetch(`./templates/${file}`);
                         if (response.ok) {
                             const template = await response.json();
+                            console.log(`加载模板: ${template.name}`);
+                            
                             templates[template.id || file.replace('.json', '')] = template;
                             
                             const option = document.createElement('option');
@@ -341,6 +343,7 @@
             const templateId = templateSelect.value;
             if (templateId && templates[templateId]) {
                 currentTemplate = templates[templateId];
+                console.log('选择模板:', currentTemplate.name);
                 updateTemplateInfo(currentTemplate);
                 hideError();
             } else {
@@ -365,6 +368,8 @@
                 showError('请先选择模板');
                 return;
             }
+
+            console.log('渲染预览:', currentTemplate.name);
 
             showLoading();
             hideError();
@@ -393,12 +398,16 @@
 
         // 模拟使用 parsers 模块渲染（简化版本）
         async function mockRenderWithParsers(data, template, globalOptions) {
+            console.log('开始渲染，数据块数量:', data.blocks.length, '模板:', template.name);
+            
             // 这里是简化的渲染逻辑，实际应该调用 parsers 模块
             let html = '';
             
             // 渲染每个块
-            for (const block of data.blocks) {
-                html += await renderBlock(block, template);
+            for (let i = 0; i < data.blocks.length; i++) {
+                const block = data.blocks[i];
+                const blockHtml = await renderBlock(block, template);
+                html += blockHtml;
             }
             
             // 应用全局样式
@@ -421,9 +430,17 @@
 
         // 渲染单个块（简化版本）
         async function renderBlock(block, template) {
+            console.log('渲染块:', block.type);
+            
+            if (!template || !template.blocks) {
+                console.error('模板或模板块不存在!', template);
+                return `<div style="color: #999; font-style: italic;">模板错误: 无法找到模板块定义</div>`;
+            }
+            
             const blockTemplate = template.blocks[block.type];
             
             if (!blockTemplate) {
+                console.warn('未找到块模板:', block.type, '可用模板:', Object.keys(template.blocks));
                 return `<div style="color: #999; font-style: italic;">不支持的块类型: ${block.type}</div>`;
             }
             
@@ -468,12 +485,21 @@
                     break;
                     
                 case 'list':
+                    console.log('渲染列表块:', block);
                     const listStyle = block.data.style || 'unordered';
-                    // 注意：模板中的字段名是 'List'（大写）
-                    const listTemplates = template.blocks['List'] || template.blocks['list'];
+                    console.log('列表样式:', listStyle);
+                    
+                    // 使用统一的小写 'list' 键名
+                    const listTemplates = template.blocks['list'];
+                    console.log('找到的列表模板:', listTemplates);
+                    
                     const listTemplate = listTemplates?.[listStyle];
+                    console.log('当前样式的模板:', listTemplate);
+                    
                     if (listTemplate) {
+                        console.log('开始处理列表项:', block.data.items);
                         const items = block.data.items.map((item, index) => {
+                            console.log(`处理第${index}项:`, item);
                             let itemHtml = listTemplate.item.replace('{{content}}', processInlineStyles(item.content || '', template));
                             
                             // 处理有序列表的索引
@@ -487,9 +513,15 @@
                                 itemHtml = itemHtml.replace('{{checkbox}}', checkbox);
                             }
                             
+                            console.log(`第${index}项生成的HTML:`, itemHtml);
                             return itemHtml;
                         }).join('');
+                        
                         html = listTemplate.wrapper.replace('{{items}}', items).replace('{{class}}', '');
+                        console.log('最终列表HTML:', html);
+                    } else {
+                        console.error('未找到匹配的列表模板:', listStyle, '可用模板:', Object.keys(listTemplates || {}));
+                        html = `<div style="color: #999; font-style: italic;">未找到列表模板: ${listStyle}</div>`;
                     }
                     break;
                     
@@ -501,6 +533,7 @@
                     html = `<div style="color: #999;">未知块类型: ${block.type}</div>`;
             }
             
+            console.log('块渲染完成:', block.type, '输出HTML:', html);
             return html;
         }
 
