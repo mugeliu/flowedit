@@ -12,13 +12,27 @@ import { AboutSettings } from './components/about-settings'
 
 function App() {
   const [activeSection, setActiveSection] = useState('overview')
+  const [editingArticleId, setEditingArticleId] = useState<string | null>(null)
+
+  const handleEditArticle = (articleId: string) => {
+    setEditingArticleId(articleId)
+    setActiveSection('editor-page')
+  }
+
+  const handleSectionChange = (section: string) => {
+    // 如果不是跳转到编辑器，清除编辑文章ID
+    if (section !== 'editor-page') {
+      setEditingArticleId(null)
+    }
+    setActiveSection(section)
+  }
 
   const renderContent = () => {
     switch (activeSection) {
       case 'overview':
-        return <OverviewSettings />
+        return <OverviewSettings onSectionChange={handleSectionChange} onEditArticle={handleEditArticle} />
       case 'editor-page':
-        return <EditorPageSettings />
+        return <EditorPageSettings articleId={editingArticleId} />
       case 'general':
         return <GeneralSettings />
       case 'editor':
@@ -26,18 +40,18 @@ function App() {
       case 'styles':
         return <StylesSettings />
       case 'history':
-        return <HistorySettings />
+        return <HistorySettings onEditArticle={handleEditArticle} onSectionChange={handleSectionChange} />
       case 'about':
         return <AboutSettings />
       default:
-        return <OverviewSettings />
+        return <OverviewSettings onSectionChange={handleSectionChange} onEditArticle={handleEditArticle} />
     }
   }
 
   const getPageTitle = () => {
     switch (activeSection) {
       case 'overview':
-        return 'FlowEdit 设置'
+        return 'FlowEdit 控制台'
       case 'editor-page':
         return '编辑器'
       case 'general':
@@ -51,7 +65,7 @@ function App() {
       case 'about':
         return '关于'
       default:
-        return 'FlowEdit 设置'
+        return 'FlowEdit 控制台'
     }
   }
 
@@ -61,10 +75,10 @@ function App() {
       <div className="flex h-screen w-full">
         <AppSidebar 
           activeSection={activeSection} 
-          onSectionChange={setActiveSection} 
+          onSectionChange={handleSectionChange} 
         />
         <SidebarInset className="flex-1">
-          {activeSection !== 'editor-page' && (
+          {activeSection !== 'editor-page' && activeSection !== 'overview' && (
             <header className="flex h-16 shrink-0 items-center gap-2 px-4">
               <SidebarTrigger className="-ml-1" />
               <div className="ml-2">
@@ -72,7 +86,10 @@ function App() {
               </div>
             </header>
           )}
-          <main className={`flex-1 overflow-auto ${activeSection === 'editor-page' ? 'p-4' : 'p-6'}`}>
+          <main className={`flex-1 overflow-auto ${
+            activeSection === 'editor-page' ? 'p-4' : 
+            activeSection === 'overview' ? 'p-6' : 'p-6'
+          }`}>
             {renderContent()}
           </main>
         </SidebarInset>

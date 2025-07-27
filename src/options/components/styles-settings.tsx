@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../shared/components/ui/card'
 import { Button } from '../../shared/components/ui/button'
-import { Palette, Eye, Download, Upload, Plus, Trash2, Check, Loader2, Globe, HardDrive, Sparkles } from 'lucide-react'
+import { Badge } from '../../shared/components/ui/badge'
+import { Palette, Eye, Upload, Check, Loader2, Sparkles, Download, Wand2, Settings, Star, Heart, TrendingUp } from 'lucide-react'
 import { TemplateManager } from '../../shared/services/template-manager.js'
 import { createLogger } from '../../shared/services/logger.js'
+import { PreviewDialog } from '../../shared/components/preview-dialog'
+import testData from '../../../assets/test-data.json'
 
 const logger = createLogger('StylesSettings')
 
@@ -22,6 +25,10 @@ export function StylesSettings() {
   const [currentTemplateId, setCurrentTemplateId] = useState('default')
   const [loading, setLoading] = useState(true)
   const [switching, setSwitching] = useState<string | null>(null)
+  
+  // 预览对话框状态
+  const [previewOpen, setPreviewOpen] = useState(false)
+  const [previewTemplate, setPreviewTemplate] = useState<Template | null>(null)
 
   const templateManager = new TemplateManager()
 
@@ -35,8 +42,10 @@ export function StylesSettings() {
     try {
       setLoading(true)
       const availableTemplates = await templateManager.getAvailableTemplates()
-      setTemplates(availableTemplates)
-      logger.info('加载模板列表成功', { count: availableTemplates.length })
+      // 只保留内置模板
+      const builtinTemplates = availableTemplates.filter(t => t.source === 'builtin')
+      setTemplates(builtinTemplates)
+      logger.info('加载模板列表成功', { count: builtinTemplates.length })
     } catch (error) {
       logger.error('加载模板列表失败:', error)
     } finally {
@@ -69,292 +78,271 @@ export function StylesSettings() {
     }
   }
 
-  const getPreviewColors = (template: Template) => {
-    // 根据模板ID返回对应的预览颜色
+  const handlePreviewTemplate = (template: Template) => {
+    setPreviewTemplate(template)
+    setPreviewOpen(true)
+  }
+
+  const handleImportTemplate = async () => {
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = '.json,.flowedit'
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0]
+      if (file) {
+        try {
+          const text = await file.text()
+          const templateData = JSON.parse(text)
+          
+          // 生成唯一的模板ID
+          const templateId = `imported_${Date.now()}`
+          
+          // 使用TemplateManager的缓存功能保存导入的模板
+          await templateManager.cacheTemplate(templateId, {
+            ...templateData,
+            id: templateId,
+            source: 'imported',
+            importedAt: Date.now()
+          })
+          
+          logger.info('模板导入并缓存成功:', templateId)
+          
+          // 重新加载模板列表以显示导入的模板
+          await loadTemplates()
+        } catch (error) {
+          logger.error('模板导入失败:', error)
+        }
+      }
+    }
+    input.click()
+  }
+
+  const loadTestData = async () => {
+    return testData
+  }
+
+  const getTemplateIcon = (template: Template) => {
     switch (template.id) {
       case 'default':
-        return 'from-emerald-50 to-emerald-100 text-emerald-700'
+        return <Sparkles className="w-6 h-6" />
       case 'business-minimal':
-        return 'from-gray-50 to-gray-100 text-gray-700'
+        return <Settings className="w-6 h-6" />
       case 'warm-orange':
-        return 'from-orange-50 to-orange-100 text-orange-700'
+        return <Heart className="w-6 h-6" />
       case 'literary-green':
-        return 'from-green-50 to-green-100 text-green-700'
+        return <Star className="w-6 h-6" />
       case 'abstract-illustration':
-        return 'from-purple-50 to-purple-100 text-purple-700'
+        return <Wand2 className="w-6 h-6" />
       case 'diffused-gradient':
-        return 'from-blue-50 to-blue-100 text-blue-700'
-      case 'ultra-bold-typography':
-        return 'from-red-50 to-red-100 text-red-700'
-      case 'handcraft-texture':
-        return 'from-amber-50 to-amber-100 text-amber-700'
+        return <TrendingUp className="w-6 h-6" />
       default:
-        return 'from-slate-50 to-slate-100 text-slate-700'
+        return <Palette className="w-6 h-6" />
     }
   }
 
-  const renderTemplateCard = (template: Template) => {
-    const isActive = template.id === currentTemplateId
-    const isSwitching = switching === template.id
-    const previewColors = getPreviewColors(template)
-    
-    return (
-      <div 
-        key={template.id} 
-        className={`border rounded-lg p-4 transition-all ${
-          isActive 
-            ? 'border-primary bg-primary/5 ring-2 ring-primary/20' 
-            : 'hover:border-primary/50'
-        }`}
-      >
-        {/* 预览区域 */}
-        <div className={`w-full h-24 rounded-md bg-gradient-to-br ${previewColors} border mb-3 flex flex-col items-center justify-center relative overflow-hidden`}>
-          <div className="text-xs font-medium mb-1">{template.name}</div>
-          <div className="flex space-x-1">
-            <div className="w-8 h-1 bg-current opacity-60 rounded"></div>
-            <div className="w-4 h-1 bg-current opacity-40 rounded"></div>
-            <div className="w-6 h-1 bg-current opacity-50 rounded"></div>
-          </div>
-          {template.source === 'remote' && (
-            <div className="absolute top-2 right-2">
-              <Globe className="w-3 h-3 opacity-60" />
-            </div>
-          )}
-        </div>
-        
-        {/* 模板信息 */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <h3 className="font-medium text-sm">{template.name}</h3>
-            {isActive && (
-              <div className="flex items-center gap-1 text-primary text-xs">
-                <Check className="w-3 h-3" />
-                使用中
-              </div>
-            )}
-          </div>
-          <p className="text-xs text-muted-foreground line-clamp-2">{template.description}</p>
-          
-          {/* 标签信息 */}
-          <div className="flex items-center justify-between text-xs">
-            <div className="flex items-center gap-2">
-              <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs ${
-                template.source === 'builtin' 
-                  ? 'bg-blue-100 text-blue-700'
-                  : 'bg-green-100 text-green-700'
-              }`}>
-                {template.source === 'builtin' ? (
-                  <HardDrive className="w-3 h-3" />
-                ) : (
-                  <Globe className="w-3 h-3" />
-                )}
-                {template.source === 'builtin' ? '内置' : '在线'}
-              </span>
-              <span className="text-muted-foreground">{template.category}</span>
-            </div>
-            <span className="text-muted-foreground">v{template.version}</span>
-          </div>
-          
-          {/* 操作按钮 */}
-          <div className="flex gap-2 pt-2">
-            <Button variant="outline" size="sm" className="flex-1">
-              <Eye className="w-3 h-3 mr-1" />
-              预览
-            </Button>
-            {!isActive && (
-              <Button 
-                size="sm" 
-                onClick={() => handleTemplateSwitch(template.id)}
-                disabled={isSwitching}
-                className="flex-1"
-              >
-                {isSwitching ? (
-                  <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                ) : (
-                  "使用"
-                )}
-              </Button>
-            )}
-          </div>
-        </div>
-      </div>
-    )
+  const getTemplateGradient = (template: Template) => {
+    const gradients = {
+      'default': 'from-emerald-400 via-teal-500 to-blue-500',
+      'business-minimal': 'from-slate-400 via-gray-500 to-zinc-600',
+      'warm-orange': 'from-orange-400 via-red-500 to-pink-500',
+      'literary-green': 'from-green-400 via-emerald-500 to-teal-600',
+      'abstract-illustration': 'from-purple-400 via-violet-500 to-indigo-600',
+      'diffused-gradient': 'from-blue-400 via-cyan-500 to-teal-500',
+      'ultra-bold-typography': 'from-red-400 via-rose-500 to-pink-600',
+      'handcraft-texture': 'from-amber-400 via-orange-500 to-yellow-500'
+    }
+    return gradients[template.id] || 'from-slate-400 via-gray-500 to-zinc-600'
   }
-
-  const builtinTemplates = templates.filter(t => t.source === 'builtin')
-  const remoteTemplates = templates.filter(t => t.source === 'remote')
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-6 h-6 animate-spin" />
-        <span className="ml-2">加载模板中...</span>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="w-12 h-12 mx-auto rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+            <Loader2 className="w-6 h-6 text-white animate-spin" />
+          </div>
+          <div>
+            <h3 className="font-medium text-gray-900">加载样式模板</h3>
+            <p className="text-sm text-gray-500">正在获取可用的样式模板...</p>
+          </div>
+        </div>
       </div>
     )
   }
 
+  const currentTemplate = templates.find(t => t.id === currentTemplateId)
+
   return (
     <div className="space-y-6">
-      
-      {/* 当前使用的模板 */}
-      {currentTemplateId && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Sparkles className="w-5 h-5" />
-              当前主题
-            </CardTitle>
-            <CardDescription>正在使用的样式模板</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {(() => {
-              const currentTemplate = templates.find(t => t.id === currentTemplateId)
-              return currentTemplate ? (
-                <div className="flex items-center gap-4 p-4 bg-primary/5 border border-primary/20 rounded-lg">
-                  <div className={`w-16 h-16 rounded-lg bg-gradient-to-br ${getPreviewColors(currentTemplate)} flex items-center justify-center`}>
-                    <Palette className="w-6 h-6" />
+      {/* 当前使用模板 */}
+      {currentTemplate && (
+        <div className="bg-white/70 backdrop-blur-sm rounded-2xl border border-white/20 shadow-xl overflow-hidden">
+          <div className="p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center">
+                <Check className="w-4 h-4 text-white" />
+              </div>
+              <h2 className="text-xl font-semibold text-gray-900">当前样式</h2>
+            </div>
+            
+            <div className="relative">
+              <div className={`h-32 rounded-xl bg-gradient-to-br ${getTemplateGradient(currentTemplate)} p-6 flex items-center justify-between text-white overflow-hidden`}>
+                <div className="absolute inset-0 bg-black/10"></div>
+                <div className="relative z-10">
+                  <div className="flex items-center gap-3 mb-2">
+                    {getTemplateIcon(currentTemplate)}
+                    <h3 className="text-lg font-semibold">{currentTemplate.name}</h3>
+                    <Badge variant="secondary" className="bg-white/20 text-white border-0">
+                      v{currentTemplate.version}
+                    </Badge>
                   </div>
-                  <div className="flex-1">
-                    <h3 className="font-medium">{currentTemplate.name}</h3>
-                    <p className="text-sm text-muted-foreground">{currentTemplate.description}</p>
-                    <div className="flex items-center gap-2 mt-2">
-                      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs ${
-                        currentTemplate.source === 'builtin' 
-                          ? 'bg-blue-100 text-blue-700'
-                          : 'bg-green-100 text-green-700'
-                      }`}>
-                        {currentTemplate.source === 'builtin' ? '内置' : '在线'}
+                  <p className="text-white/90 text-sm max-w-md">{currentTemplate.description}</p>
+                </div>
+                <div className="relative z-10 flex items-center gap-2">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => handlePreviewTemplate(currentTemplate)}
+                    className="bg-white/20 hover:bg-white/30 text-white border-0"
+                  >
+                    <Eye className="w-4 h-4 mr-2" />
+                    预览
+                  </Button>
+                </div>
+                
+                {/* 装饰元素 */}
+                <div className="absolute top-4 right-4 w-24 h-24 rounded-full bg-white/10 blur-xl"></div>
+                <div className="absolute bottom-4 right-16 w-16 h-16 rounded-full bg-white/5 blur-lg"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 模板网格 */}
+      <div className="bg-white/70 backdrop-blur-sm rounded-2xl border border-white/20 shadow-xl">
+        <div className="p-6 border-b border-gray-100">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">模板库</h2>
+              <p className="text-gray-600 mt-1">选择您喜欢的样式模板</p>
+            </div>
+            <Button
+              onClick={handleImportTemplate}
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0 shadow-lg"
+            >
+              <Upload className="w-4 h-4 mr-2" />
+              导入模板
+            </Button>
+          </div>
+        </div>
+        
+        <div className="p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {templates.map((template) => {
+              const isActive = template.id === currentTemplateId
+              const isSwitching = switching === template.id
+              
+              return (
+                <div key={template.id} className={`group relative bg-white rounded-xl border-2 transition-all duration-300 overflow-hidden ${
+                  isActive 
+                    ? 'border-blue-500 shadow-lg shadow-blue-500/25' 
+                    : 'border-gray-200 hover:border-gray-300 hover:shadow-lg hover:-translate-y-1'
+                }`}>
+                  {/* 模板预览色块 */}
+                  <div className={`h-24 bg-gradient-to-br ${getTemplateGradient(template)} relative overflow-hidden rounded-t-xl`}>
+                    <div className="absolute inset-0 bg-black/10"></div>
+                    
+                    {/* 顶部状态指示器 */}
+                    {isActive && (
+                      <div className="absolute top-3 right-3 w-6 h-6 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center">
+                        <Check className="w-4 h-4 text-blue-600" />
+                      </div>
+                    )}
+                    
+                    {/* 模板标题在底部 */}
+                    <div className="absolute bottom-2 left-3 right-3">
+                      <h3 className="font-bold text-white text-sm truncate drop-shadow-lg">{template.name}</h3>
+                    </div>
+                    
+                    {/* 图标居中 */}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="text-white/80 drop-shadow-lg">
+                        {getTemplateIcon(template)}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* 模板信息 */}
+                  <div className="p-4">
+                    <p className="text-sm text-gray-600 mb-3 line-clamp-2 leading-relaxed">{template.description}</p>
+                    
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full font-medium">
+                        {template.category}
                       </span>
-                      <span className="text-xs text-muted-foreground">{currentTemplate.category}</span>
+                      <Badge variant="outline" className="text-xs px-2 py-1">
+                        v{template.version}
+                      </Badge>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handlePreviewTemplate(template)}
+                        className="flex-1 text-xs h-8 hover:bg-gray-50"
+                      >
+                        <Eye className="w-3 h-3 mr-1" />
+                        预览
+                      </Button>
+                      
+                      {!isActive && (
+                        <Button
+                          size="sm"
+                          onClick={() => handleTemplateSwitch(template.id)}
+                          disabled={isSwitching}
+                          className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0 text-xs h-8 shadow-md hover:shadow-lg transition-all"
+                        >
+                          {isSwitching ? (
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                          ) : (
+                            "使用"
+                          )}
+                        </Button>
+                      )}
+                      
+                      {isActive && (
+                        <div className="flex-1 flex items-center justify-center gap-1 text-blue-600 text-xs font-medium bg-blue-50 rounded-md py-2 border border-blue-200">
+                          <Check className="w-3 h-3" />
+                          使用中
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
-              ) : (
-                <div className="text-center py-4 text-muted-foreground">
-                  未找到当前模板信息
-                </div>
               )
-            })()}
-          </CardContent>
-        </Card>
+            })}
+          </div>
+        </div>
+      </div>
+      
+      {/* 样式预览对话框 */}
+      {previewTemplate && (
+        <PreviewDialog
+          isOpen={previewOpen}
+          onClose={() => setPreviewOpen(false)}
+          title={`${previewTemplate.name} 样式预览`}
+          subtitle={previewTemplate.description}
+          loadData={loadTestData}
+          templateId={previewTemplate.id}
+          metadata={{
+            模板分类: previewTemplate.category,
+            版本: previewTemplate.version,
+            来源: '内置模板'
+          }}
+        />
       )}
-
-      {/* 内置模板 */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <HardDrive className="w-5 h-5" />
-            内置模板
-            <span className="text-sm font-normal text-muted-foreground">({builtinTemplates.length})</span>
-          </CardTitle>
-          <CardDescription>系统提供的预设样式模板，无需网络连接</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {builtinTemplates.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {builtinTemplates.map(renderTemplateCard)}
-            </div>
-          ) : (
-            <div className="text-center py-8 text-muted-foreground">
-              暂无内置模板
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* 在线模板 */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Globe className="w-5 h-5" />
-            在线模板
-            <span className="text-sm font-normal text-muted-foreground">({remoteTemplates.length})</span>
-          </CardTitle>
-          <CardDescription>来自云端的更多样式选择，需要网络连接</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {remoteTemplates.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {remoteTemplates.map(renderTemplateCard)}
-            </div>
-          ) : (
-            <div className="text-center py-8 text-muted-foreground">
-              <Globe className="w-12 h-12 mx-auto mb-3 opacity-50" />
-              <p>暂无在线模板</p>
-              <p className="text-sm">未来将提供更多云端模板</p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* 自定义样式 */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Plus className="w-5 h-5" />
-            自定义样式
-          </CardTitle>
-          <CardDescription>创建和管理你的个人样式模板</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-sm text-muted-foreground">暂无自定义样式</p>
-                <p className="text-xs text-muted-foreground">你可以基于现有模板创建自己的样式</p>
-              </div>
-              <Button size="sm" className="gap-2">
-                <Plus className="w-4 h-4" />
-                新建样式
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* 样式管理 */}
-      <Card>
-        <CardHeader>
-          <CardTitle>样式管理</CardTitle>
-          <CardDescription>导入导出和分享你的样式模板</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="flex items-center justify-between p-4 border rounded-lg">
-              <div>
-                <h3 className="font-medium">导出样式包</h3>
-                <p className="text-sm text-muted-foreground">将所有自定义样式导出为文件</p>
-              </div>
-              <Button variant="outline" size="sm">
-                <Download className="w-4 h-4 mr-2" />
-                导出
-              </Button>
-            </div>
-            
-            <div className="flex items-center justify-between p-4 border rounded-lg">
-              <div>
-                <h3 className="font-medium">导入样式包</h3>
-                <p className="text-sm text-muted-foreground">从文件导入样式模板</p>
-              </div>
-              <Button variant="outline" size="sm">
-                <Upload className="w-4 h-4 mr-2" />
-                导入
-              </Button>
-            </div>
-          </div>
-          
-          <div className="flex items-center justify-between p-4 border border-destructive/20 rounded-lg bg-destructive/5">
-            <div>
-              <h3 className="font-medium">重置为默认</h3>
-              <p className="text-sm text-muted-foreground">清空所有自定义样式，恢复默认设置</p>
-            </div>
-            <Button variant="destructive" size="sm">
-              <Trash2 className="w-4 h-4 mr-2" />
-              重置
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   )
 }

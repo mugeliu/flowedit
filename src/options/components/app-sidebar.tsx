@@ -35,7 +35,7 @@ export function AppSidebar({ activeSection, onSectionChange }: AppSidebarProps) 
     <Sidebar>
       <SidebarHeader className="border-b border-sidebar-border p-4">
         <div className="flex items-center gap-2 cursor-pointer" onClick={() => onSectionChange?.('overview')}>
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground text-sm font-semibold">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 text-white text-sm font-semibold">
             F
           </div>
           <div>
@@ -49,6 +49,22 @@ export function AppSidebar({ activeSection, onSectionChange }: AppSidebarProps) 
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
+              {/* 首页 */}
+              <SidebarMenuItem>
+                <SidebarMenuButton 
+                  asChild
+                  isActive={activeSection === 'overview'}
+                >
+                  <button
+                    onClick={() => onSectionChange?.('overview')}
+                    className="w-full"
+                  >
+                    <Home />
+                    <span>首页</span>
+                  </button>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
               {/* 编辑器 */}
               <SidebarMenuItem>
                 <SidebarMenuButton 
@@ -65,13 +81,45 @@ export function AppSidebar({ activeSection, onSectionChange }: AppSidebarProps) 
                 </SidebarMenuButton>
               </SidebarMenuItem>
 
+              {/* 历史文章 */}
+              <SidebarMenuItem>
+                <SidebarMenuButton 
+                  asChild
+                  isActive={activeSection === 'history'}
+                >
+                  <button
+                    onClick={() => onSectionChange?.('history')}
+                    className="w-full"
+                  >
+                    <History />
+                    <span>历史文章</span>
+                  </button>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              {/* 我的样式 */}
+              <SidebarMenuItem>
+                <SidebarMenuButton 
+                  asChild
+                  isActive={activeSection === 'styles'}
+                >
+                  <button
+                    onClick={() => onSectionChange?.('styles')}
+                    className="w-full"
+                  >
+                    <Palette />
+                    <span>我的样式</span>
+                  </button>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
               {/* 基本设置 - 可折叠分组 */}
               <Collapsible defaultOpen className="group/collapsible">
                 <SidebarMenuItem>
                   <CollapsibleTrigger asChild>
                     <SidebarMenuButton className="w-full">
                       <Settings />
-                      <span>基本设置</span>
+                      <span>设置</span>
                       <ChevronDown className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-180" />
                     </SidebarMenuButton>
                   </CollapsibleTrigger>
@@ -86,7 +134,7 @@ export function AppSidebar({ activeSection, onSectionChange }: AppSidebarProps) 
                             onClick={() => onSectionChange?.('general')}
                             className="w-full"
                           >
-                            <Home className="w-4 h-4" />
+                            <Settings className="w-4 h-4" />
                             <span>基本设置</span>
                           </button>
                         </SidebarMenuSubButton>
@@ -109,38 +157,6 @@ export function AppSidebar({ activeSection, onSectionChange }: AppSidebarProps) 
                   </CollapsibleContent>
                 </SidebarMenuItem>
               </Collapsible>
-
-              {/* 我的样式 */}
-              <SidebarMenuItem>
-                <SidebarMenuButton 
-                  asChild
-                  isActive={activeSection === 'styles'}
-                >
-                  <button
-                    onClick={() => onSectionChange?.('styles')}
-                    className="w-full"
-                  >
-                    <Palette />
-                    <span>我的样式</span>
-                  </button>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-
-              {/* 历史文章 */}
-              <SidebarMenuItem>
-                <SidebarMenuButton 
-                  asChild
-                  isActive={activeSection === 'history'}
-                >
-                  <button
-                    onClick={() => onSectionChange?.('history')}
-                    className="w-full"
-                  >
-                    <History />
-                    <span>历史文章</span>
-                  </button>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
 
               {/* 关于 */}
               <SidebarMenuItem>

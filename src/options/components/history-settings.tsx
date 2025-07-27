@@ -4,7 +4,7 @@ import { Button } from '../../shared/components/ui/button'
 import { History, Search, Filter, Eye, Edit, Trash2, Download, FileText, Clock, RefreshCw } from 'lucide-react'
 import { createLogger } from '../../shared/services/logger.js'
 import { storage } from '../../shared/services/storage/index.js'
-// import { ArticlePreview } from './article-preview'
+import { PreviewDialog } from '../../shared/components/preview-dialog'
 
 const logger = createLogger('HistorySettings')
 
@@ -19,21 +19,27 @@ interface Article {
   metadata?: any
 }
 
-export function HistorySettings() {
+interface HistorySettingsProps {
+  onEditArticle?: (articleId: string) => void
+  onSectionChange?: (section: string) => void
+}
+
+export function HistorySettings({ onEditArticle, onSectionChange }: HistorySettingsProps) {
   const [articles, setArticles] = useState<Article[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('all')
-  const [storage, setStorage] = useState<any>(null)
-  // 移除预览相关状态
-  // const [previewOpen, setPreviewOpen] = useState(false)
-  // const [previewArticleId, setPreviewArticleId] = useState<string | null>(null)
+  const [storageService, setStorageService] = useState<any>(null)
+  
+  // 预览相关状态
+  const [previewOpen, setPreviewOpen] = useState(false)
+  const [previewArticle, setPreviewArticle] = useState<Article | null>(null)
 
   // Initialize storage service
   useEffect(() => {
     const initStorage = async () => {
       try {
-        setStorage(storage)
+        setStorageService(storage)
         await loadArticles(storage)
       } catch (error) {
         logger.error('Failed to initialize storage service:', error)
@@ -43,10 +49,10 @@ export function HistorySettings() {
     initStorage()
   }, [])
 
-  const loadArticles = async (storageService?: any) => {
+  const loadArticles = async (storageServiceParam?: any) => {
     try {
       setLoading(true)
-      const service = storageService || storage
+      const service = storageServiceParam || storageService
       if (!service) return
 
       const articleList = await service.getAllArticles({
@@ -90,11 +96,11 @@ export function HistorySettings() {
   }
 
   const handleDeleteArticle = async (articleId: string) => {
-    if (!storage) return
+    if (!storageService) return
     
     if (confirm('确定要删除这篇文章吗？此操作不可恢复。')) {
       try {
-        const success = await storage.deleteArticle(articleId)
+        const success = await storageService.deleteArticle(articleId)
         if (success) {
           await loadArticles()
           logger.info(`Article ${articleId} deleted successfully`)
@@ -108,10 +114,10 @@ export function HistorySettings() {
   }
 
   const handleExportArticle = async (articleId: string) => {
-    if (!storage) return
+    if (!storageService) return
     
     try {
-      const article = await storage.getArticle(articleId)
+      const article = await storageService.getArticle(articleId)
       if (article) {
         const exportData = {
           title: article.title,
@@ -137,10 +143,21 @@ export function HistorySettings() {
     }
   }
 
-  const handlePreviewArticle = (articleId: string) => {
-    // 预览功能已移除
-    logger.info('预览功能已移除，文章ID:', articleId)
-    // 可以添加其他操作，比如跳转到编辑页面等
+  const handlePreviewArticle = (article: Article) => {
+    setPreviewArticle(article)
+    setPreviewOpen(true)
+  }
+
+  const handleLoadArticle = async () => {
+    if (!storageService || !previewArticle) {
+      throw new Error('存储服务未初始化或文章不存在')
+    }
+    // 使用 getArticleEditorData 获取 EditorJS 格式的数据
+    const editorData = await storageService.getArticleEditorData(previewArticle.id)
+    if (!editorData) {
+      throw new Error('无法加载文章的EditorJS数据')
+    }
+    return editorData
   }
 
   // Filter articles based on search term and status
@@ -156,56 +173,61 @@ export function HistorySettings() {
 
   if (loading) {
     return (
-      <div className="space-y-6">
-        <Card>
-          <CardContent className="flex items-center justify-center py-8">
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <RefreshCw className="w-4 h-4 animate-spin" />
-              加载文章列表中...
-            </div>
-          </CardContent>
-        </Card>
+      <div className="min-h-64 flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="w-12 h-12 mx-auto rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+            <RefreshCw className="w-6 h-6 text-white animate-spin" />
+          </div>
+          <div>
+            <h3 className="font-medium text-gray-900">加载文章列表</h3>
+            <p className="text-sm text-gray-500">正在获取您的文章...</p>
+          </div>
+        </div>
       </div>
     )
   }
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
+      {/* 主文章列表 */}
+      <div className="bg-white/70 backdrop-blur-sm rounded-2xl border border-white/20 shadow-xl">
+        <div className="p-6 border-b border-gray-100">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="flex items-center gap-2">
-                <History className="w-5 h-5" />
-                历史文章管理
-              </CardTitle>
-              <CardDescription>查看和管理你的所有文章</CardDescription>
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center">
+                  <History className="w-4 h-4 text-white" />
+                </div>
+                <h2 className="text-xl font-semibold text-gray-900">历史文章管理</h2>
+              </div>
+              <p className="text-gray-600">查看和管理你的所有文章</p>
             </div>
-            <Button onClick={handleRefresh} variant="outline" size="sm">
+            <Button onClick={handleRefresh} variant="outline" size="sm" className="hover:bg-gray-50">
               <RefreshCw className="w-4 h-4 mr-2" />
               刷新
             </Button>
           </div>
-        </CardHeader>
-        <CardContent>
+        </div>
+        
+        <div className="p-6">
           {/* 搜索和筛选 */}
           <div className="flex gap-4 flex-wrap mb-6">
             <div className="flex-1 min-w-[200px]">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <input 
                   type="text" 
                   placeholder="搜索文章标题或内容..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
             </div>
             <select 
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+              className="px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
             >
               <option value="all">全部状态</option>
               <option value="已发布">已发布</option>
@@ -217,106 +239,134 @@ export function HistorySettings() {
           {/* 文章列表 */}
           <div className="space-y-4">
             {filteredArticles.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                {searchTerm || statusFilter !== 'all' ? '未找到匹配的文章' : '暂无文章'}
+              <div className="text-center py-12">
+                <div className="w-16 h-16 mx-auto rounded-full bg-gray-100 flex items-center justify-center mb-4">
+                  <FileText className="w-8 h-8 text-gray-400" />
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  {searchTerm || statusFilter !== 'all' ? '未找到匹配的文章' : '暂无文章'}
+                </h3>
+                <p className="text-gray-500">
+                  {searchTerm || statusFilter !== 'all' ? '请尝试修改搜索条件' : '开始创作你的第一篇文章吧'}
+                </p>
               </div>
             ) : (
-              filteredArticles.map((article) => (
-                <div key={article.id} className="border rounded-lg p-4 hover:border-primary/50 transition-colors">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <h3 className="font-medium">{article.title}</h3>
-                        <span className={`px-2 py-1 text-xs rounded-full ${
-                          article.status === '已发布' 
-                            ? 'bg-green-100 text-green-700' 
-                            : article.status === '草稿'
-                            ? 'bg-orange-100 text-orange-700'
-                            : 'bg-gray-100 text-gray-700'
-                        }`}>
-                          {article.status}
-                        </span>
+              filteredArticles.map((article) => {
+                const statusColors = {
+                  '已发布': 'from-green-50 to-green-100 text-green-700 border-green-200',
+                  '草稿': 'from-orange-50 to-orange-100 text-orange-700 border-orange-200',
+                  '已归档': 'from-gray-50 to-gray-100 text-gray-700 border-gray-200'
+                }
+                const statusClass = statusColors[article.status] || 'from-gray-50 to-gray-100 text-gray-700 border-gray-200'
+                
+                return (
+                  <div key={article.id} className="bg-white border border-gray-200 rounded-xl p-5 hover:border-gray-300 hover:shadow-md transition-all duration-200">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-3">
+                          <h3 className="font-semibold text-gray-900 text-lg">{article.title}</h3>
+                          <span className={`px-3 py-1 text-xs rounded-full bg-gradient-to-r border ${statusClass}`}>
+                            {article.status}
+                          </span>
+                        </div>
+                        <p className="text-gray-600 mb-4 line-clamp-2">{article.summary}</p>
+                        <div className="flex items-center gap-6 text-xs text-gray-500">
+                          <span className="flex items-center gap-1.5">
+                            <Clock className="w-3.5 h-3.5" />
+                            创建: {article.createdAt}
+                          </span>
+                          <span className="flex items-center gap-1.5">
+                            <Edit className="w-3.5 h-3.5" />
+                            修改: {article.updatedAt}
+                          </span>
+                          <span className="flex items-center gap-1.5">
+                            <FileText className="w-3.5 h-3.5" />
+                            {article.wordCount} 字
+                          </span>
+                        </div>
                       </div>
-                      <p className="text-sm text-muted-foreground mb-2">{article.summary}</p>
-                      <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          创建: {article.createdAt}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Edit className="w-3 h-3" />
-                          修改: {article.updatedAt}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <FileText className="w-3 h-3" />
-                          {article.wordCount} 字
-                        </span>
+                      <div className="flex gap-2 ml-6">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => onEditArticle?.(article.id)}
+                          className="hover:bg-green-50 hover:border-green-300 hover:text-green-600"
+                          title="编辑文章"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handlePreviewArticle(article)}
+                          className="hover:bg-blue-50 hover:border-blue-300 hover:text-blue-600"
+                          title="预览文章"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleExportArticle(article.id)}
+                          className="hover:bg-purple-50 hover:border-purple-300 hover:text-purple-600"
+                          title="导出文章"
+                        >
+                          <Download className="w-4 h-4" />
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="hover:bg-red-50 hover:border-red-300 hover:text-red-600"
+                          onClick={() => handleDeleteArticle(article.id)}
+                          title="删除文章"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
                       </div>
-                    </div>
-                    <div className="flex gap-2 ml-4">
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => handlePreviewArticle(article.id)}
-                        title="预览文章"
-                      >
-                        <Eye className="w-3 h-3" />
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => handleExportArticle(article.id)}
-                        title="导出文章"
-                      >
-                        <Download className="w-3 h-3" />
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        className="text-red-600 hover:text-red-700"
-                        onClick={() => handleDeleteArticle(article.id)}
-                        title="删除文章"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </Button>
                     </div>
                   </div>
-                </div>
-              ))
+                )
+              })
             )}
           </div>
 
           {/* 显示文章统计信息 */}
           {articles.length > 0 && (
-            <div className="mt-6 pt-4 border-t">
-              <div className="flex justify-between text-sm text-muted-foreground">
-                <span>共 {filteredArticles.length} 篇文章</span>
-                <span>总计 {filteredArticles.reduce((sum, article) => sum + article.wordCount, 0)} 字</span>
+            <div className="mt-6 pt-6 border-t border-gray-100">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">共 <span className="font-semibold text-gray-900">{filteredArticles.length}</span> 篇文章</span>
+                <span className="text-gray-600">总计 <span className="font-semibold text-gray-900">{filteredArticles.reduce((sum, article) => sum + article.wordCount, 0)}</span> 字</span>
               </div>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
-      {/* 批量操作 */}
-      <Card>
-        <CardHeader>
-          <CardTitle>数据管理</CardTitle>
-          <CardDescription>批量操作和数据维护</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="font-medium">导出所有文章</h3>
-              <p className="text-sm text-muted-foreground">将所有文章导出为JSON格式文件</p>
+      {/* 数据管理 */}
+      <div className="bg-white/70 backdrop-blur-sm rounded-2xl border border-white/20 shadow-xl">
+        <div className="p-6 border-b border-gray-100">
+          <h2 className="text-xl font-semibold text-gray-900">数据管理</h2>
+          <p className="text-gray-600 mt-1">批量操作和数据维护</p>
+        </div>
+        <div className="p-6 space-y-6">
+          <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl border border-blue-200">
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+                <Download className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900">导出所有文章</h3>
+                <p className="text-sm text-gray-600">将所有文章导出为JSON格式文件</p>
+              </div>
             </div>
             <Button 
               variant="outline" 
               size="sm"
+              className="hover:bg-blue-50"
               onClick={async () => {
-                if (!storage) return
+                if (!storageService) return
                 try {
-                  const allArticles = await storage.getAllArticles()
+                  const allArticles = await storageService.getAllArticles()
                   const exportData = {
                     articles: allArticles,
                     exportedAt: new Date().toISOString(),
@@ -339,24 +389,29 @@ export function HistorySettings() {
                 }
               }}
             >
-              <Download className="w-4 h-4 mr-2" />
               导出
             </Button>
           </div>
           
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="font-medium">清理数据</h3>
-              <p className="text-sm text-muted-foreground">删除过期的草稿和临时数据</p>
+          <div className="flex items-center justify-between p-4 bg-gradient-to-r from-orange-50 to-orange-100 rounded-xl border border-orange-200">
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
+                <Trash2 className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900">清理数据</h3>
+                <p className="text-sm text-gray-600">删除过期的草稿和临时数据</p>
+              </div>
             </div>
             <Button 
               variant="outline" 
               size="sm"
+              className="hover:bg-orange-50"
               onClick={async () => {
-                if (!storage) return
+                if (!storageService) return
                 if (confirm('确定要清理过期数据吗？这将删除超过30天的草稿。')) {
                   try {
-                    await storage.cleanup()
+                    await storageService.cleanup()
                     await loadArticles()
                     logger.info('Data cleanup completed')
                   } catch (error) {
@@ -368,17 +423,28 @@ export function HistorySettings() {
               清理
             </Button>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
-      {/* 预览组件已移除 */}
-      {/* <ArticlePreview
-        open={previewOpen}
-        onOpenChange={setPreviewOpen}
-        articleId={previewArticleId}
-        onDelete={handleDeleteArticle}
-        onExport={handleExportArticle}
-      /> */}
+      {/* 文章预览对话框 */}
+      {previewArticle && (
+        <PreviewDialog
+          isOpen={previewOpen}
+          onClose={() => {
+            setPreviewOpen(false)
+            setPreviewArticle(null)
+          }}
+          title={previewArticle.title}
+          subtitle="历史文章预览"
+          loadData={handleLoadArticle}
+          metadata={{
+            createdAt: previewArticle.createdAt,
+            updatedAt: previewArticle.updatedAt,
+            wordCount: previewArticle.wordCount,
+            status: previewArticle.status
+          }}
+        />
+      )}
     </div>
   )
 }

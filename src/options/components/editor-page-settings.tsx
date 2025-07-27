@@ -1,15 +1,25 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Button } from '../../shared/components/ui/button'
 import { Save, Download, Eye, Upload } from 'lucide-react'
 import { SidebarTrigger } from '../../shared/components/ui/sidebar'
+import { PreviewDialog } from '../../shared/components/preview-dialog'
 import { createLogger } from '../../shared/services/logger.js'
 import { storage } from '../../shared/services/storage/index.js'
 
 const logger = createLogger('EditorPageSettings')
 
-export function EditorPageSettings() {
+interface EditorPageSettingsProps {
+  articleId?: string | null
+}
+
+export function EditorPageSettings({ articleId }: EditorPageSettingsProps) {
   const editorRef = useRef(null)
   const editorInstance = useRef(null)
+  const [currentArticleId, setCurrentArticleId] = useState<string | null>(null)
+  const [editorReady, setEditorReady] = useState(false)
+  
+  // 预览状态
+  const [previewOpen, setPreviewOpen] = useState(false)
 
   useEffect(() => {
     const initializeEditor = async () => {
@@ -21,6 +31,22 @@ export function EditorPageSettings() {
           // 从全局变量获取 EditorJS 和工具
           const EditorJS = window.EditorJS
           const { Header, Paragraph, List, Code, Delimiter, ImageTool, InlineCode, Marker, Quote, Raw, Underline } = EditorJS
+
+          // 标题工具图标资源
+          const EDITOR_ICONS = {
+            h1: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+              <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M6 7L6 12M6 17L6 12M6 12L12 12M12 7V12M12 17L12 12"/>
+              <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M19 17V10.2135C19 10.1287 18.9011 10.0824 18.836 10.1367L16 12.5"/>
+            </svg>`,
+            h2: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+              <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M6 7L6 12M6 17L6 12M6 12L12 12M12 7V12M12 17L12 12"/>
+              <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M16 11C16 10 19 9.5 19 12C19 13.9771 16.0684 13.9997 16.0012 16.8981C15.9999 16.9533 16.0448 17 16.1 17L19.3 17"/>
+            </svg>`,
+            h3: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+              <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M6 7L6 12M6 17L6 12M6 12L12 12M12 7V12M12 17L12 12"/>
+              <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M16 11C16 10.5 16.8323 10 17.6 10C18.3677 10 19.5 10.311 19.5 11.5C19.5 12.5315 18.7474 12.9022 18.548 12.9823C18.5378 12.9864 18.5395 13.0047 18.5503 13.0063C18.8115 13.0456 20 13.3065 20 14.8C20 16 19.5 17 17.8 17C17.8 17 16 17 16 16.3"/>
+            </svg>`
+          }
 
           // 创建EditorJS实例
           editorInstance.current = new EditorJS({
@@ -40,6 +66,11 @@ export function EditorPageSettings() {
                   defaultLevel: 1,
                   placeholder: '请输入标题',
                 },
+                toolbox: [
+                  { title: "标题 1", icon: EDITOR_ICONS.h1, data: { level: 1 } },
+                  { title: "标题 2", icon: EDITOR_ICONS.h2, data: { level: 2 } },
+                  { title: "标题 3", icon: EDITOR_ICONS.h3, data: { level: 3 } },
+                ],
               },
               quote: {
                 class: Quote,
@@ -61,10 +92,10 @@ export function EditorPageSettings() {
                 class: Delimiter 
               },
               code: { 
-                class: Code,
-                config: {
-                  placeholder: '输入代码...'
-                }
+                class: Code
+              },
+              raw: { 
+                class: Raw
               },
               marker: { 
                 class: Marker 
@@ -75,16 +106,22 @@ export function EditorPageSettings() {
               underline: { 
                 class: Underline 
               },
-              raw: { 
-                class: Raw,
+              image: {
+                class: ImageTool,
                 config: {
-                  placeholder: '输入HTML代码...'
+                  endpoints: {
+                    byFile: 'https://httpbin.org/post', // 临时端点，实际使用时应配置真实的上传服务
+                    byUrl: 'https://httpbin.org/post',
+                  }
                 }
               }
-              // 注意：options页面不包含image工具，因为不需要微信上传功能
             },
             onChange: (api, event) => {
               logger.debug('内容已更改', event)
+            },
+            onReady: () => {
+              logger.info('EditorJS 已准备就绪')
+              setEditorReady(true)
             }
           })
 
@@ -120,8 +157,53 @@ export function EditorPageSettings() {
         editorInstance.current.destroy()
         editorInstance.current = null
       }
+      setEditorReady(false)
+      setCurrentArticleId(null)
     }
   }, [])
+
+  // 加载指定文章的数据
+  useEffect(() => {
+    const loadArticleData = async () => {
+      if (articleId && editorInstance.current && editorReady && articleId !== currentArticleId) {
+        try {
+          logger.info(`开始加载文章: ${articleId}`)
+          logger.info(`编辑器实例状态:`, {
+            hasEditor: !!editorInstance.current,
+            hasRender: !!editorInstance.current?.render,
+            isReady: editorReady
+          })
+          
+          const articleData = await storage.getArticleEditorData(articleId)
+          logger.info(`获取到文章数据:`, articleData)
+          
+          if (articleData && editorInstance.current.render) {
+            logger.info(`准备渲染文章数据，blocks数量: ${articleData.blocks?.length || 0}`)
+            await editorInstance.current.render(articleData)
+            setCurrentArticleId(articleId)
+            logger.info(`文章加载成功: ${articleId}`)
+          } else {
+            logger.warn(`无法加载文章: ${articleId}`, {
+              hasData: !!articleData,
+              hasRenderMethod: !!editorInstance.current?.render
+            })
+          }
+        } catch (error) {
+          logger.error(`加载文章失败: ${articleId}`, error)
+        }
+      } else {
+        logger.debug('跳过文章加载:', {
+          articleId,
+          hasEditor: !!editorInstance.current,
+          editorReady,
+          currentId: currentArticleId,
+          shouldLoad: articleId && editorInstance.current && editorReady && articleId !== currentArticleId
+        })
+      }
+    }
+
+    loadArticleData()
+  }, [articleId, currentArticleId, editorReady])
 
   const handleSave = async () => {
     try {
@@ -129,15 +211,24 @@ export function EditorPageSettings() {
         const editorData = await editorInstance.current.save()
         logger.info('开始保存文章数据:', editorData)
         
-        // 使用共享的storage服务保存文章
-        const result = await storage.saveOrUpdateArticle(editorData, {
-          status: 'draft' // Options页面保存为草稿
-        })
+        // 如果是编辑现有文章，更新它；否则创建新文章
+        const result = currentArticleId 
+          ? await storage.updateArticle(currentArticleId, {
+              editorData,
+              updatedAt: new Date().toISOString()
+            })
+          : await storage.saveOrUpdateArticle(editorData, {
+              status: 'draft' // Options页面保存为草稿
+            })
         
-        if (result.success) {
-          logger.info(`文章已保存: ${result.article.title}`)
-          // 这里可以添加成功提示UI，比如toast
-          alert(`草稿《${result.article.title}》已保存`) // 临时使用alert，后续可改为更好的UI
+        if (result.success || result) {
+          const article = result.article || result
+          logger.info(`文章已保存: ${article.title}`)
+          // 如果是新文章，记录ID
+          if (!currentArticleId && article.id) {
+            setCurrentArticleId(article.id)
+          }
+          alert(`草稿《${article.title}》已保存`) // 临时使用alert，后续可改为更好的UI
         } else {
           logger.error('保存失败:', result)
           alert('保存失败: ' + (result.message || '未知错误'))
@@ -191,16 +282,34 @@ export function EditorPageSettings() {
   }
 
   const handlePreview = async () => {
+    setPreviewOpen(true)
+  }
+
+  const loadCurrentEditorData = async () => {
     try {
       if (editorInstance.current && editorInstance.current.save) {
         const data = await editorInstance.current.save()
-        logger.info('预览文章数据:', data)
-        // 打开预览窗口
+        logger.info('加载编辑器数据用于预览:', data)
+        return data
       } else {
-        logger.info('使用简化模式预览')
+        // 简化模式的fallback
+        const titleElement = document.querySelector('[contenteditable="true"]') as HTMLElement
+        if (titleElement) {
+          const content = titleElement.innerHTML || '空内容'
+          return {
+            blocks: [{
+              type: 'paragraph',
+              data: {
+                text: content
+              }
+            }]
+          }
+        }
+        throw new Error('无法获取编辑器内容')
       }
     } catch (error) {
-      logger.error('预览失败:', error)
+      logger.error('加载编辑器数据失败:', error)
+      throw error
     }
   }
 
@@ -257,12 +366,25 @@ export function EditorPageSettings() {
       </div>
 
       {/* 编辑器区域 */}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-auto">
         <div 
           ref={editorRef}
-          className="h-full w-full focus:outline-none"
+          className="h-full w-full focus:outline-none min-h-[calc(100vh-160px)]"
         />
       </div>
+
+      {/* 预览对话框 */}
+      <PreviewDialog
+        isOpen={previewOpen}
+        onClose={() => setPreviewOpen(false)}
+        title="编辑器内容预览"
+        subtitle="当前编辑内容的样式预览"
+        loadData={loadCurrentEditorData}
+        metadata={{
+          来源: '编辑器页面',
+          模式: editorInstance.current ? 'EditorJS' : '简化模式'
+        }}
+      />
     </div>
   )
 }
@@ -271,14 +393,34 @@ export function EditorPageSettings() {
 function loadEditorJSBundle() {
   return new Promise((resolve, reject) => {
     if (window.EditorJS) {
+      logger.info('EditorJS already loaded')
       resolve()
       return
     }
     
+    logger.info('Loading EditorJS bundle...')
     const script = document.createElement('script')
     script.src = chrome.runtime.getURL('scripts/editorjs-bundle.js')
-    script.onload = resolve
-    script.onerror = reject
+    
+    script.onload = () => {
+      logger.info('EditorJS bundle loaded successfully')
+      // 添加一个小延迟确保全局变量设置完成
+      setTimeout(() => {
+        if (window.EditorJS) {
+          logger.info('EditorJS global variable confirmed')
+          resolve()
+        } else {
+          logger.error('EditorJS global variable not found after loading')
+          reject(new Error('EditorJS global variable not found'))
+        }
+      }, 100)
+    }
+    
+    script.onerror = (error) => {
+      logger.error('Failed to load EditorJS bundle:', error)
+      reject(new Error('Failed to load EditorJS bundle'))
+    }
+    
     document.head.appendChild(script)
   })
 }

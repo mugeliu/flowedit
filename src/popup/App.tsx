@@ -3,7 +3,7 @@ import { Button } from '../shared/components/ui/button'
 import { Card, CardContent } from '../shared/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../shared/components/ui/select'
 import { Toaster } from '../shared/components/ui/sonner'
-import { Settings, Palette } from 'lucide-react'
+import { Settings, Palette, Bell, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { TemplateManager } from '../shared/services/template-manager.js'
 import { createLogger } from '../shared/services/logger.js'
@@ -22,6 +22,7 @@ function App() {
   const [currentTemplateId, setCurrentTemplateId] = useState('default')
   const [localTemplates, setLocalTemplates] = useState<Template[]>([])
   const [loading, setLoading] = useState(true)
+  const [showQRCode, setShowQRCode] = useState(false)
 
   const templateManager = new TemplateManager()
 
@@ -83,69 +84,121 @@ function App() {
     }
   };
 
+  const handleShowQRCode = () => {
+    setShowQRCode(true)
+  }
+
+  const handleCloseQRCode = () => {
+    setShowQRCode(false)
+  }
+
   return (
-    <div className="p-3 w-64 bg-background">
+    <div className="p-4 w-72 bg-background">
       <Toaster />
-      <Card className="border-0 shadow-none">
-        <CardContent className="p-4 space-y-4">
-          {/* 二维码区域 */}
-          <div className="flex flex-col items-center space-y-2">
-            <div className="w-40 h-40 rounded-lg overflow-hidden border">
-              <img 
-                src="/assets/qrcode.jpg" 
-                alt="FlowEdit 二维码" 
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <p className="text-xs text-muted-foreground text-center leading-tight">
-              关注插件最新功能
-            </p>
-          </div>
-
-          {/* 样式模板切换 */}
-          <div className="space-y-2">
-            <div className="flex items-center space-x-2">
-              <Palette className="w-4 h-4 text-muted-foreground" />
-              <span className="text-sm font-medium">样式主题</span>
-            </div>
-            
-            {loading ? (
-              <div className="flex items-center justify-center h-10 text-sm text-muted-foreground">
-                加载中...
+      
+      {showQRCode ? (
+        // 二维码页面
+        <div className="bg-white/70 backdrop-blur-sm rounded-2xl border border-white/20 shadow-xl">
+          <div className="p-4 border-b border-gray-100">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                  <Bell className="w-3 h-3 text-white" />
+                </div>
+                <h3 className="font-semibold text-gray-900">关注更新</h3>
               </div>
-            ) : (
-              <Select value={currentTemplateId} onValueChange={handleTemplateChange}>
-                <SelectTrigger className="w-full h-10">
-                  <SelectValue placeholder="选择样式主题" />
-                </SelectTrigger>
-                <SelectContent>
-                  {localTemplates.map((template) => (
-                    <SelectItem key={template.id} value={template.id}>
-                      {template.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={handleCloseQRCode}
+                className="h-8 w-8 p-0 hover:bg-gray-100 rounded-full"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+          
+          <div className="p-6">
+            <div className="flex flex-col items-center space-y-4">
+              <div className="w-40 h-40 rounded-xl overflow-hidden border border-gray-200 shadow-md">
+                <img 
+                  src="/assets/qrcode.jpg" 
+                  alt="FlowEdit 二维码" 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="text-center">
+                <h4 className="font-medium text-gray-900 mb-1">微信扫码关注</h4>
+                <p className="text-sm text-gray-600">
+                  获取插件最新功能和更新通知
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        // 主页面
+        <div className="space-y-6">
+          {/* 样式主题选择 */}
+          <div className="bg-white/70 backdrop-blur-sm rounded-2xl border border-white/20 shadow-xl">
+            <div className="p-4 border-b border-gray-100">
+              <div className="flex items-center gap-2">
+                <Palette className="w-4 h-4 text-purple-600" />
+                <span className="text-sm font-semibold text-gray-900">样式主题</span>
+              </div>
+            </div>
             
-            {!loading && localTemplates.length > 0 && (
-              <p className="text-xs text-muted-foreground">
-                当前: {localTemplates.find(t => t.id === currentTemplateId)?.name || '默认主题'}
-              </p>
-            )}
+            <div className="p-4">
+              {loading ? (
+                <div className="flex items-center justify-center h-10 text-sm text-gray-500">
+                  加载中...
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <Select value={currentTemplateId} onValueChange={handleTemplateChange}>
+                    <SelectTrigger className="w-full h-10 border-gray-200 hover:border-gray-300">
+                      <SelectValue placeholder="选择样式主题" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {localTemplates.map((template) => (
+                        <SelectItem key={template.id} value={template.id}>
+                          {template.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  
+                  {localTemplates.length > 0 && (
+                    <div className="text-xs text-gray-500 bg-gray-50 px-3 py-2 rounded-lg">
+                      当前: {localTemplates.find(t => t.id === currentTemplateId)?.name || '默认主题'}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* 更多设置按钮 */}
-          <Button 
-            variant="outline" 
-            className="w-full h-10" 
-            onClick={openOptionsPage}
-          >
-            <Settings className="w-4 h-4 mr-2" />
-            更多设置
-          </Button>
-        </CardContent>
-      </Card>
+          {/* 操作按钮 */}
+          <div className="space-y-3">
+            <Button 
+              className="w-full h-10 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0 shadow-lg" 
+              onClick={openOptionsPage}
+            >
+              <Settings className="w-4 h-4 mr-2" />
+              更多设置
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              className="w-full h-10 hover:bg-gray-50" 
+              onClick={handleShowQRCode}
+            >
+              <Bell className="w-4 h-4 mr-2" />
+              关注更新
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

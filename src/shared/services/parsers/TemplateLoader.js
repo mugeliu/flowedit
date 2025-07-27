@@ -14,6 +14,7 @@ class TemplateLoader {
   constructor() {
     this.template = null;
     this.isLoaded = false;
+    this.isManuallyLoaded = false; // 标记是否手动加载了模板
   }
 
   /**
@@ -28,6 +29,7 @@ class TemplateLoader {
       if (result.currentTemplate) {
         logger.info(`从存储加载模板: ${result.currentTemplateId}`);
         this.loadTemplate(result.currentTemplate);
+        this.isManuallyLoaded = false; // 重置手动加载标记
         return true;
       }
       
@@ -60,6 +62,7 @@ class TemplateLoader {
     });
     
     this.loadTemplate(defaultTemplate);
+    this.isManuallyLoaded = false; // 重置手动加载标记
     return true;
   }
 
@@ -81,6 +84,7 @@ class TemplateLoader {
 
       this.template = template;
       this.isLoaded = true;
+      this.isManuallyLoaded = true; // 标记为手动加载
       logger.debug(`模板加载成功: ${template.id || template.name || 'unknown'}`);
       return true;
     } catch (error) {
@@ -97,6 +101,12 @@ class TemplateLoader {
    * 确保模板已加载，否则从存储自动加载
    */
   async _ensureLoaded() {
+    // 如果已经手动加载了模板，不要从存储重新加载
+    if (this.isManuallyLoaded && this.isLoaded) {
+      logger.debug('模板已手动加载，跳过从存储加载');
+      return;
+    }
+    
     // 每次都重新从存储加载，确保获取最新模板
     logger.debug('重新从存储加载模板以确保最新');
     await this.loadFromStorage();
