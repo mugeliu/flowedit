@@ -98,21 +98,33 @@ export class ArticleSerializer {
    */
   deserialize(articleData) {
     try {
+      logger.info('开始反序列化文章数据:', articleData)
+      
       if (!articleData || !articleData.content) {
+        logger.error('文章数据无效:', { hasData: !!articleData, hasContent: !!articleData?.content })
         throw new Error('无效的文章数据');
       }
       
       // 验证数据格式
       if (!this._validateArticleData(articleData)) {
+        logger.error('文章数据格式验证失败:', articleData)
         throw new Error('文章数据格式不正确');
       }
       
       // 返回EditorJS格式的数据
-      return {
+      const result = {
         blocks: articleData.content.blocks || articleData.raw?.blocks || [],
         time: articleData.content.time || articleData.raw?.time || Date.now(),
         version: articleData.metadata?.editorVersion || '2.0.0'
       };
+      
+      logger.info('反序列化结果:', {
+        blocksCount: result.blocks.length,
+        hasTime: !!result.time,
+        version: result.version
+      })
+      
+      return result;
     } catch (error) {
       logger.error('反序列化文章数据失败:', error);
       throw new Error('文章数据反序列化失败');

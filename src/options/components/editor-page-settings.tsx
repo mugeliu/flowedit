@@ -5,6 +5,7 @@ import { SidebarTrigger } from '../../shared/components/ui/sidebar'
 import { PreviewDialog } from '../../shared/components/preview-dialog'
 import { createLogger } from '../../shared/services/logger.js'
 import { storage } from '../../shared/services/storage/index.js'
+import { toast } from 'sonner'
 
 const logger = createLogger('EditorPageSettings')
 
@@ -23,8 +24,21 @@ export function EditorPageSettings({ articleId }: EditorPageSettingsProps) {
 
   useEffect(() => {
     const initializeEditor = async () => {
-      if (editorRef.current && !editorInstance.current) {
+      if (editorRef.current) {
         try {
+          // 如果已有编辑器实例，先清理
+          if (editorInstance.current) {
+            try {
+              await editorInstance.current.destroy()
+            } catch (e) {
+              logger.warn('清理旧编辑器实例时出错:', e)
+            }
+            editorInstance.current = null
+            setEditorReady(false)
+          }
+
+          logger.info('开始初始化新的编辑器实例')
+          
           // 加载已打包的 EditorJS Bundle
           await loadEditorJSBundle()
           
@@ -165,56 +179,86 @@ export function EditorPageSettings({ articleId }: EditorPageSettingsProps) {
   // 加载指定文章的数据
   useEffect(() => {
     const loadArticleData = async () => {
-      if (articleId && editorInstance.current && editorReady && articleId !== currentArticleId) {
-        try {
-          logger.info(`开始加载文章: ${articleId}`)
-          logger.info(`编辑器实例状态:`, {
-            hasEditor: !!editorInstance.current,
-            hasRender: !!editorInstance.current?.render,
-            isReady: editorReady
-          })
-          
-          const articleData = await storage.getArticleEditorData(articleId)
-          logger.info(`获取到文章数据:`, articleData)
-          
-          if (articleData && editorInstance.current.render) {
-            logger.info(`准备渲染文章数据，blocks数量: ${articleData.blocks?.length || 0}`)
-            await editorInstance.current.render(articleData)
-            setCurrentArticleId(articleId)
-            logger.info(`文章加载成功: ${articleId}`)
-          } else {
-            logger.warn(`无法加载文章: ${articleId}`, {
-              hasData: !!articleData,
-              hasRenderMethod: !!editorInstance.current?.render
-            })
+      // 如果没有文章ID，清空编辑器并重置状态
+      if (!articleId) {
+        if (editorInstance.current && editorReady) {
+          try {
+            await editorInstance.current.clear()
+            setCurrentArticleId(null)
+            logger.info('已清空编辑器内容')
+          } catch (error) {
+            logger.warn('清空编辑器内容时出错:', error)
           }
-        } catch (error) {
-          logger.error(`加载文章失败: ${articleId}`, error)
         }
-      } else {
+        return
+      }
+
+      // 检查是否需要加载文章
+      if (!editorInstance.current || !editorReady) {
         logger.debug('跳过文章加载:', {
           articleId,
           hasEditor: !!editorInstance.current,
           editorReady,
-          currentId: currentArticleId,
-          shouldLoad: articleId && editorInstance.current && editorReady && articleId !== currentArticleId
+          reason: !editorInstance.current ? '编辑器未初始化' : '编辑器未准备好'
         })
+        return
+      }
+
+      // 如果是同一篇文章，跳过加载
+      if (articleId === currentArticleId) {
+        logger.debug(`文章已加载，跳过: ${articleId}`)
+        return
+      }
+
+      try {
+        logger.info(`开始加载文章: ${articleId}`)
+        logger.info(`编辑器实例状态:`, {
+          hasEditor: !!editorInstance.current,
+          hasRender: !!editorInstance.current?.render,
+          isReady: editorReady
+        })
+        
+        const articleData = await storage.getArticleEditorData(articleId)
+        logger.info(`获取到文章数据:`, articleData)
+        
+        if (articleData && editorInstance.current.render) {
+          logger.info(`准备渲染文章数据，blocks数量: ${articleData.blocks?.length || 0}`)
+          
+          // 清空编辑器内容再加载新内容
+          await editorInstance.current.clear()
+          await editorInstance.current.render(articleData)
+          
+          setCurrentArticleId(articleId)
+          logger.info(`文章加载成功: ${articleId}`)
+        } else {
+          logger.warn(`无法加载文章: ${articleId}`, {
+            hasData: !!articleData,
+            hasRenderMethod: !!editorInstance.current?.render
+          })
+        }
+      } catch (error) {
+        logger.error(`加载文章失败: ${articleId}`, error)
       }
     }
 
     loadArticleData()
-  }, [articleId, currentArticleId, editorReady])
+  }, [articleId, editorReady]) // 移除currentArticleId依赖，让它能重复加载同一文章
 
   const handleSave = async () => {
     try {
       if (editorInstance.current && editorInstance.current.save) {
         const editorData = await editorInstance.current.save()
-        logger.info('开始保存文章数据:', editorData)
+        logger.info('从编辑器获取的数据:', editorData)
+        logger.info('数据格式验证:', {
+          hasBlocks: !!editorData.blocks,
+          blocksCount: editorData.blocks?.length || 0,
+          hasTime: !!editorData.time,
+          hasVersion: !!editorData.version
+        })
         
         // 如果是编辑现有文章，更新它；否则创建新文章
         const result = currentArticleId 
-          ? await storage.updateArticle(currentArticleId, {
-              editorData,
+          ? await storage.updateArticle(currentArticleId, editorData, {
               updatedAt: new Date().toISOString()
             })
           : await storage.saveOrUpdateArticle(editorData, {
@@ -228,10 +272,16 @@ export function EditorPageSettings({ articleId }: EditorPageSettingsProps) {
           if (!currentArticleId && article.id) {
             setCurrentArticleId(article.id)
           }
-          alert(`草稿《${article.title}》已保存`) // 临时使用alert，后续可改为更好的UI
+          toast.success(`草稿《${article.title}》已保存`, {
+            description: '文章已成功保存为草稿',
+            duration: 3000,
+          })
         } else {
           logger.error('保存失败:', result)
-          alert('保存失败: ' + (result.message || '未知错误'))
+          toast.error('保存失败', {
+            description: result.message || '未知错误',
+            duration: 5000,
+          })
         }
       } else {
         logger.info('使用简化模式保存')
@@ -254,15 +304,24 @@ export function EditorPageSettings({ articleId }: EditorPageSettingsProps) {
           })
           
           if (result.success) {
-            alert(`草稿《${result.article.title}》已保存`)
+            toast.success(`草稿《${result.article.title}》已保存`, {
+              description: '文章已成功保存为草稿',
+              duration: 3000,
+            })
           } else {
-            alert('保存失败: ' + (result.message || '未知错误'))
+            toast.error('保存失败', {
+              description: result.message || '未知错误',
+              duration: 5000,
+            })
           }
         }
       }
     } catch (error) {
       logger.error('保存失败:', error)
-      alert('保存时发生错误: ' + error.message)
+      toast.error('保存时发生错误', {
+        description: error.message,
+        duration: 5000,
+      })
     }
   }
 

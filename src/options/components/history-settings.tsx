@@ -28,7 +28,6 @@ export function HistorySettings({ onEditArticle, onSectionChange }: HistorySetti
   const [articles, setArticles] = useState<Article[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
-  const [statusFilter, setStatusFilter] = useState<string>('all')
   const [storageService, setStorageService] = useState<any>(null)
   
   // 预览相关状态
@@ -160,15 +159,13 @@ export function HistorySettings({ onEditArticle, onSectionChange }: HistorySetti
     return editorData
   }
 
-  // Filter articles based on search term and status
+  // Filter articles based on search term only
   const filteredArticles = articles.filter(article => {
     const matchesSearch = searchTerm === '' || 
       article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       article.summary.toLowerCase().includes(searchTerm.toLowerCase())
     
-    const matchesStatus = statusFilter === 'all' || article.status === statusFilter
-    
-    return matchesSearch && matchesStatus
+    return matchesSearch
   })
 
   if (loading) {
@@ -224,16 +221,6 @@ export function HistorySettings({ onEditArticle, onSectionChange }: HistorySetti
                 />
               </div>
             </div>
-            <select 
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
-            >
-              <option value="all">全部状态</option>
-              <option value="已发布">已发布</option>
-              <option value="草稿">草稿</option>
-              <option value="已归档">已归档</option>
-            </select>
           </div>
 
           {/* 文章列表 */}
@@ -244,30 +231,20 @@ export function HistorySettings({ onEditArticle, onSectionChange }: HistorySetti
                   <FileText className="w-8 h-8 text-gray-400" />
                 </div>
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  {searchTerm || statusFilter !== 'all' ? '未找到匹配的文章' : '暂无文章'}
+                  {searchTerm ? '未找到匹配的文章' : '暂无文章'}
                 </h3>
                 <p className="text-gray-500">
-                  {searchTerm || statusFilter !== 'all' ? '请尝试修改搜索条件' : '开始创作你的第一篇文章吧'}
+                  {searchTerm ? '请尝试修改搜索条件' : '开始创作你的第一篇文章吧'}
                 </p>
               </div>
             ) : (
               filteredArticles.map((article) => {
-                const statusColors = {
-                  '已发布': 'from-green-50 to-green-100 text-green-700 border-green-200',
-                  '草稿': 'from-orange-50 to-orange-100 text-orange-700 border-orange-200',
-                  '已归档': 'from-gray-50 to-gray-100 text-gray-700 border-gray-200'
-                }
-                const statusClass = statusColors[article.status] || 'from-gray-50 to-gray-100 text-gray-700 border-gray-200'
-                
                 return (
                   <div key={article.id} className="bg-white border border-gray-200 rounded-xl p-5 hover:border-gray-300 hover:shadow-md transition-all duration-200">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-3">
                           <h3 className="font-semibold text-gray-900 text-lg">{article.title}</h3>
-                          <span className={`px-3 py-1 text-xs rounded-full bg-gradient-to-r border ${statusClass}`}>
-                            {article.status}
-                          </span>
                         </div>
                         <p className="text-gray-600 mb-4 line-clamp-2">{article.summary}</p>
                         <div className="flex items-center gap-6 text-xs text-gray-500">

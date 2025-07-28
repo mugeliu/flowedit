@@ -8,10 +8,7 @@
     "build:content": "vite build --config vite.content.config.js",
     "build:editorjs": "vite build --config vite.editorjs.config.js",
     "build:react": "vite build --config vite.react.config.js",
-    "dev": "vite --config vite.content.config.js",
-    "test": "node",
-    "test:unit": "node test/unit/",
-    "test:all": "node test/run-all-tests.js"
+    "dev": "vite --config vite.content.config.js"
   },
   "devDependencies": {
     "@editorjs/editorjs": "^2.30.8",
@@ -19,8 +16,6 @@
     "@types/chrome": "^0.1.1",
     "@vitejs/plugin-react": "^4.7.0",
     "autoprefixer": "^10.4.21",
-    "fs-extra": "^11.0.0",
-    "jsdom": "^23.0.0",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.17",
     "tailwindcss-animate": "^1.0.7",

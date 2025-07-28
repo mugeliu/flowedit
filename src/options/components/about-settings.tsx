@@ -3,6 +3,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../..
 import { Button } from '../../shared/components/ui/button'
 import { Badge } from '../../shared/components/ui/badge'
 import { ExternalLink, Github, Heart, Shield, Info, Star, Users, Download, Copy, Check } from 'lucide-react'
+import { createLogger } from '../../shared/services/logger.js'
+import { toast } from 'sonner'
+
+const logger = createLogger('AboutSettings')
 
 export function AboutSettings() {
   const [copied, setCopied] = useState(false)
@@ -21,8 +25,16 @@ export function AboutSettings() {
       await navigator.clipboard.writeText(systemInfo)
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
+      toast.success('系统信息已复制', {
+        description: '系统信息已复制到剪贴板',
+        duration: 2000,
+      })
     } catch (error) {
-      console.error('复制失败:', error)
+      logger.error('复制失败:', error)
+      toast.error('复制失败', {
+        description: '请手动选择并复制系统信息',
+        duration: 3000,
+      })
     }
   }
 

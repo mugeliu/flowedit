@@ -3,6 +3,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../..
 import { Button } from '../../shared/components/ui/button'
 import { PenTool, Settings, Palette, History, FileText, Clock, ChevronRight } from 'lucide-react'
 import { storage } from '../../shared/services/storage/index.js'
+import { createLogger } from '../../shared/services/logger.js'
+
+const logger = createLogger('OverviewSettings')
 
 interface OverviewSettingsProps {
   onSectionChange?: (section: string) => void
@@ -37,7 +40,7 @@ export function OverviewSettings({ onSectionChange, onEditArticle }: OverviewSet
         templates: 5 // 固定值，或从模板系统获取
       })
     } catch (error) {
-      console.error('加载统计数据失败:', error)
+      logger.error('加载统计数据失败:', error)
     }
   }
 
@@ -49,7 +52,7 @@ export function OverviewSettings({ onSectionChange, onEditArticle }: OverviewSet
         .slice(0, 3)
       setRecentArticles(recent)
     } catch (error) {
-      console.error('加载最近文章失败:', error)
+      logger.error('加载最近文章失败:', error)
     }
   }
 
