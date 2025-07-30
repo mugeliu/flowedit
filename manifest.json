@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "FlowEdit",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "增强微信公众平台编辑器体验，提供现代化的富文本编辑功能",
   "icons": {
     "16": "assets/icons/icon16.png",
@@ -33,7 +33,7 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "scripts/page-injector.js", 
+        "scripts/page-injector.js",
         "scripts/editorjs-bundle.js",
         "assets/templates/default.json",
         "assets/templates/business-minimal.json",
