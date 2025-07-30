@@ -30,7 +30,6 @@
   ],
   "permissions": ["storage"],
   "host_permissions": ["https://mp.weixin.qq.com/*"],
-  "options_page": "options/options.html",
   "web_accessible_resources": [
     {
       "resources": [

@@ -24,7 +24,7 @@ npm run build
 # Build individual components
 npm run build:content    # Content script only
 npm run build:editorjs   # EditorJS bundle only  
-npm run build:react      # React apps (popup & options) only
+npm run build:react      # React app (popup) only
 
 # Development mode (content script)
 npm run dev
@@ -49,7 +49,7 @@ npm run test:all
 The extension uses a sophisticated build system with three separate Vite configurations:
 - **vite.content.config.js** - Content script and static assets
 - **vite.editorjs.config.js** - EditorJS tools bundle 
-- **vite.react.config.js** - React applications (popup & options)
+- **vite.react.config.js** - React application (popup)
 
 ### Plugin-Based Content Script Architecture
 The content script uses a plugin registry system (`src/content/services/plugin-registry.js`) where features are registered as plugins with standardized interfaces:
@@ -107,19 +107,15 @@ src/
 │   └── utils/                # Shared utilities
 │       └── index.ts          # TypeScript utilities
 ├── popup/                    # React popup application
-│   ├── App.tsx               # Main popup component
+│   ├── App.tsx               # Main popup component  
 │   ├── index.html            # Popup HTML template
-│   └── index.tsx             # Popup entry point
-├── options/                  # React options application
-│   ├── App.tsx               # Main options component
-│   ├── index.html            # Options HTML template
-│   ├── index.tsx             # Options entry point
-│   └── components/           # Options-specific components
-│       ├── app-sidebar.tsx   # Options navigation
-│       ├── general-settings.tsx
-│       ├── editor-settings.tsx
-│       ├── theme-settings.tsx
-│       └── [other-settings].tsx
+│   ├── index.tsx             # Popup entry point
+│   └── components/           # Popup-specific components
+│       ├── article-preview.tsx
+│       ├── article-tab.tsx
+│       ├── profile-tab.tsx
+│       ├── style-preview.tsx
+│       └── style-tab.tsx
 └── editorjs-bundle.js        # EditorJS tools bundle entry
 ```
 
@@ -127,7 +123,7 @@ src/
 ## Key Technologies
 
 ### Frontend Technologies
-- **React 19** with TypeScript for popup and options pages
+- **React 19** with TypeScript for popup interface
 - **Vite** for modern build tooling with multiple configurations
 - **Tailwind CSS** with shadcn/ui components for consistent UI design
 - **Editor.js** v2.30.8 as the core rich-text editor
@@ -234,20 +230,11 @@ Centralized logging service (`src/shared/services/logger.js`) with:
 ### React Applications
 
 #### Popup Application
-Simple status and quick actions interface:
-- Extension status display
-- Quick toggle controls
-- Navigation to options page
-
-#### Options Application
-Comprehensive settings management with sidebar navigation:
-- **overview-settings.tsx** - Dashboard and overview
-- **general-settings.tsx** - General extension settings
-- **editor-settings.tsx** - Editor.js configuration
-- **editor-page-settings.tsx** - WeChat editor page settings
-- **styles-settings.tsx** - Theme and appearance settings
-- **history-settings.tsx** - Article history management
-- **about-settings.tsx** - About and help information
+Modern tab-based interface with comprehensive functionality:
+- Tab-based navigation (Style/Article/Profile)
+- Style theme selection and preview
+- Article management with search and preview
+- Personal settings and updates
 
 ### UI Components
 
@@ -293,7 +280,7 @@ Each Vite configuration targets specific functionality:
 - Handles Editor.js plugin compatibility
 
 **vite.react.config.js**:
-- Builds React applications (popup + options)
+- Builds React application (popup)
 - Handles TypeScript compilation
 - Optimizes React bundle size
 

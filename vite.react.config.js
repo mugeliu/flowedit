@@ -16,8 +16,7 @@ export default defineConfig({
       closeBundle: async () => {
         // 移动HTML文件到正确位置
         const htmlMoves = [
-          { from: "dist/src/popup/index.html", to: "dist/popup/popup.html" },
-          { from: "dist/src/options/index.html", to: "dist/options/options.html" }
+          { from: "dist/src/popup/index.html", to: "dist/popup/popup.html" }
         ];
         
         for (const { from, to } of htmlMoves) {
@@ -50,15 +49,13 @@ export default defineConfig({
     rollupOptions: {
       input: {
         // React 应用
-        popup: resolve(__dirname, "src/popup/index.html"),
-        options: resolve(__dirname, "src/options/index.html"),
+        popup: resolve(__dirname, "src/popup/index.html")
       },
       output: {
         // 入口文件命名
         entryFileNames: (chunkInfo) => {
           const nameMap = {
-            popup: "popup/popup.js",
-            options: "options/options.js",
+            popup: "popup/popup.js"
           };
           return nameMap[chunkInfo.name] || "[name].js";
         },
@@ -80,9 +77,6 @@ export default defineConfig({
           if (fileName.endsWith('.html')) {
             if (fileName.includes('popup') || fileName === 'index.html') {
               return "popup/popup.html";
-            }
-            if (fileName.includes('options')) {
-              return "options/options.html";
             }
           }
           
