@@ -53,3 +53,21 @@ temp/
 
 # claude文件
 .claude/
+
+# Python 相关
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+backend/venv/
+backend/env/
+backend/.venv/
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# 后端环境变量（保留.env.example）
+backend/.env
+backend/.env.local
