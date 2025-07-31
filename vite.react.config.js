@@ -3,33 +3,22 @@ import { resolve } from "path";
 import react from "@vitejs/plugin-react";
 import fs from "fs-extra";
 
-// 工具函数：处理Chrome扩展文件名限制
-function sanitizeFileName(fileName) {
-  return fileName.startsWith("_") ? "vendor" + fileName.substring(1) : fileName;
-}
-
 export default defineConfig({
   plugins: [
     react(),
     {
-      name: "react-app-build",
+      name: "move-html",
       closeBundle: async () => {
         // 移动HTML文件到正确位置
-        const htmlMoves = [
-          { from: "dist/src/popup/index.html", to: "dist/popup/popup.html" }
-        ];
-        
-        for (const { from, to } of htmlMoves) {
-          if (await fs.pathExists(from)) {
-            // 如果目标文件已存在，先删除
-            if (await fs.pathExists(to)) {
-              await fs.remove(to);
-            }
-            await fs.move(from, to);
+        if (await fs.pathExists("dist/src/popup/index.html")) {
+          await fs.ensureDir("dist/popup");
+          // 如果目标存在，先删除
+          if (await fs.pathExists("dist/popup/popup.html")) {
+            await fs.remove("dist/popup/popup.html");
           }
+          await fs.move("dist/src/popup/index.html", "dist/popup/popup.html");
         }
-        
-        // 清理临时src目录
+        // 清理临时目录
         if (await fs.pathExists("dist/src")) {
           await fs.remove("dist/src");
         }
@@ -45,56 +34,25 @@ export default defineConfig({
     outDir: "dist",
     emptyOutDir: false,
     minify: false,
-    cssCodeSplit: true,
     rollupOptions: {
       input: {
-        // React 应用
         popup: resolve(__dirname, "src/popup/index.html")
       },
       output: {
-        // 入口文件命名
-        entryFileNames: (chunkInfo) => {
-          const nameMap = {
-            popup: "popup/popup.js"
-          };
-          return nameMap[chunkInfo.name] || "[name].js";
-        },
-        
-        // Chunk文件命名  
-        chunkFileNames: (chunkInfo) => {
-          const fileName = sanitizeFileName(chunkInfo.name || "chunk");
-          return `${fileName}.js`;
-        },
-        
-        // 使用ES格式（React应用支持）
-        format: 'es',
-        
-        // 资源文件命名
+        entryFileNames: "popup/popup.js",
+        chunkFileNames: "popup/[name].js", 
         assetFileNames: (assetInfo) => {
-          const fileName = sanitizeFileName(assetInfo.name || "asset");
-          
-          // HTML文件
-          if (fileName.endsWith('.html')) {
-            if (fileName.includes('popup') || fileName === 'index.html') {
-              return "popup/popup.html";
-            }
-          }
-          
+          const name = assetInfo.name || "";
           // CSS文件
-          if (fileName.endsWith('.css')) {
-            if (fileName.includes('globals') || fileName.includes('index')) {
-              return "assets/css/ui.css";
-            }
-            return `assets/css/${fileName}`;
+          if (name.endsWith('.css')) {
+            return "assets/css/popup.css";
           }
-          
-          // 其他资源文件
-          const ext = fileName.split('.').pop();
-          const nameWithoutExt = fileName.substring(0, fileName.lastIndexOf('.')) || fileName;
-          return `assets/${nameWithoutExt}.${ext}`;
+          return "assets/[name].[ext]";
         },
-        
+        format: 'es',
         sourcemap: false,
+        // 禁用代码分割，全部打包到一个文件
+        inlineDynamicImports: true,
       },
     },
   },

@@ -21,7 +21,7 @@ export default defineConfig({
         // Chunk文件命名  
         chunkFileNames: (chunkInfo) => {
           const fileName = sanitizeFileName(chunkInfo.name || "chunk");
-          return `${fileName}.js`;
+          return `scripts/${fileName}.js`;
         },
         
         // 使用IIFE格式避免ES模块问题
