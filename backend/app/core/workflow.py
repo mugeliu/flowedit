@@ -36,20 +36,39 @@ def create_style_workflow():
     def parse_content(state: WorkflowState) -> Dict[str, Any]:
         """解析内容结构"""
         try:
-            result = content_parser.chain.run(raw_content=state["raw_content"])
+            # 获取LLM的原始字符串输出
+            raw_output = content_parser.chain.invoke({"raw_content": state["raw_content"]})
+            
+            # 使用自定义解析方法清理数据
+            result = content_parser.parse_and_clean(raw_output)
+            
+            # 验证解析结果
+            if not hasattr(result, 'elements') or not result.elements:
+                raise ContentParsingError("解析结果为空或格式不正确", state["raw_content"])
+            
             return {"parsed_content": result.elements}
+            
         except Exception as e:
-            raise ContentParsingError(f"内容解析失败: {str(e)}", state["raw_content"])
+            # 如果是我们已知的错误，直接抛出
+            if isinstance(e, ContentParsingError):
+                raise
+            # 其他错误包装后抛出
+            error_msg = f"内容解析失败: {str(e)}"
+            if "ValidationError" in str(e):
+                error_msg += " (数据格式验证失败，可能是LLM输出格式不正确)"
+            elif "OutputParserException" in str(e):
+                error_msg += " (LLM输出解析失败，请检查内容格式)"
+            raise ContentParsingError(error_msg, state["raw_content"])
     
     def generate_style_dna(state: WorkflowState) -> Dict[str, Any]:
         """生成新的风格DNA"""
         if state["workflow_type"] == WorkflowType.CREATE_NEW_STYLE:
             try:
-                result = style_generator.chain.run(
-                    theme_name=state["theme_name"],
-                    theme_description=state["theme_description"],
-                    content_structure=state["parsed_content"]
-                )
+                result = style_generator.chain.invoke({
+                    "theme_name": state["theme_name"],
+                    "theme_description": state["theme_description"],
+                    "content_structure": state["parsed_content"]
+                })
                 # 解析JSON结果
                 style_dna = json.loads(result)
                 return {"style_dna": style_dna}
@@ -95,10 +114,10 @@ def create_style_workflow():
     def generate_html(state: WorkflowState) -> Dict[str, Any]:
         """生成HTML"""
         try:
-            result = html_generator.chain.run(
-                parsed_content=state["parsed_content"],
-                style_dna=state["style_dna"]
-            )
+            result = html_generator.chain.invoke({
+                "parsed_content": state["parsed_content"],
+                "style_dna": state["style_dna"]
+            })
             return {"generated_html": result}
         except Exception as e:
             raise StyleGenerationError(f"HTML生成失败: {str(e)}")

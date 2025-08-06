@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试 Apply Style API</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+            background: #f0f9ff; 
+            padding: 20px;
+        }
+        .container { 
+            max-width: 1000px; 
+            margin: 0 auto; 
+            background: white; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header { 
+            background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%); 
+            color: white; 
+            padding: 30px; 
+            text-align: center; 
+        }
+        .header h1 { font-size: 28px; margin-bottom: 10px; }
+        .header p { opacity: 0.9; font-size: 16px; }
+        .content { padding: 30px; }
+        .test-section { 
+            border: 1px solid #e1e8ed; 
+            border-radius: 8px; 
+            margin-bottom: 25px; 
+            overflow: hidden;
+        }
+        .section-header { 
+            background: #f0f9ff; 
+            padding: 15px 20px; 
+            border-bottom: 1px solid #e1e8ed; 
+            font-weight: 600; 
+            color: #0c4a6e;
+        }
+        .section-content { padding: 20px; }
+        .form-group { margin-bottom: 20px; }
+        label { 
+            display: block; 
+            margin-bottom: 8px; 
+            font-weight: 500; 
+            color: #374151; 
+        }
+        input, textarea, select { 
+            width: 100%; 
+            padding: 12px 16px; 
+            border: 2px solid #e5e7eb; 
+            border-radius: 8px; 
+            font-size: 14px; 
+            transition: all 0.3s;
+        }
+        input:focus, textarea:focus, select:focus { 
+            outline: none; 
+            border-color: #0ea5e9; 
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+        }
+        textarea { 
+            min-height: 120px; 
+            resize: vertical; 
+            font-family: 'Monaco', 'Courier New', monospace;
+        }
+        .btn { 
+            background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%); 
+            color: white; 
+            padding: 12px 24px; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-weight: 600; 
+            font-size: 16px;
+            transition: all 0.3s;
+            margin-right: 10px;
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(14, 165, 233, 0.3); }
+        .btn:disabled { 
+            background: #9ca3af; 
+            cursor: not-allowed; 
+            transform: none; 
+            box-shadow: none; 
+        }
+        .btn.secondary { 
+            background: #6b7280; 
+        }
+        .btn.secondary:hover { 
+            background: #4b5563; 
+            box-shadow: 0 8px 25px rgba(107, 114, 128, 0.3);
+        }
+        .result { 
+            background: #f8fafc; 
+            border: 1px solid #e5e7eb; 
+            border-radius: 8px; 
+            padding: 20px; 
+            margin-top: 20px; 
+            white-space: pre-wrap; 
+            font-family: 'Monaco', 'Courier New', monospace; 
+            font-size: 12px; 
+            max-height: 400px; 
+            overflow-y: auto;
+        }
+        .success { border-color: #10b981; background-color: #ecfdf5; }
+        .error { border-color: #ef4444; background-color: #fef2f2; }
+        .warning { border-color: #f59e0b; background-color: #fffbeb; }
+        .status { 
+            padding: 8px 12px; 
+            border-radius: 6px; 
+            font-size: 12px; 
+            font-weight: 600; 
+            margin-bottom: 15px;
+        }
+        .status.loading { background: #dbeafe; color: #1d4ed8; }
+        .status.success { background: #dcfce7; color: #166534; }
+        .status.error { background: #fee2e2; color: #991b1b; }
+        .preview-section { 
+            background: #ffffff; 
+            border: 2px solid #e5e7eb; 
+            border-radius: 8px; 
+            padding: 20px; 
+            margin-top: 20px; 
+        }
+        .preview-header { 
+            color: #374151; 
+            font-weight: 600; 
+            margin-bottom: 15px; 
+            padding-bottom: 10px; 
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .theme-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); 
+            gap: 10px; 
+            margin-bottom: 20px; 
+        }
+        .theme-card { 
+            background: #f1f5f9; 
+            padding: 15px 10px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            transition: all 0.2s; 
+            text-align: center;
+            border: 2px solid transparent;
+        }
+        .theme-card:hover { 
+            background: #e2e8f0; 
+            border-color: #0ea5e9;
+        }
+        .theme-card.selected { 
+            background: #dbeafe; 
+            border-color: #0ea5e9; 
+            color: #1e40af;
+        }
+        .theme-card .name { font-weight: 600; font-size: 13px; }
+        .theme-card .desc { font-size: 11px; margin-top: 5px; opacity: 0.7; }
+        .api-info { 
+            background: #eff6ff; 
+            border-left: 4px solid #0ea5e9; 
+            padding: 15px; 
+            margin-bottom: 25px; 
+            border-radius: 0 8px 8px 0;
+        }
+        .info-note {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+            font-size: 14px;
+        }
+        .quick-tests { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+            gap: 10px; 
+            margin-bottom: 20px; 
+        }
+        .quick-test { 
+            background: #f0f9ff; 
+            padding: 12px; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            transition: all 0.2s; 
+            text-align: center;
+            font-size: 13px;
+            border: 1px solid #bae6fd;
+        }
+        .quick-test:hover { background: #e0f2fe; border-color: #0ea5e9; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 Apply Style API 测试器</h1>
+            <p>使用已有的风格主题对新内容进行样式化处理</p>
+        </div>
+
+        <div class="content">
+            <div class="api-info">
+                <strong>API端点:</strong> POST /api/v1/styles/apply<br>
+                <strong>功能:</strong> 使用数据库中已存在的风格主题，对新的原始内容进行样式化处理<br>
+                <strong>前提:</strong> 需要先使用 Create Style API 创建风格主题
+            </div>
+
+            <div class="info-note">
+                💡 <strong>使用说明:</strong> 此API需要引用已创建的风格主题。如果没有可用主题，请先使用 Create Style API 创建主题。
+            </div>
+
+            <div class="test-section">
+                <div class="section-header">📝 API配置</div>
+                <div class="section-content">
+                    <div class="form-group">
+                        <label for="apiBase">API基础地址</label>
+                        <input type="text" id="apiBase" value="http://localhost:8000/api" placeholder="http://localhost:8000/api">
+                    </div>
+                </div>
+            </div>
+
+            <div class="test-section">
+                <div class="section-header">📚 可用主题</div>
+                <div class="section-content">
+                    <button class="btn secondary" onclick="loadThemes()">🔄 刷新主题列表</button>
+                    <div id="themesStatus" class="status" style="display:none;"></div>
+                    <div class="theme-grid" id="themeGrid">
+                        <div class="theme-card" onclick="selectTheme('测试风格')">
+                            <div class="name">测试风格</div>
+                            <div class="desc">默认测试主题</div>
+                        </div>
+                    </div>
+                    <input type="hidden" id="selectedTheme" value="测试风格">
+                </div>
+            </div>
+
+            <div class="test-section">
+                <div class="section-header">📋 说明</div>
+                <div class="section-content">
+                    <div style="background: #f0f9ff; padding: 15px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; color: #0c4a6e;">
+                        💡 <strong>使用说明：</strong>此API使用与Create Style API相同的FlowEdit产品介绍内容，让你能够测试已创建的风格主题效果。内容已固定，你只需要选择主题即可测试。
+                    </div>
+                </div>
+            </div>
+
+            <div class="test-section">
+                <div class="section-header">📋 请求参数</div>
+                <div class="section-content">
+                    <div class="form-group">
+                        <label for="themeName">主题名称 (theme_name)</label>
+                        <input type="text" id="themeName" placeholder="选择一个已创建的主题" value="测试风格" readonly>
+                        <small style="color: #6b7280;">从上面的主题列表中选择，或者手动输入已创建的主题名称</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="rawContent">原始内容 (与Create Style API相同的FlowEdit预设内容)</label>
+                        <textarea id="rawContent" style="background: #f8fafc; color: #6b7280;"># FlowEdit - 重新定义微信公众号内容创作体验
+
+## 产品概述
+
+FlowEdit 是一款革命性的 Chrome 浏览器扩展，专为微信公众号创作者设计。通过深度集成现代化的 Editor.js 编辑器和 AI 智能功能，FlowEdit 将传统的公众号编辑体验提升到全新高度。
+
+### 为什么选择 FlowEdit？
+
+在内容创作的时代，**效率**和**质量**是每个创作者追求的目标。FlowEdit 正是为解决这一痛点而生：
+
+- 告别繁琐的格式调整，专注内容本身
+- 智能化的排版建议，让文章更具专业感
+- 丰富的模板库，快速开启创作灵感
+- 一键风格化，打造独特的品牌形象
+
+## 核心功能特性
+
+### 🎨 现代化编辑体验
+
+基于 **Editor.js** 的块级编辑器，提供：
+
+- 拖拽式内容组织
+- 实时预览效果
+- 多媒体内容支持
+- 快捷键操作体验
+
+### 🤖 AI 智能辅助
+
+集成先进的人工智能技术：
+
+- **智能排版优化**: 自动调整段落间距、字体搭配
+- **风格一致性**: 确保全文风格统一协调
+- **内容结构建议**: AI 分析内容逻辑，提供结构优化建议
+- **多风格适配**: 商务、文艺、科技等多种预设风格
+
+### 📱 微信平台深度适配
+
+完美兼容微信公众号平台特性：
+
+- 严格遵循微信 HTML 规范
+- 移动端阅读优化
+- 保留平台原生功能
+- 无缝集成工作流程
+
+### 🎯 智能侧边栏管理
+
+高效的内容管理界面：
+
+- **历史文章管理**: 快速查看和编辑历史内容
+- **模板库**: 丰富的文章模板，一键应用
+- **风格预设**: 保存和复用个人风格配置
+- **实时预览**: 所见即所得的编辑体验
+
+## 技术架构亮点
+
+### 先进的多构建系统
+
+FlowEdit 采用现代化的工程架构：
+
+```
+多构建配置
+├── vite.content.config.js    # 内容脚本构建
+├── vite.editorjs.config.js   # Editor.js 工具集
+└── vite.react.config.js      # React 应用界面
+```
+
+### 插件化架构设计
+
+- **模块化开发**: 功能组件独立可扩展
+- **插件注册机制**: 灵活的功能扩展体系
+- **生命周期管理**: 完善的插件生命周期控制
+
+### 现代技术栈
+
+#### 前端技术
+
+- **React 19** + TypeScript: 现代化的用户界面
+- **Vite**: 快速的构建和开发体验  
+- **Tailwind CSS** + shadcn/ui: 一致的设计系统
+- **Editor.js**: 强大的块级编辑器核心
+
+#### 扩展技术
+
+- **Manifest V3**: 最新的浏览器扩展标准
+- **Chrome APIs**: 深度集成浏览器能力
+- **Service Worker**: 高效的后台处理
+
+## 使用场景
+
+### 💼 企业品牌传播
+
+- **品牌一致性**: 统一的视觉风格和排版标准
+- **专业形象**: 精美的版式设计提升品牌形象
+- **批量制作**: 模板化内容快速生产
+
+### ✍️ 个人内容创作
+
+- **创作效率**: 智能化工具减少重复劳动
+- **灵感激发**: 丰富的模板和样式选择
+- **个性表达**: 自定义风格展现独特个性
+
+### 📚 知识分享与教育
+
+- **结构化内容**: 清晰的层次结构便于阅读理解
+- **多媒体支持**: 图文并茂的内容表现形式
+- **移动优化**: 适配手机阅读习惯
+
+### 🎯 营销推广活动
+
+- **视觉冲击**: 精美的版式设计抓住读者注意力
+- **转化优化**: 专业的排版提升内容可信度
+- **快速迭代**: 模板化制作支持营销活动快速响应
+
+## 产品优势
+
+### 🚀 显著提升创作效率
+
+- 传统编辑器操作时间减少 **70%**
+- 格式调整工作量降低 **80%**  
+- 内容发布准备时间缩短 **60%**
+
+### 🎨 专业级视觉效果
+
+- 媲美专业设计师的排版质量
+- 多种预设风格适应不同场景
+- AI 智能配色和字体搭配建议
+
+### 🔧 完善的工具生态
+
+- 丰富的第三方插件支持
+- 开放的 API 接口
+- 活跃的社区和文档支持
+
+### 📈 数据驱动优化
+
+- 详细的编辑行为分析
+- 内容效果追踪
+- 持续的产品优化迭代
+
+## 开始使用 FlowEdit
+
+### 安装步骤
+
+1. **下载扩展**: 从 Chrome 网上应用店搜索 "FlowEdit"
+2. **安装激活**: 一键安装，立即生效
+3. **打开微信**: 访问微信公众号后台编辑界面
+4. **开始创作**: 享受全新的内容创作体验
+
+### 快速上手
+
+- **5分钟教程**: 交互式引导快速掌握核心功能
+- **视频教程**: 详细的功能演示和最佳实践
+- **社区支持**: 活跃的用户社区和技术支持
+
+## 未来展望
+
+FlowEdit 致力于成为内容创作领域的**智能助手**，我们正在开发更多激动人心的功能：
+
+### 即将推出
+
+- **AI 内容生成**: 基于主题的智能内容创作
+- **多平台支持**: 扩展到更多内容创作平台
+- **团队协作**: 支持多人协同编辑和审核流程
+- **数据分析**: 深度的内容效果分析和优化建议
+
+### 长远规划
+
+- **个性化 AI**: 学习用户偏好的智能创作助手
+- **内容生态**: 打造完整的内容创作和分发生态
+- **国际化**: 支持更多语言和地区
+- **企业版**: 面向大型组织的定制化解决方案
+
+---
+
+**FlowEdit** - *让内容创作更简单，让表达更精彩*
+
+> 加入我们，一起重新定义内容创作的未来！</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="test-section">
+                <div class="section-header">🔧 执行测试</div>
+                <div class="section-content">
+                    <button class="btn" onclick="testApplyStyle()" id="testBtn">
+                        🎯 执行 Apply Style API 测试
+                    </button>
+                    
+                    <div id="status"></div>
+                    <div id="result" class="result" style="display: none;"></div>
+                </div>
+            </div>
+
+            <div class="test-section" id="previewSection" style="display: none;">
+                <div class="section-header">🎨 应用风格后的HTML预览</div>
+                <div class="section-content">
+                    <div class="preview-section">
+                        <div class="preview-header">HTML渲染效果:</div>
+                        <div id="htmlPreview"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentApiBase = 'http://localhost:8000/api';
+        let availableThemes = [];
+
+        // 更新API基础地址
+        document.getElementById('apiBase').addEventListener('change', function() {
+            currentApiBase = this.value;
+        });
+
+        // 内容测试用例
+        const contentCases = {
+            news: {
+                content: `# 重大科技突破：新型材料问世
+
+## 最新发现
+
+科学家们今天宣布了一项重大发现，这种新材料具有以下特性：
+
+### 主要优势
+
+- 超轻重量设计
+- 极高强度表现
+- 环保可回收
+- 成本控制优异
+
+### 应用前景
+
+预计这项技术将在以下领域产生重大影响：
+
+1. 航空航天工业
+2. 汽车制造业
+3. 建筑工程领域
+
+**专家评价**：这是*材料科学领域的重大突破*。
+
+## 市场反应
+
+相关企业股价出现显著上涨。`
+            },
+            tutorial: {
+                content: `# React Hooks 完全指南
+
+## 什么是 Hooks？
+
+React Hooks 是 React 16.8 引入的新特性，让你在函数组件中使用状态和其他 React 特性。
+
+### 基础 Hooks
+
+#### useState Hook
+
+\`\`\`javascript
+const [count, setCount] = useState(0);
+\`\`\`
+
+#### useEffect Hook
+
+用于处理副作用：
+
+- 数据获取
+- 订阅设置
+- 手动更改 DOM
+
+### 自定义 Hooks
+
+创建自己的 Hook 来**复用状态逻辑**：
+
+\`\`\`javascript
+function useCounter(initialValue) {
+  const [count, setCount] = useState(initialValue);
+  
+  const increment = () => setCount(count + 1);
+  const decrement = () => setCount(count - 1);
+  
+  return { count, increment, decrement };
+}
+\`\`\`
+
+## 最佳实践
+
+1. 只在顶层调用 Hooks
+2. 只在 React 函数中调用 Hooks
+3. 使用 *ESLint 插件*确保规则遵循
+
+**总结**：Hooks 让函数组件更加强大和灵活。`
+            },
+            announcement: {
+                content: `# 重要通知：系统升级维护
+
+## 维护时间安排
+
+**维护时间**：2024年8月10日 02:00 - 06:00
+
+### 影响范围
+
+此次维护将影响以下服务：
+
+- 用户登录系统
+- 数据同步功能
+- 在线客服支持
+- 移动端应用
+
+### 升级内容
+
+#### 新功能上线
+
+1. 智能推荐算法优化
+2. 用户界面全面升级
+3. 性能提升 **30%**
+4. 新增多语言支持
+
+#### 安全性增强
+
+- 数据加密算法升级
+- *双因素认证*功能
+- 异常访问监控
+
+### 注意事项
+
+请在维护期间：
+
+- 提前保存重要数据
+- 避免进行关键操作
+- 如有紧急问题请联系客服
+
+**感谢您的理解与配合！**
+
+## 联系方式
+
+技术支持：support@example.com`
+            },
+            review: {
+                content: `# iPhone 15 Pro 深度评测
+
+## 外观设计
+
+新一代 iPhone 15 Pro 在设计上有了**显著提升**。
+
+### 材质工艺
+
+#### 钛金属边框
+
+- 重量减轻 *19%*
+- 强度提升明显
+- 手感更加舒适
+
+#### 磨砂玻璃背板
+
+采用全新工艺：
+
+1. 防指纹涂层
+2. 更好的散热性能
+3. 优雅的视觉效果
+
+## 性能表现
+
+### A17 Pro 芯片
+
+性能提升包括：
+
+- CPU 性能提升 **10%**
+- GPU 性能提升 **20%**
+- 能效提升 *15%*
+- 神经网络引擎升级
+
+### 摄影系统
+
+#### 主摄像头
+
+- 4800万像素传感器
+- f/1.78 光圈
+- 传感器位移式光学防抖
+
+#### 超广角镜头
+
+新增微距拍摄功能。
+
+## 电池续航
+
+在实际测试中，续航表现**令人满意**：
+
+- 视频播放：23小时
+- 音频播放：75小时
+- 无线充电支持
+
+## 总结
+
+iPhone 15 Pro 是一款*均衡优秀*的旗舰产品。
+
+**推荐指数**：⭐⭐⭐⭐⭐`
+            },
+            story: {
+                content: `# 小镇的秘密
+
+## 第一章：意外发现
+
+在那个宁静的小镇上，**艾米丽**发现了一个古老的秘密。
+
+### 神秘的地图
+
+那天下午，她在祖母的阁楼里发现了：
+
+- 一张手绘地图
+- 几封发黄的信件  
+- 一个精美的*铜制指南针*
+
+### 线索追踪
+
+地图上标记着几个关键位置：
+
+1. 老橡树下的石头
+2. 废弃的水车房
+3. 镇中心的古井
+
+## 第二章：探索之旅
+
+艾米丽决定**按图寻找**这些地点。
+
+### 第一站：老橡树
+
+在百年老橡树下，她发现了一块刻着*奇怪符号*的石头。
+
+> "时间会揭示一切真相，
+> 勇敢的心将找到答案。"
+
+### 第二站：水车房
+
+废弃的水车房里藏着什么秘密？
+
+当艾米丽推开那扇**锈迹斑斑**的门时...
+
+## 第三章：真相大白
+
+最终，所有的线索都指向了一个惊人的发现：
+
+这个小镇隐藏着一个*百年宝藏*的秘密，而艾米丽的祖母正是这个秘密的守护者。
+
+**故事未完待续...**`
+            },
+            technical: {
+                content: `# 微服务架构设计指南
+
+## 架构概述
+
+微服务架构是一种将**单一应用程序**拆分为多个小型、独立服务的架构模式。
+
+### 核心原则
+
+#### 单一职责
+
+每个微服务应该：
+
+- 专注于单一业务功能
+- 具有明确的边界
+- 独立部署和扩展
+
+#### 去中心化
+
+- 数据管理去中心化
+- *服务治理*去中心化
+- 技术栈多样化
+
+### 技术栈选择
+
+#### 后端服务
+
+常用技术包括：
+
+1. **Spring Boot** (Java)
+2. **Express.js** (Node.js)  
+3. **Django** (Python)
+4. **Go Gin** (Golang)
+
+#### 容器化
+
+使用 Docker 进行容器化：
+
+\`\`\`dockerfile
+FROM node:16-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+EXPOSE 3000
+CMD ["npm", "start"]
+\`\`\`
+
+## 服务间通信
+
+### 同步通信
+
+- REST API
+- *GraphQL*
+- gRPC
+
+### 异步通信
+
+- 消息队列 (RabbitMQ)
+- 事件总线 (Apache Kafka)
+- **发布订阅模式**
+
+## 数据管理
+
+### 数据库策略
+
+每个服务应该：
+
+1. 拥有独立的数据库
+2. 避免直接访问其他服务的数据库
+3. 通过 API 进行数据交互
+
+### 数据一致性
+
+处理分布式事务：
+
+- Saga 模式
+- *两阶段提交*
+- 最终一致性
+
+## 部署和监控
+
+### 容器编排
+
+使用 **Kubernetes** 进行服务编排：
+
+- 自动扩缩容
+- 服务发现
+- 负载均衡
+- 健康检查
+
+### 监控和日志
+
+- 分布式链路追踪
+- 集中式日志管理
+- *性能监控指标*
+
+## 最佳实践
+
+1. API 版本管理
+2. 服务降级和熔断
+3. 自动化测试
+4. CI/CD 流水线
+
+**总结**：微服务架构提供了更好的*可扩展性和维护性*，但也带来了复杂性挑战。`
+            }
+        };
+
+        // 加载内容测试用例
+        function loadContentCase(type) {
+            const testCase = contentCases[type];
+            if (testCase) {
+                document.getElementById('rawContent').value = testCase.content;
+                showStatus('已加载测试用例: ' + type, 'success');
+            }
+        }
+
+        // 加载主题列表
+        async function loadThemes() {
+            const statusDiv = document.getElementById('themesStatus');
+            statusDiv.style.display = 'block';
+            statusDiv.innerHTML = '<div class="status loading">正在加载主题列表...</div>';
+
+            try {
+                const response = await fetch(`${currentApiBase}/v1/styles/themes`);
+                const result = await response.json();
+
+                if (response.ok && result.themes) {
+                    availableThemes = result.themes;
+                    renderThemes(result.themes);
+                    statusDiv.innerHTML = '<div class="status success">✅ 已加载 ' + result.themes.length + ' 个主题</div>';
+                } else {
+                    statusDiv.innerHTML = '<div class="status error">❌ 加载主题失败</div>';
+                    renderThemes([]);
+                }
+            } catch (error) {
+                statusDiv.innerHTML = '<div class="status error">❌ 网络错误: ' + error.message + '</div>';
+                renderThemes([]);
+            }
+
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 3000);
+        }
+
+        // 渲染主题网格
+        function renderThemes(themes) {
+            const themeGrid = document.getElementById('themeGrid');
+            
+            if (themes.length === 0) {
+                themeGrid.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 20px; color: #6b7280;">
+                        😔 暂无可用主题，请先使用 Create Style API 创建主题
+                    </div>
+                `;
+                return;
+            }
+
+            themeGrid.innerHTML = themes.map(theme => `
+                <div class="theme-card" onclick="selectTheme('${theme}')">
+                    <div class="name">${theme}</div>
+                    <div class="desc">点击选择此主题</div>
+                </div>
+            `).join('');
+        }
+
+        // 选择主题
+        function selectTheme(themeName) {
+            // 更新UI状态
+            document.querySelectorAll('.theme-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            event.target.closest('.theme-card').classList.add('selected');
+            
+            // 更新表单
+            document.getElementById('selectedTheme').value = themeName;
+            document.getElementById('themeName').value = themeName;
+            
+            showStatus('已选择主题: ' + themeName, 'success');
+        }
+
+        // 显示状态
+        function showStatus(message, type = 'loading') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+
+        // 显示结果
+        function showResult(data, isSuccess = true) {
+            const resultDiv = document.getElementById('result');
+            const previewSection = document.getElementById('previewSection');
+            
+            resultDiv.style.display = 'block';
+            resultDiv.className = `result ${isSuccess ? 'success' : 'error'}`;
+            
+            if (isSuccess && data.html_content) {
+                // 只显示大模型返回的HTML内容
+                resultDiv.textContent = data.html_content;
+                previewSection.style.display = 'block';
+                document.getElementById('htmlPreview').innerHTML = data.html_content;
+            } else {
+                // 错误时显示完整响应
+                resultDiv.textContent = JSON.stringify(data, null, 2);
+                previewSection.style.display = 'none';
+            }
+        }
+
+        // 执行API测试
+        async function testApplyStyle() {
+            const btn = document.getElementById('testBtn');
+            const themeName = document.getElementById('themeName').value;
+            
+            if (!themeName) {
+                showStatus('❌ 请选择一个主题', 'error');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = '⏳ 正在测试...';
+            
+            showStatus('正在发送请求到 Apply Style API...', 'loading');
+            
+            try {
+                const requestData = {
+                    raw_content: document.getElementById('rawContent').value,
+                    theme_name: themeName
+                };
+
+                console.log('发送请求:', requestData);
+                
+                const response = await fetch(`${currentApiBase}/v1/styles/apply`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData)
+                });
+
+                const result = await response.json();
+                console.log('收到响应:', result);
+
+                if (response.ok) {
+                    showStatus('✅ API测试成功完成！', 'success');
+                    showResult(result, true);
+                } else {
+                    showStatus(`❌ API测试失败: ${response.status} - ${result.detail || '未知错误'}`, 'error');
+                    showResult(result, false);
+                }
+
+            } catch (error) {
+                console.error('请求错误:', error);
+                showStatus('❌ 网络请求失败: ' + error.message, 'error');
+                showResult({ error: error.message, stack: error.stack }, false);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🎯 执行 Apply Style API 测试';
+            }
+        }
+
+        // 页面加载时的初始化
+        window.onload = function() {
+            showStatus('准备就绪，可以开始测试 Apply Style API', 'success');
+            loadThemes(); // 自动加载主题列表
+        };
+    </script>
+</body>
+</html>

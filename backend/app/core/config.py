@@ -1,5 +1,9 @@
 import os
 from typing import Optional
+from dotenv import load_dotenv
+
+# 确保在创建Settings实例前加载环境变量
+load_dotenv()
 
 
 class Settings:

@@ -1,5 +1,5 @@
 from typing import List, Dict, Optional
-from typing_extensions import TypedDict
+from typing_extensions import TypedDict, NotRequired
 from enum import Enum
 from pydantic import BaseModel
 
@@ -11,9 +11,9 @@ class WorkflowType(Enum):
 
 
 class ContentElement(TypedDict):
-    type: str  # 'h1', 'h2', 'p', 'em', 'li', etc.
-    content: str
-    level: int
+    type: str                    # 必需：'h1', 'h2', 'p', 'em', 'li', 'ul', 'ol' 等
+    content: NotRequired[str]    # 可选：文本内容，某些类型可能为空
+    level: NotRequired[int]      # 可选：标题层次或重要程度
 
 
 class StyleDNA(TypedDict):
