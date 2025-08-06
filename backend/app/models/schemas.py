@@ -1,34 +1,74 @@
-from pydantic import BaseModel, Field
-from typing import Optional, Literal
+from typing import List, Dict, Optional
+from typing_extensions import TypedDict
 from enum import Enum
+from pydantic import BaseModel
 
 
-class ContentType(str, Enum):
-    TEXT = "text"
-    HTML = "html"
+class WorkflowType(Enum):
+    CREATE_NEW_STYLE = "create_new_style"
+    USE_EXISTING_STYLE = "use_existing_style"
+    ADJUST_STYLE = "adjust_style"
 
 
-class ProcessRequest(BaseModel):
-    content: str = Field(..., description="用户输入的文本或HTML内容")
-    user_prompt: str = Field(..., description="用户自定义提示词")
-    content_type: ContentType = Field(default=ContentType.TEXT, description="内容类型：text或html")
-    model: Optional[str] = Field(default=None, description="指定使用的AI模型，如gpt-4o-mini")
+class ContentElement(TypedDict):
+    type: str  # 'h1', 'h2', 'p', 'em', 'li', etc.
+    content: str
+    level: int
 
 
-class ProcessResponse(BaseModel):
-    success: bool = Field(..., description="处理是否成功")
-    data: Optional[dict] = Field(default=None, description="处理结果数据")
-    error: Optional[str] = Field(default=None, description="错误信息")
+class StyleDNA(TypedDict):
+    theme_name: str
+    h1_styles: Dict[str, str]
+    h2_styles: Dict[str, str]
+    p_styles: Dict[str, str]
+    em_styles: Dict[str, str]
+    li_styles: Dict[str, str]
+    section_styles: Dict[str, str]
 
 
-class ProcessResult(BaseModel):
-    processed_content: str = Field(..., description="处理后的内容")
-    model_used: str = Field(..., description="使用的AI模型")
-    tokens_used: Optional[int] = Field(default=None, description="消耗的token数量")
-    processing_time: float = Field(..., description="处理耗时（秒）")
+class WorkflowState(TypedDict):
+    # Input
+    raw_content: str
+    workflow_type: WorkflowType
+    theme_name: Optional[str]
+    theme_description: Optional[str]
+    adjustment_request: Optional[str]
+    
+    # Processed Data
+    parsed_content: List[ContentElement]
+    style_dna: Optional[StyleDNA]
+    generated_html: Optional[str]
+    validation_errors: List[str]
+    
+    # Control Flow
+    retry_count: int
+    is_valid: bool
 
 
-class HealthResponse(BaseModel):
-    status: str = Field(..., description="服务状态")
-    version: str = Field(..., description="服务版本")
-    timestamp: str = Field(..., description="检查时间")
+# Pydantic models for API requests/responses
+class CreateStyleRequest(BaseModel):
+    raw_content: str
+    theme_name: str
+    theme_description: str
+
+
+class UseStyleRequest(BaseModel):
+    raw_content: str
+    theme_name: str
+
+
+class AdjustStyleRequest(BaseModel):
+    theme_name: str
+    adjustment_request: str
+
+
+class StyleResponse(BaseModel):
+    html_content: str
+    style_dna: StyleDNA
+    theme_name: str
+    is_valid: bool
+    errors: List[str]
+
+
+class ContentStructure(BaseModel):
+    elements: List[ContentElement]

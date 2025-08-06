@@ -1,74 +1,79 @@
+import os
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-import logging
 
-from app.config.settings import settings
-from app.api import routes
-from app.utils.logger import setup_logger
+from app.api.routes import router
+from app.db.database import create_tables
+from app.services.cache import style_cache
+from app.utils.monitor import logger
+from app.core.config import settings
 
-
-# 设置日志
-logger = setup_logger(__name__)
+# 加载环境变量
+load_dotenv()
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """应用生命周期管理"""
-    # 启动时
-    logger.info("Starting FlowEdit Backend Service...")
-    logger.info(f"Debug mode: {settings.debug}")
-    logger.info(f"Default model: {settings.default_model}")
-    logger.info(f"Allowed origins: {settings.origins_list}")
+    # 启动时初始化数据库
+    create_tables()
+    logger.info("数据库初始化完成")
+    
+    # 验证配置（非阻塞）
+    try:
+        if not settings.validate():
+            logger.warning("配置验证存在警告，请检查环境变量")
+        else:
+            logger.info(f"AI风格化内容生成服务启动完成 - 模型: {settings.default_model}")
+    except Exception as e:
+        logger.warning(f"配置验证失败: {e}")
     
     yield
-    
-    # 关闭时
-    logger.info("Shutting down FlowEdit Backend Service...")
+    # 关闭时清理资源
+    style_cache.clear()
+    logger.info("应用关闭完成")
 
 
-# 创建FastAPI应用实例
 app = FastAPI(
-    title="FlowEdit Backend Service",
-    description="AI-powered content processing service for FlowEdit Chrome Extension",
+    title="AI Style Generation Service",
+    description="基于LangChain和LangGraph的智能内容风格化系统",
     version="1.0.0",
-    docs_url="/docs" if settings.debug else None,
-    redoc_url="/redoc" if settings.debug else None,
     lifespan=lifespan
 )
 
 # 配置CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.origins_list,
+    allow_origins=["*"],  # 在生产环境中应该限制具体域名
     allow_credentials=True,
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
-    expose_headers=["*"]
 )
 
 # 注册路由
-app.include_router(routes.router, prefix="/api")
+app.include_router(router, prefix="/api")
 
 
 @app.get("/", tags=["Root"])
 async def root():
-    """根路径"""
+    """根路径健康检查"""
     return {
-        "service": "FlowEdit Backend",
+        "service": "AI Style Generation Service",
         "version": "1.0.0",
         "status": "running",
-        "docs": "/docs" if settings.debug else "disabled"
+        "description": "基于LangChain和LangGraph的智能内容风格化系统"
     }
 
 
+# 启动命令
 if __name__ == "__main__":
     import uvicorn
     
     uvicorn.run(
-        "main:app",
-        host=settings.host,
-        port=settings.port,
+        "main:app", 
+        host=settings.host, 
+        port=settings.port, 
         reload=settings.debug,
-        log_level="debug" if settings.debug else "info"
+        log_level="info"
     )
