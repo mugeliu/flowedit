@@ -9,6 +9,7 @@ from ..models.schemas import (
 from ..core.workflow import create_style_workflow
 from ..core.exceptions import StyleGenerationError, WeChatComplianceError, ContentParsingError
 from ..services.style_dna_service import StyleDNAService
+from ..services.html_renderer import HTMLRendererService
 from ..db.database import get_db
 from ..utils.monitor import monitor_workflow, workflow_monitor
 
@@ -35,31 +36,21 @@ def execute_style_workflow(workflow_type_str: str, initial_state: dict):
 
 @router.post("/v1/styles/create", response_model=StyleResponse)
 async def create_new_style(request: CreateStyleRequest, db: Session = Depends(get_db)):
-    """仅创建风格DNA并保存到数据库"""
+    """创建风格DNA并保存到数据库 - 使用新的分步生成方法"""
     try:
-        # 直接调用样式DNA生成链，不使用工作流
+        # 使用新的分步生成方法
         from ..core.langchain_chains import StyleDNAGeneratorChain
         
         generator = StyleDNAGeneratorChain()
-        style_dna_result = generator.chain.invoke({
-            "theme_name": request.theme_name,
-            "theme_description": request.theme_description
-        })
         
-        # 解析生成的样式DNA
-        try:
-            style_dna = generator.parse_and_clean_style_dna(style_dna_result)
-            style_dna["theme_name"] = request.theme_name
-        except json.JSONDecodeError as e:
-            raise HTTPException(
-                status_code=400,
-                detail=f"样式DNA生成格式错误: {str(e)}"
-            )
-        except Exception as e:
-            raise HTTPException(
-                status_code=400,
-                detail=f"样式DNA解析失败: {str(e)}"
-            )
+        # 调用新的生成方法，获取包含详细步骤的结果
+        result = generator.generate_style_dna(
+            theme_name=request.theme_name,
+            theme_description=request.theme_description
+        )
+        
+        # 提取样式DNA（兼容原有返回格式）
+        style_dna = result["style_dna"]
         
         # 保存风格DNA到数据库
         style_service = StyleDNAService(db)
@@ -72,15 +63,14 @@ async def create_new_style(request: CreateStyleRequest, db: Session = Depends(ge
             errors=[]
         )
         
-    except HTTPException:
-        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"服务器内部错误: {str(e)}")
+        print(f"❌ 创建样式失败: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"创建样式失败: {str(e)}")
 
 
 @router.post("/v1/styles/apply", response_model=StyleResponse)
 async def apply_existing_style(request: UseStyleRequest, db: Session = Depends(get_db)):
-    """使用已有风格生成HTML"""
+    """使用已有风格生成HTML - 优化版本，基于代码渲染"""
     try:
         # 检查风格是否存在
         style_service = StyleDNAService(db)
@@ -92,35 +82,149 @@ async def apply_existing_style(request: UseStyleRequest, db: Session = Depends(g
                 detail=f"未找到风格主题: {request.theme_name}"
             )
         
-        initial_state = {
-            "raw_content": request.raw_content,
-            "workflow_type": WorkflowType.USE_EXISTING_STYLE,
-            "theme_name": request.theme_name,
-            "retry_count": 0,
-            "parsed_content": [],
-            "style_dna": None,
-            "generated_html": None,
-            "validation_errors": [],
-            "is_valid": False
-        }
+        # 使用内容解析器解析内容结构
+        from ..core.langchain_chains import ContentParserChain, StyleDNAGeneratorChain
         
-        result = execute_style_workflow(
-            WorkflowType.USE_EXISTING_STYLE.value,
-            initial_state
-        )
+        # 初始化解析器和渲染器
+        llm = StyleDNAGeneratorChain().llm  # 复用已有的LLM实例
+        parser = ContentParserChain(llm)
+        renderer = HTMLRendererService()
+        
+        print(f"🔄 开始解析内容: {request.raw_content[:100]}...")
+        
+        # 解析内容结构
+        content_result = parser.chain.invoke({"raw_content": request.raw_content})
+        content_structure = parser.parse_and_clean(content_result)
+        
+        print(f"✅ 内容解析完成，元素数量: {len(content_structure.elements)}")
+        
+        # 基于代码渲染HTML
+        html_content = renderer.render_complete_html(content_structure, existing_style)
         
         return StyleResponse(
-            html_content=result["generated_html"],
-            style_dna=result["style_dna"],
-            theme_name=result["style_dna"]["theme_name"],
-            is_valid=result.get("is_valid", True),
-            errors=result.get("validation_errors", [])
+            html_content=html_content,
+            style_dna=existing_style,
+            theme_name=request.theme_name,
+            is_valid=True,
+            errors=[]
         )
         
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"服务器内部错误: {str(e)}")
+        print(f"❌ 应用样式失败: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"应用样式失败: {str(e)}")
+
+
+@router.post("/v1/styles/apply-fast", response_model=StyleResponse)
+async def apply_existing_style_fast(request: UseStyleRequest, db: Session = Depends(get_db)):
+    """使用已有风格生成HTML - 超快版本，纯代码处理"""
+    try:
+        # 检查风格是否存在
+        style_service = StyleDNAService(db)
+        existing_style = style_service.get_style_dna(request.theme_name)
+        
+        if not existing_style:
+            raise HTTPException(
+                status_code=404,
+                detail=f"未找到风格主题: {request.theme_name}"
+            )
+        
+        # 纯代码解析内容结构，不使用LLM
+        content_structure = parse_content_with_regex(request.raw_content)
+        
+        # 基于代码渲染HTML
+        renderer = HTMLRendererService()
+        html_content = renderer.render_complete_html(content_structure, existing_style)
+        
+        return StyleResponse(
+            html_content=html_content,
+            style_dna=existing_style,
+            theme_name=request.theme_name,
+            is_valid=True,
+            errors=[]
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ 快速应用样式失败: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"快速应用样式失败: {str(e)}")
+
+
+def parse_content_with_regex(raw_content: str):
+    """纯代码解析内容结构，不依赖LLM"""
+    from ..models.schemas import ContentStructure
+    import re
+    
+    elements = []
+    lines = raw_content.split('\n')
+    
+    for line in lines:
+        line = line.strip()
+        if not line:
+            continue
+        
+        # 解析标题
+        if line.startswith('#'):
+            level = min(6, len(line) - len(line.lstrip('#')))
+            content = line.lstrip('# ').strip()
+            if content:
+                elements.append({
+                    'type': f'h{level}',
+                    'content': content,
+                    'level': level
+                })
+        
+        # 解析列表
+        elif line.startswith('-') or line.startswith('*') or line.startswith('+'):
+            content = line[1:].strip()
+            if content:
+                elements.append({
+                    'type': 'li',
+                    'content': content
+                })
+        
+        # 解析有序列表
+        elif re.match(r'^\d+\.', line):
+            content = re.sub(r'^\d+\.\s*', '', line)
+            if content:
+                elements.append({
+                    'type': 'li',
+                    'content': content
+                })
+        
+        # 解析引用
+        elif line.startswith('>'):
+            content = line[1:].strip()
+            if content:
+                elements.append({
+                    'type': 'blockquote',
+                    'content': content
+                })
+        
+        # 解析代码块
+        elif line.startswith('```') or line.startswith('~~~'):
+            elements.append({
+                'type': 'code',
+                'content': 'Code block placeholder'
+            })
+        
+        # 普通段落
+        else:
+            elements.append({
+                'type': 'p',
+                'content': line
+            })
+    
+    # 如果没有解析到任何元素，创建一个默认段落
+    if not elements:
+        elements.append({
+            'type': 'p',
+            'content': raw_content or 'FlowEdit - 样式化内容'
+        })
+    
+    return ContentStructure(elements=elements)
 
 
 @router.post("/v1/styles/adjust", response_model=StyleResponse)

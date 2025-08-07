@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlowEdit - 专业级样式生成测试</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #2c3e50;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            color: white;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .panel {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .panel h2 {
+            color: #2c3e50;
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 0.5rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #34495e;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        textarea.form-control {
+            resize: vertical;
+            min-height: 200px;
+            font-family: inherit;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+        }
+        
+        .btn-info {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        }
+        
+        .result-panel {
+            grid-column: 1 / -1;
+        }
+        
+        .result-content {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid #667eea;
+        }
+        
+        .html-output {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        
+        .loading {
+            text-align: center;
+            color: #667eea;
+            font-weight: 600;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+        
+        .copy-btn {
+            background: #6c757d;
+            font-size: 0.8rem;
+            padding: 0.5rem 1rem;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎨 FlowEdit 专业级样式生成</h1>
+            <p>测试优化后的StyleDNA复杂样式生成和代码化HTML渲染</p>
+        </div>
+        
+        <div class="main-content">
+            <!-- 样式创建面板 -->
+            <div class="panel">
+                <h2>💫 创建新样式</h2>
+                <div class="form-group">
+                    <label for="themeName">风格主题名称：</label>
+                    <input type="text" id="themeName" class="form-control" 
+                           placeholder="例如：新粗野橙潮主题" 
+                           value="专业级复杂样式测试">
+                </div>
+                <div class="form-group">
+                    <label for="themeDescription">风格特征描述：</label>
+                    <textarea id="themeDescription" class="form-control" 
+                              placeholder="详细描述风格特征..."
+                              rows="8">现代专业设计风格，融合以下特点：
+1. 渐变背景和多层阴影效果
+2. 高对比度的视觉层次
+3. 精致的圆角和间距设计  
+4. 适合移动端阅读的排版
+5. 丰富的色彩搭配和透明度效果
+6. 现代CSS技术应用</textarea>
+                </div>
+                <button class="btn" onclick="createNewStyle()">🚀 生成专业样式</button>
+            </div>
+            
+            <!-- 样式应用面板 -->
+            <div class="panel">
+                <h2>✨ 应用已有样式</h2>
+                <div class="form-group">
+                    <label for="applyThemeName">风格主题名称：</label>
+                    <input type="text" id="applyThemeName" class="form-control" 
+                           placeholder="输入已创建的主题名称" 
+                           value="专业级复杂样式测试">
+                </div>
+                <div class="form-group">
+                    <label for="contentText">原始内容：</label>
+                    <textarea id="contentText" class="form-control" 
+                              placeholder="输入要样式化的内容..."
+                              rows="8"># FlowEdit 专业级样式系统
+
+## 核心特性
+
+### 🎨 复杂视觉效果
+- **渐变背景**：多色渐变营造深度感
+- **多层阴影**：立体视觉效果
+- **RGBA透明度**：精细色彩控制
+
+### ⚡ 性能优化
+- 基于代码的模板填充
+- 避免LLM处理造成的样式不一致
+- 毫秒级HTML生成速度
+
+### 📱 微信兼容
+> 严格遵循微信公众号HTML规范，确保完美显示
+
+## 测试列表
+1. 标题层次测试
+2. 内联样式测试
+3. 列表渲染测试
+4. 引用块测试
+
+*这是斜体文本*，**这是粗体文本**，`这是代码文本`。
+
+---
+
+FlowEdit - 让内容更有视觉冲击力！</textarea>
+                </div>
+                <button class="btn btn-success" onclick="applyStyleOptimized()">🎯 智能渲染</button>
+                <button class="btn btn-info" onclick="applyStyleFast()">⚡ 极速渲染</button>
+            </div>
+        </div>
+        
+        <!-- 结果显示面板 -->
+        <div class="panel result-panel" id="resultPanel" style="display: none;">
+            <h2>📊 生成结果</h2>
+            <div id="resultContent"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000/v1';
+        
+        async function createNewStyle() {
+            const themeName = document.getElementById('themeName').value.trim();
+            const themeDescription = document.getElementById('themeDescription').value.trim();
+            
+            if (!themeName || !themeDescription) {
+                alert('请填写完整的风格信息！');
+                return;
+            }
+            
+            showResult('loading', '🎨 正在生成专业级复杂样式...');
+            
+            try {
+                const startTime = Date.now();
+                const response = await fetch(`${API_BASE}/styles/create`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        theme_name: themeName,
+                        theme_description: themeDescription
+                    })
+                });
+                
+                const endTime = Date.now();
+                const result = await response.json();
+                
+                if (response.ok) {
+                    const styleCount = Object.keys(result.style_dna).length;
+                    showResult('success', `
+                        <div class="stats">
+                            <span>✅ 样式创建成功</span>
+                            <span>⏱️ 用时：${endTime - startTime}ms</span>
+                            <span>📦 样式数量：${styleCount}个</span>
+                        </div>
+                        <div class="result-content">
+                            <h4>🎨 生成的StyleDNA配置：</h4>
+                            <pre>${JSON.stringify(result.style_dna, null, 2)}</pre>
+                        </div>
+                    `);
+                    
+                    // 自动填充应用面板
+                    document.getElementById('applyThemeName').value = themeName;
+                } else {
+                    throw new Error(result.detail || '创建样式失败');
+                }
+            } catch (error) {
+                showResult('error', `❌ 创建样式失败：${error.message}`);
+            }
+        }
+        
+        async function applyStyleOptimized() {
+            await applyStyle('/styles/apply', '🎯 智能渲染中（LLM解析+代码渲染）...');
+        }
+        
+        async function applyStyleFast() {
+            await applyStyle('/styles/apply-fast', '⚡ 极速渲染中（纯代码处理）...');
+        }
+        
+        async function applyStyle(endpoint, loadingMsg) {
+            const themeName = document.getElementById('applyThemeName').value.trim();
+            const contentText = document.getElementById('contentText').value.trim();
+            
+            if (!themeName || !contentText) {
+                alert('请填写主题名称和内容！');
+                return;
+            }
+            
+            showResult('loading', loadingMsg);
+            
+            try {
+                const startTime = Date.now();
+                const response = await fetch(`${API_BASE}${endpoint}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        theme_name: themeName,
+                        raw_content: contentText
+                    })
+                });
+                
+                const endTime = Date.now();
+                const result = await response.json();
+                
+                if (response.ok) {
+                    const htmlLength = result.html_content.length;
+                    showResult('success', `
+                        <div class="stats">
+                            <span>✅ HTML生成成功</span>
+                            <span>⏱️ 用时：${endTime - startTime}ms</span>
+                            <span>📄 HTML长度：${htmlLength}字符</span>
+                            <button class="copy-btn btn" onclick="copyToClipboard('${result.html_content.replace(/'/g, "\\'")}')">📋 复制HTML</button>
+                        </div>
+                        
+                        <div class="result-content">
+                            <h4>🎨 渲染效果预览：</h4>
+                            <div class="html-output">${result.html_content}</div>
+                        </div>
+                        
+                        <div class="result-content">
+                            <h4>📋 生成的HTML代码：</h4>
+                            <pre style="background: #f8f9fa; padding: 1rem; border-radius: 4px; overflow-x: auto; font-size: 0.8rem; white-space: pre-wrap;">${escapeHtml(result.html_content)}</pre>
+                        </div>
+                    `);
+                } else {
+                    throw new Error(result.detail || '应用样式失败');
+                }
+            } catch (error) {
+                showResult('error', `❌ 应用样式失败：${error.message}`);
+            }
+        }
+        
+        function showResult(type, content) {
+            const resultPanel = document.getElementById('resultPanel');
+            const resultContent = document.getElementById('resultContent');
+            
+            resultPanel.style.display = 'block';
+            
+            if (type === 'loading') {
+                resultContent.innerHTML = `<div class="loading">${content}</div>`;
+            } else if (type === 'error') {
+                resultContent.innerHTML = `<div class="result-content error">${content}</div>`;
+            } else {
+                resultContent.innerHTML = content;
+            }
+            
+            // 滚动到结果区域
+            resultPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('✅ HTML代码已复制到剪贴板！');
+            }).catch(err => {
+                console.error('复制失败:', err);
+                alert('❌ 复制失败，请手动选择复制');
+            });
+        }
+    </script>
+</body>
+</html>

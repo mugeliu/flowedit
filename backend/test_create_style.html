@@ -222,11 +222,22 @@
                 <div class="section-header">🧬 生成的样式DNA</div>
                 <div class="section-content">
                     <div class="preview-section">
-                        <div class="preview-header">样式DNA数据结构:</div>
+                        <div class="preview-header">最终组装的样式DNA配置</div>
                         <div style="background: #f8fafc; padding: 15px; border-radius: 6px; font-size: 13px; color: #64748b; margin-bottom: 15px;">
-                            💡 <strong>说明:</strong> 显示大模型生成的样式DNA数据结构，包含主题配置、颜色方案、字体设置等，这些数据将存储在数据库中用于后续的样式应用。
+                            💡 <strong>说明:</strong> 显示通过分步生成和代码组装后的完整样式DNA配置，包含30+个样式规则。大模型的分步输出过程可以在后端日志中查看。
+                            <br><br>
+                            🔍 <strong>生成流程:</strong> 
+                            <br>1. 大模型生成配色方案 (6个颜色参数)
+                            <br>2. 大模型生成字体参数 (7个排版参数) 
+                            <br>3. Python代码基于参数组装完整样式DNA (30+个样式配置)
                         </div>
-                        <pre id="styleDnaDisplay" style="background: #1e293b; color: #e2e8f0; padding: 20px; border-radius: 8px; font-size: 12px; overflow-x: auto; white-space: pre-wrap;"></pre>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <div style="font-size: 14px; color: #374151;">
+                                <strong>样式配置总数:</strong> <span id="styleCount">-</span> 个
+                            </div>
+                            <button onclick="copyStyleDNA()" class="btn" style="padding: 8px 16px; font-size: 12px; margin: 0;">📋 复制配置</button>
+                        </div>
+                        <pre id="styleDnaDisplay" style="background: #1e293b; color: #e2e8f0; padding: 20px; border-radius: 8px; font-size: 12px; overflow-x: auto; white-space: pre-wrap; max-height: 400px; overflow-y: auto;"></pre>
                     </div>
                 </div>
             </div>
@@ -295,21 +306,28 @@
             const resultDiv = document.getElementById('result');
             const styleDnaSection = document.getElementById('styleDnaSection');
             const styleDnaDisplay = document.getElementById('styleDnaDisplay');
+            const styleCount = document.getElementById('styleCount');
             
             resultDiv.style.display = 'block';
             resultDiv.className = `result ${isSuccess ? 'success' : 'error'}`;
             
             if (isSuccess && data.style_dna) {
+                // 计算样式配置数量
+                const styleConfigCount = Object.keys(data.style_dna).filter(key => key.endsWith('_styles')).length;
+                
                 // 显示样式DNA在专用区域
                 styleDnaDisplay.textContent = JSON.stringify(data.style_dna, null, 2);
+                styleCount.textContent = styleConfigCount;
                 styleDnaSection.style.display = 'block';
+                
                 // 在结果区域显示成功摘要
                 resultDiv.innerHTML = `<div style="color: #059669; font-weight: 600; margin-bottom: 10px;">✅ 样式DNA创建成功！</div>
 <div style="font-size: 14px; color: #374151;">
 <strong>主题名称:</strong> ${data.theme_name || '未知'}<br>
 <strong>是否有效:</strong> ${data.is_valid ? '✅ 是' : '❌ 否'}<br>
+<strong>配置数量:</strong> ${styleConfigCount} 个样式规则<br>
 <strong>数据状态:</strong> 已保存到数据库<br>
-<strong>详细数据:</strong> 请查看下方样式DNA结构
+<strong>详细配置:</strong> 请查看下方样式DNA结构
 </div>`;
             } else if (isSuccess && !data.style_dna) {
                 // 如果成功但没有style_dna，显示完整响应
@@ -319,6 +337,35 @@
                 // 错误时显示完整响应
                 resultDiv.textContent = JSON.stringify(data, null, 2);
                 styleDnaSection.style.display = 'none';
+            }
+        }
+
+        // 复制样式DNA到剪贴板
+        function copyStyleDNA() {
+            const styleDnaDisplay = document.getElementById('styleDnaDisplay');
+            const textToCopy = styleDnaDisplay.textContent;
+            
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    showStatus('✅ 样式DNA已复制到剪贴板', 'success');
+                }).catch(err => {
+                    console.error('复制失败:', err);
+                    showStatus('❌ 复制失败', 'error');
+                });
+            } else {
+                // 兼容旧浏览器
+                const textArea = document.createElement('textarea');
+                textArea.value = textToCopy;
+                document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    showStatus('✅ 样式DNA已复制到剪贴板', 'success');
+                } catch (err) {
+                    console.error('复制失败:', err);
+                    showStatus('❌ 复制失败', 'error');
+                }
+                document.body.removeChild(textArea);
             }
         }
 

@@ -1,4 +1,4 @@
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Any
 from typing_extensions import TypedDict, NotRequired
 from enum import Enum
 from pydantic import BaseModel
@@ -16,14 +16,8 @@ class ContentElement(TypedDict):
     level: NotRequired[int]      # 可选：标题层次或重要程度
 
 
-class StyleDNA(TypedDict):
-    theme_name: str
-    h1_styles: Dict[str, str]
-    h2_styles: Dict[str, str]
-    p_styles: Dict[str, str]
-    em_styles: Dict[str, str]
-    li_styles: Dict[str, str]
-    section_styles: Dict[str, str]
+# 使用灵活的字典类型，无需预定义所有字段
+StyleDNA = Dict[str, Any]  # 完全动态的样式配置
 
 
 class WorkflowState(TypedDict):
