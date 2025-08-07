@@ -47,7 +47,6 @@ class WorkflowState(TypedDict):
 
 # Pydantic models for API requests/responses
 class CreateStyleRequest(BaseModel):
-    raw_content: str
     theme_name: str
     theme_description: str
 
@@ -63,7 +62,6 @@ class AdjustStyleRequest(BaseModel):
 
 
 class StyleResponse(BaseModel):
-    html_content: str
     style_dna: StyleDNA
     theme_name: str
     is_valid: bool

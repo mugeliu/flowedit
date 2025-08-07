@@ -159,7 +159,7 @@
         <div class="content">
             <div class="api-info">
                 <strong>API端点:</strong> POST /api/v1/styles/create<br>
-                <strong>功能:</strong> 根据用户提供的原始内容和风格描述，生成新的风格DNA并输出样式化HTML
+                <strong>功能:</strong> 根据用户提供的风格描述，生成新的风格DNA（仅返回数据结构，不处理具体内容）
             </div>
 
             <div class="test-section">
@@ -185,7 +185,7 @@
                         <div class="quick-test" onclick="loadStyleCase('simple')">简单测试</div>
                     </div>
                     <div style="background: #f0f9ff; padding: 15px; border-radius: 8px; margin-top: 15px; font-size: 14px; color: #0c4a6e;">
-                        💡 <strong>提示：</strong>内容已固定为FlowEdit产品介绍，你只需要选择不同的风格进行测试，体验各种排版效果！
+                        💡 <strong>提示：</strong>只需要选择风格特征描述，不需要输入具体内容，API将只生成样式DNA配置！
                     </div>
                 </div>
             </div>
@@ -203,186 +203,6 @@
                         <textarea id="themeDescription" placeholder="详细描述风格特点，如颜色偏好、字体风格、布局特点等">简洁现代的设计风格，使用蓝色系配色，清爽的字体，适合商务和技术内容展示</textarea>
                     </div>
 
-                    <div class="form-group">
-                        <label for="rawContent">预设内容 (FlowEdit产品介绍 - 简单测试时可编辑)</label>
-                        <textarea id="rawContent" style="background: #f8fafc; color: #6b7280;"># FlowEdit - 重新定义微信公众号内容创作体验
-
-## 产品概述
-
-FlowEdit 是一款革命性的 Chrome 浏览器扩展，专为微信公众号创作者设计。通过深度集成现代化的 Editor.js 编辑器和 AI 智能功能，FlowEdit 将传统的公众号编辑体验提升到全新高度。
-
-### 为什么选择 FlowEdit？
-
-在内容创作的时代，**效率**和**质量**是每个创作者追求的目标。FlowEdit 正是为解决这一痛点而生：
-
-- 告别繁琐的格式调整，专注内容本身
-- 智能化的排版建议，让文章更具专业感
-- 丰富的模板库，快速开启创作灵感
-- 一键风格化，打造独特的品牌形象
-
-## 核心功能特性
-
-### 🎨 现代化编辑体验
-
-基于 **Editor.js** 的块级编辑器，提供：
-
-- 拖拽式内容组织
-- 实时预览效果
-- 多媒体内容支持
-- 快捷键操作体验
-
-### 🤖 AI 智能辅助
-
-集成先进的人工智能技术：
-
-- **智能排版优化**: 自动调整段落间距、字体搭配
-- **风格一致性**: 确保全文风格统一协调
-- **内容结构建议**: AI 分析内容逻辑，提供结构优化建议
-- **多风格适配**: 商务、文艺、科技等多种预设风格
-
-### 📱 微信平台深度适配
-
-完美兼容微信公众号平台特性：
-
-- 严格遵循微信 HTML 规范
-- 移动端阅读优化
-- 保留平台原生功能
-- 无缝集成工作流程
-
-### 🎯 智能侧边栏管理
-
-高效的内容管理界面：
-
-- **历史文章管理**: 快速查看和编辑历史内容
-- **模板库**: 丰富的文章模板，一键应用
-- **风格预设**: 保存和复用个人风格配置
-- **实时预览**: 所见即所得的编辑体验
-
-## 技术架构亮点
-
-### 先进的多构建系统
-
-FlowEdit 采用现代化的工程架构：
-
-```
-多构建配置
-├── vite.content.config.js    # 内容脚本构建
-├── vite.editorjs.config.js   # Editor.js 工具集
-└── vite.react.config.js      # React 应用界面
-```
-
-### 插件化架构设计
-
-- **模块化开发**: 功能组件独立可扩展
-- **插件注册机制**: 灵活的功能扩展体系
-- **生命周期管理**: 完善的插件生命周期控制
-
-### 现代技术栈
-
-#### 前端技术
-
-- **React 19** + TypeScript: 现代化的用户界面
-- **Vite**: 快速的构建和开发体验  
-- **Tailwind CSS** + shadcn/ui: 一致的设计系统
-- **Editor.js**: 强大的块级编辑器核心
-
-#### 扩展技术
-
-- **Manifest V3**: 最新的浏览器扩展标准
-- **Chrome APIs**: 深度集成浏览器能力
-- **Service Worker**: 高效的后台处理
-
-## 使用场景
-
-### 💼 企业品牌传播
-
-- **品牌一致性**: 统一的视觉风格和排版标准
-- **专业形象**: 精美的版式设计提升品牌形象
-- **批量制作**: 模板化内容快速生产
-
-### ✍️ 个人内容创作
-
-- **创作效率**: 智能化工具减少重复劳动
-- **灵感激发**: 丰富的模板和样式选择
-- **个性表达**: 自定义风格展现独特个性
-
-### 📚 知识分享与教育
-
-- **结构化内容**: 清晰的层次结构便于阅读理解
-- **多媒体支持**: 图文并茂的内容表现形式
-- **移动优化**: 适配手机阅读习惯
-
-### 🎯 营销推广活动
-
-- **视觉冲击**: 精美的版式设计抓住读者注意力
-- **转化优化**: 专业的排版提升内容可信度
-- **快速迭代**: 模板化制作支持营销活动快速响应
-
-## 产品优势
-
-### 🚀 显著提升创作效率
-
-- 传统编辑器操作时间减少 **70%**
-- 格式调整工作量降低 **80%**  
-- 内容发布准备时间缩短 **60%**
-
-### 🎨 专业级视觉效果
-
-- 媲美专业设计师的排版质量
-- 多种预设风格适应不同场景
-- AI 智能配色和字体搭配建议
-
-### 🔧 完善的工具生态
-
-- 丰富的第三方插件支持
-- 开放的 API 接口
-- 活跃的社区和文档支持
-
-### 📈 数据驱动优化
-
-- 详细的编辑行为分析
-- 内容效果追踪
-- 持续的产品优化迭代
-
-## 开始使用 FlowEdit
-
-### 安装步骤
-
-1. **下载扩展**: 从 Chrome 网上应用店搜索 "FlowEdit"
-2. **安装激活**: 一键安装，立即生效
-3. **打开微信**: 访问微信公众号后台编辑界面
-4. **开始创作**: 享受全新的内容创作体验
-
-### 快速上手
-
-- **5分钟教程**: 交互式引导快速掌握核心功能
-- **视频教程**: 详细的功能演示和最佳实践
-- **社区支持**: 活跃的用户社区和技术支持
-
-## 未来展望
-
-FlowEdit 致力于成为内容创作领域的**智能助手**，我们正在开发更多激动人心的功能：
-
-### 即将推出
-
-- **AI 内容生成**: 基于主题的智能内容创作
-- **多平台支持**: 扩展到更多内容创作平台
-- **团队协作**: 支持多人协同编辑和审核流程
-- **数据分析**: 深度的内容效果分析和优化建议
-
-### 长远规划
-
-- **个性化 AI**: 学习用户偏好的智能创作助手
-- **内容生态**: 打造完整的内容创作和分发生态
-- **国际化**: 支持更多语言和地区
-- **企业版**: 面向大型组织的定制化解决方案
-
----
-
-**FlowEdit** - *让内容创作更简单，让表达更精彩*
-
-> 加入我们，一起重新定义内容创作的未来！</textarea>
-                    </div>
                 </div>
             </div>
 
@@ -390,7 +210,7 @@ FlowEdit 致力于成为内容创作领域的**智能助手**，我们正在开�
                 <div class="section-header">🔧 执行测试</div>
                 <div class="section-content">
                     <button class="btn" onclick="testCreateStyle()" id="testBtn">
-                        🎨 创建风格主题 (基于FlowEdit内容)
+                        🧬 创建样式DNA (仅返回数据结构)
                     </button>
                     
                     <div id="status"></div>
@@ -398,12 +218,15 @@ FlowEdit 致力于成为内容创作领域的**智能助手**，我们正在开�
                 </div>
             </div>
 
-            <div class="test-section" id="previewSection" style="display: none;">
-                <div class="section-header">🎨 生成的HTML预览</div>
+            <div class="test-section" id="styleDnaSection" style="display: none;">
+                <div class="section-header">🧬 生成的样式DNA</div>
                 <div class="section-content">
                     <div class="preview-section">
-                        <div class="preview-header">HTML渲染效果:</div>
-                        <div id="htmlPreview"></div>
+                        <div class="preview-header">样式DNA数据结构:</div>
+                        <div style="background: #f8fafc; padding: 15px; border-radius: 6px; font-size: 13px; color: #64748b; margin-bottom: 15px;">
+                            💡 <strong>说明:</strong> 显示大模型生成的样式DNA数据结构，包含主题配置、颜色方案、字体设置等，这些数据将存储在数据库中用于后续的样式应用。
+                        </div>
+                        <pre id="styleDnaDisplay" style="background: #1e293b; color: #e2e8f0; padding: 20px; border-radius: 8px; font-size: 12px; overflow-x: auto; white-space: pre-wrap;"></pre>
                     </div>
                 </div>
             </div>
@@ -457,23 +280,7 @@ FlowEdit 致力于成为内容创作领域的**智能助手**，我们正在开�
             if (styleCase) {
                 document.getElementById('themeName').value = styleCase.themeName;
                 document.getElementById('themeDescription').value = styleCase.themeDescription;
-                
-                // 如果是简单测试，使用简短的内容；否则使用FlowEdit完整介绍
-                if (type === 'simple' && styleCase.content) {
-                    const textarea = document.getElementById('rawContent');
-                    textarea.value = styleCase.content;
-                    textarea.removeAttribute('readonly');
-                    textarea.style.background = '#ffffff';
-                    textarea.style.color = '#000000';
-                    showStatus('已加载简单测试用例: ' + styleCase.themeName + ' (使用简短内容，可编辑)', 'success');
-                } else {
-                    // 内容保持不变，使用固定的FlowEdit介绍，并设为只读
-                    const textarea = document.getElementById('rawContent');
-                    textarea.setAttribute('readonly', 'true');
-                    textarea.style.background = '#f8fafc';
-                    textarea.style.color = '#6b7280';
-                    showStatus('已加载风格用例: ' + styleCase.themeName, 'success');
-                }
+                showStatus('已加载风格用例: ' + styleCase.themeName, 'success');
             }
         }
 
@@ -486,20 +293,32 @@ FlowEdit 致力于成为内容创作领域的**智能助手**，我们正在开�
         // 显示结果
         function showResult(data, isSuccess = true) {
             const resultDiv = document.getElementById('result');
-            const previewSection = document.getElementById('previewSection');
+            const styleDnaSection = document.getElementById('styleDnaSection');
+            const styleDnaDisplay = document.getElementById('styleDnaDisplay');
             
             resultDiv.style.display = 'block';
             resultDiv.className = `result ${isSuccess ? 'success' : 'error'}`;
             
-            if (isSuccess && data.html_content) {
-                // 只显示大模型返回的HTML内容
-                resultDiv.textContent = data.html_content;
-                previewSection.style.display = 'block';
-                document.getElementById('htmlPreview').innerHTML = data.html_content;
+            if (isSuccess && data.style_dna) {
+                // 显示样式DNA在专用区域
+                styleDnaDisplay.textContent = JSON.stringify(data.style_dna, null, 2);
+                styleDnaSection.style.display = 'block';
+                // 在结果区域显示成功摘要
+                resultDiv.innerHTML = `<div style="color: #059669; font-weight: 600; margin-bottom: 10px;">✅ 样式DNA创建成功！</div>
+<div style="font-size: 14px; color: #374151;">
+<strong>主题名称:</strong> ${data.theme_name || '未知'}<br>
+<strong>是否有效:</strong> ${data.is_valid ? '✅ 是' : '❌ 否'}<br>
+<strong>数据状态:</strong> 已保存到数据库<br>
+<strong>详细数据:</strong> 请查看下方样式DNA结构
+</div>`;
+            } else if (isSuccess && !data.style_dna) {
+                // 如果成功但没有style_dna，显示完整响应
+                resultDiv.textContent = JSON.stringify(data, null, 2);
+                styleDnaSection.style.display = 'none';
             } else {
                 // 错误时显示完整响应
                 resultDiv.textContent = JSON.stringify(data, null, 2);
-                previewSection.style.display = 'none';
+                styleDnaSection.style.display = 'none';
             }
         }
 
@@ -513,7 +332,6 @@ FlowEdit 致力于成为内容创作领域的**智能助手**，我们正在开�
             
             try {
                 const requestData = {
-                    raw_content: document.getElementById('rawContent').value,
                     theme_name: document.getElementById('themeName').value,
                     theme_description: document.getElementById('themeDescription').value
                 };
@@ -545,13 +363,13 @@ FlowEdit 致力于成为内容创作领域的**智能助手**，我们正在开�
                 showResult({ error: error.message, stack: error.stack }, false);
             } finally {
                 btn.disabled = false;
-                btn.textContent = '🎨 创建风格主题 (基于FlowEdit内容)';
+                btn.textContent = '🧬 创建样式DNA (仅返回数据结构)';
             }
         }
 
         // 页面加载时显示提示
         window.onload = function() {
-            showStatus('准备就绪！内容已预设FlowEdit产品介绍，选择风格开始测试', 'success');
+            showStatus('准备就绪！输入风格描述开始生成样式DNA', 'success');
             // 默认加载极简商务风格
             loadStyleCase('minimal');
         };

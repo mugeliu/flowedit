@@ -183,7 +183,7 @@ class ContentParserChain:
     
     def _fix_json_comprehensive(self, json_str: str) -> str:
         """全面的JSON修复"""
-        print("🔧 应用全面JSON修复")
+        print("应用全面JSON修复")
         
         # 移除多余的逗号
         json_str = re.sub(r',\s*}', '}', json_str)
@@ -253,42 +253,312 @@ class ContentParserChain:
 
 
 class StyleDNAGeneratorChain:
-    def __init__(self, llm):
+    def __init__(self, llm=None):
+        if llm is None:
+            from .config import settings
+            from langchain_openai import ChatOpenAI
+            
+            llm = ChatOpenAI(
+                model=settings.default_model,
+                openai_api_key=settings.openai_api_key,
+                openai_api_base=settings.openai_base_url,
+                temperature=settings.temperature,
+                max_tokens=settings.max_tokens
+            )
+        
+        self.parser = StrOutputParser()
         self.prompt = PromptTemplate(
             template="""
-            基于以下风格描述，生成符合微信公众号平台限制的风格DNA配置：
+            基于以下风格描述，生成符合微信公众号平台限制的完整风格DNA配置：
 
             风格主题：{theme_name}
             风格特征描述：{theme_description}
-            内容结构：{content_structure}
 
             微信平台CSS限制：
-            - 允许：font-size, color, font-weight, line-height, margin, padding, background-color, border, text-align, display
+            - 允许：font-size, color, font-weight, line-height, margin, padding, background-color, border, text-align, display, text-decoration
             - 禁止：position, transform, z-index, div标签, class/id属性
             - 必须：内联样式，使用section替代div
 
-            生成JSON格式的风格DNA，包含各内容层次的样式配置：
+            生成JSON格式的完整风格DNA，必须包含以下所有基础样式：
             {{
               "theme_name": "{theme_name}",
-              "h1_styles": {{"font-size": "24px", "color": "#2c3e50", ...}},
-              "h2_styles": {{"font-size": "20px", "color": "#34495e", ...}},
-              "p_styles": {{"font-size": "16px", "color": "#333333", ...}},
-              "em_styles": {{"color": "#e74c3c", "font-style": "italic", ...}},
-              "li_styles": {{"font-size": "16px", "margin-bottom": "8px", ...}},
-              "section_styles": {{"margin": "20px 0", "padding": "16px", ...}}
+              
+              "strong_styles": {{"color": "#e74c3c", "font-weight": "bold"}},
+              "b_styles": {{"color": "#2c3e50", "font-weight": "bold"}},
+              "em_styles": {{"color": "#e67e22", "font-style": "italic", "font-weight": "500"}},
+              "i_styles": {{"color": "#8e44ad", "font-style": "italic"}},
+              "u_styles": {{"color": "#3498db", "text-decoration": "underline"}},
+              "code_styles": {{"background-color": "#f8f9fa", "color": "#e74c3c", "padding": "2px 4px", "font-size": "14px", "border": "1px solid #e9ecef"}},
+              "mark_styles": {{"background-color": "#fff3cd", "color": "#856404", "padding": "2px 4px"}},
+              "a_styles": {{"color": "#3498db", "text-decoration": "underline"}},
+              "sup_styles": {{"font-size": "12px", "color": "#7f8c8d"}},
+              
+              "h1_styles": {{"font-size": "28px", "color": "#2c3e50", "font-weight": "bold", "margin": "24px 0 20px 0", "line-height": "1.4", "text-align": "center"}},
+              "h2_styles": {{"font-size": "24px", "color": "#34495e", "font-weight": "bold", "margin": "20px 0 16px 0", "line-height": "1.4"}},
+              "h3_styles": {{"font-size": "20px", "color": "#34495e", "font-weight": "bold", "margin": "18px 0 14px 0", "line-height": "1.4"}},
+              "h4_styles": {{"font-size": "18px", "color": "#7f8c8d", "font-weight": "bold", "margin": "16px 0 12px 0", "line-height": "1.4"}},
+              
+              "p_styles": {{"font-size": "16px", "color": "#333333", "line-height": "1.8", "margin": "0 0 16px 0", "text-align": "justify"}},
+              
+              "quote_styles": {{"font-size": "16px", "color": "#7f8c8d", "font-style": "italic", "margin": "20px 0", "padding": "16px 20px", "background-color": "#f8f9fa", "border-left": "4px solid #3498db"}},
+              
+              "delimiter_styles": {{"text-align": "center", "margin": "24px 0", "color": "#bdc3c7", "font-size": "18px"}},
+              
+              "image_styles": {{"display": "block", "margin": "20px auto", "max-width": "100%", "border": "1px solid #e9ecef"}},
+              
+              "code_block_styles": {{"background-color": "#f8f9fa", "color": "#333333", "padding": "16px", "margin": "16px 0", "font-size": "14px", "line-height": "1.6", "border": "1px solid #e9ecef"}},
+              
+              "ordered_list_styles": {{"margin": "16px 0", "padding-left": "20px"}},
+              "unordered_list_styles": {{"margin": "16px 0", "padding-left": "20px"}},
+              "li_styles": {{"font-size": "16px", "color": "#333333", "margin-bottom": "8px", "line-height": "1.6"}},
+              
+              "section_styles": {{"margin": "20px 0", "padding": "16px", "background-color": "#ffffff"}},
+              "blockquote_styles": {{"margin": "20px 0", "padding": "16px 20px", "background-color": "#f8f9fa", "border-left": "4px solid #3498db", "color": "#7f8c8d"}},
+              
+              "table_styles": {{"width": "100%", "margin": "16px 0", "border": "1px solid #e9ecef"}},
+              "th_styles": {{"background-color": "#f8f9fa", "padding": "12px", "font-weight": "bold", "color": "#2c3e50", "text-align": "center", "border": "1px solid #e9ecef"}},
+              "td_styles": {{"padding": "12px", "color": "#333333", "border": "1px solid #e9ecef", "text-align": "left"}},
+              
+              "hr_styles": {{"margin": "24px 0", "border": "none", "border-top": "2px solid #ecf0f1"}},
+              
+              "highlight_section_styles": {{"background-color": "#f8f9fa", "padding": "20px", "margin": "20px 0", "border": "1px solid #e9ecef"}},
+              
+              "note_styles": {{"background-color": "#e8f5e8", "color": "#2d5a2d", "padding": "16px", "margin": "16px 0", "border-left": "4px solid #27ae60"}},
+              "warning_styles": {{"background-color": "#fff3cd", "color": "#856404", "padding": "16px", "margin": "16px 0", "border-left": "4px solid #ffc107"}},
+              "danger_styles": {{"background-color": "#f8d7da", "color": "#721c24", "padding": "16px", "margin": "16px 0", "border-left": "4px solid #dc3545"}}
             }}
 
             要求：
             1. 创造性地体现风格特征，避免模板化
-            2. 严格遵循微信平台CSS限制
-            3. 适配移动端阅读体验
-            4. 保持视觉层次清晰
+            2. 严格遵循微信平台CSS限制  
+            3. 适配移动端阅读体验（字体大小合适，行距舒适）
+            4. 保持视觉层次清晰，颜色搭配和谐
+            5. 确保所有基础样式都有定义
+            6. 根据风格主题调整颜色方案和排版风格
+            
+            重要：
+            - 只输出有效的JSON格式，不要任何解释文字
+            - 不要使用注释，确保JSON语法正确
+            - 所有字符串值必须用双引号包围
+            - 确保JSON结构完整，没有遗漏的括号或逗号
             """,
-            input_variables=["theme_name", "theme_description", "content_structure"]
+            input_variables=["theme_name", "theme_description"]
         )
         
         # 使用RunnableSequence替代已废弃的LLMChain
-        self.chain = self.prompt | llm | StrOutputParser()
+        self.chain = self.prompt | llm | self.parser
+
+    def parse_and_clean_style_dna(self, raw_output: str) -> dict:
+        """解析和清理LLM输出的Style DNA - 多层次解析策略"""
+        print(f"开始解析Style DNA输出 (长度: {len(raw_output)} 字符)")
+        
+        # 策略1: 尝试标准JSON解析
+        try:
+            return self._parse_json_standard(raw_output)
+        except Exception as e1:
+            print(f"标准JSON解析失败: {str(e1)[:100]}")
+            
+            # 策略2: 尝试修复JSON后解析
+            try:
+                return self._parse_json_with_fixes(raw_output)
+            except Exception as e2:
+                print(f"修复JSON解析失败: {str(e2)[:100]}")
+                
+                # 策略3: 尝试从JSON片段重建
+                try:
+                    return self._rebuild_from_fragments(raw_output)
+                except Exception as e3:
+                    print(f"片段重建失败: {str(e3)[:100]}")
+                    
+                    # 策略4: 创建基础样式DNA
+                    try:
+                        return self._create_fallback_style_dna()
+                    except Exception as e4:
+                        # 所有策略都失败，抛出详细错误
+                        error_details = f"""
+                        所有解析策略都失败了:
+                        1. 标准JSON: {str(e1)[:100]}
+                        2. 修复JSON: {str(e2)[:100]}
+                        3. 片段重建: {str(e3)[:100]}
+                        4. 创建备用: {str(e4)[:100]}
+                        
+                        原始输出预览: {raw_output[:500]}...
+                        """
+                        raise json.JSONDecodeError(error_details, raw_output, 0)
+
+    def _parse_json_standard(self, raw_output: str) -> dict:
+        """策略1: 标准JSON解析"""
+        # 查找JSON内容
+        json_match = re.search(r'\{.*\}', raw_output, re.DOTALL)
+        if json_match:
+            json_str = json_match.group()
+        else:
+            json_str = raw_output.strip()
+        
+        data = json.loads(json_str)
+        return self._validate_style_dna_structure(data)
+
+    def _parse_json_with_fixes(self, raw_output: str) -> dict:
+        """策略2: 修复常见JSON问题后解析"""
+        json_match = re.search(r'\{.*\}', raw_output, re.DOTALL)
+        if json_match:
+            json_str = json_match.group()
+        else:
+            json_str = raw_output.strip()
+        
+        # 应用多种JSON修复
+        json_str = self._fix_json_comprehensive(json_str)
+        data = json.loads(json_str)
+        return self._validate_style_dna_structure(data)
+
+    def _rebuild_from_fragments(self, raw_output: str) -> dict:
+        """策略3: 从JSON片段重建Style DNA"""
+        print("尝试从片段重建Style DNA")
+        
+        style_dna = {}
+        
+        # 提取样式片段的正则模式
+        patterns = [
+            # 普通样式: "h1_styles": {"color": "#333", "font-size": "24px"}
+            r'"([a-zA-Z_]+_styles)"\s*:\s*(\{[^}]*\})',
+            # theme_name: "theme_name": "主题名"
+            r'"(theme_name)"\s*:\s*"([^"]*)"',
+        ]
+        
+        for pattern in patterns:
+            matches = re.findall(pattern, raw_output)
+            for match in matches:
+                if len(match) == 2:
+                    key, value = match
+                    try:
+                        if key == "theme_name":
+                            style_dna[key] = value
+                        else:
+                            # 解析样式对象
+                            style_obj = json.loads(value)
+                            style_dna[key] = style_obj
+                    except json.JSONDecodeError:
+                        continue
+        
+        # 确保包含基础样式
+        return self._ensure_basic_styles(style_dna)
+
+    def _create_fallback_style_dna(self) -> dict:
+        """策略4: 创建备用Style DNA"""
+        print("创建备用Style DNA")
+        
+        return {
+            "theme_name": "默认样式",
+            "strong_styles": {"color": "#e74c3c", "font-weight": "bold"},
+            "b_styles": {"color": "#2c3e50", "font-weight": "bold"},
+            "em_styles": {"color": "#e67e22", "font-style": "italic", "font-weight": "500"},
+            "i_styles": {"color": "#8e44ad", "font-style": "italic"},
+            "u_styles": {"color": "#3498db", "text-decoration": "underline"},
+            "code_styles": {"background-color": "#f8f9fa", "color": "#e74c3c", "padding": "2px 4px", "font-size": "14px", "border": "1px solid #e9ecef"},
+            "mark_styles": {"background-color": "#fff3cd", "color": "#856404", "padding": "2px 4px"},
+            "a_styles": {"color": "#3498db", "text-decoration": "underline"},
+            "sup_styles": {"font-size": "12px", "color": "#7f8c8d"},
+            "h1_styles": {"font-size": "28px", "color": "#2c3e50", "font-weight": "bold", "margin": "24px 0 20px 0", "line-height": "1.4", "text-align": "center"},
+            "h2_styles": {"font-size": "24px", "color": "#34495e", "font-weight": "bold", "margin": "20px 0 16px 0", "line-height": "1.4"},
+            "h3_styles": {"font-size": "20px", "color": "#34495e", "font-weight": "bold", "margin": "18px 0 14px 0", "line-height": "1.4"},
+            "h4_styles": {"font-size": "18px", "color": "#7f8c8d", "font-weight": "bold", "margin": "16px 0 12px 0", "line-height": "1.4"},
+            "p_styles": {"font-size": "16px", "color": "#333333", "line-height": "1.8", "margin": "0 0 16px 0", "text-align": "justify"},
+            "quote_styles": {"font-size": "16px", "color": "#7f8c8d", "font-style": "italic", "margin": "20px 0", "padding": "16px 20px", "background-color": "#f8f9fa", "border-left": "4px solid #3498db"},
+            "delimiter_styles": {"text-align": "center", "margin": "24px 0", "color": "#bdc3c7", "font-size": "18px"},
+            "image_styles": {"display": "block", "margin": "20px auto", "max-width": "100%", "border": "1px solid #e9ecef"},
+            "code_block_styles": {"background-color": "#f8f9fa", "color": "#333333", "padding": "16px", "margin": "16px 0", "font-size": "14px", "line-height": "1.6", "border": "1px solid #e9ecef"},
+            "ordered_list_styles": {"margin": "16px 0", "padding-left": "20px"},
+            "unordered_list_styles": {"margin": "16px 0", "padding-left": "20px"},
+            "li_styles": {"font-size": "16px", "color": "#333333", "margin-bottom": "8px", "line-height": "1.6"}
+        }
+
+    def _validate_style_dna_structure(self, data: dict) -> dict:
+        """验证并确保Style DNA结构完整"""
+        if not isinstance(data, dict):
+            raise ValueError("输出格式不正确，期望JSON对象")
+        
+        # 确保包含基础样式
+        return self._ensure_basic_styles(data)
+
+    def _ensure_basic_styles(self, style_dna: dict) -> dict:
+        """确保包含所有必需的基础样式"""
+        required_styles = [
+            "strong_styles", "b_styles", "em_styles", "i_styles", "u_styles", 
+            "code_styles", "mark_styles", "a_styles", "sup_styles",
+            "h1_styles", "h2_styles", "h3_styles", "h4_styles", "p_styles",
+            "quote_styles", "delimiter_styles", "image_styles", "code_block_styles",
+            "ordered_list_styles", "unordered_list_styles", "li_styles"
+        ]
+        
+        fallback = self._create_fallback_style_dna()
+        
+        # 补充缺失的样式
+        for style_key in required_styles:
+            if style_key not in style_dna or not isinstance(style_dna[style_key], dict):
+                style_dna[style_key] = fallback[style_key]
+                print(f"补充缺失的样式: {style_key}")
+        
+        # 确保theme_name存在
+        if "theme_name" not in style_dna:
+            style_dna["theme_name"] = "未知主题"
+        
+        return style_dna
+
+    def _fix_json_comprehensive(self, json_str: str) -> str:
+        """全面的JSON修复"""
+        print("应用全面JSON修复")
+        
+        # 1. 移除多余的逗号
+        json_str = re.sub(r',\s*}', '}', json_str)
+        json_str = re.sub(r',\s*]', ']', json_str)
+        
+        # 2. 修复未引用的键名
+        json_str = re.sub(r'(\w+)\s*:', r'"\1":', json_str)
+        
+        # 3. 修复字符串中的未转义引号和控制字符
+        def fix_string_content(match):
+            content = match.group(1)
+            # 转义内部的双引号
+            content = content.replace('\\"', '"').replace('"', '\\"')
+            # 转义换行符
+            content = content.replace('\n', '\\n').replace('\r', '\\r')
+            return f'"{content}"'
+        
+        # 更细致的字符串匹配和修复
+        json_str = re.sub(r'"([^"\\]*(?:\\.[^"\\]*)*)"', fix_string_content, json_str)
+        
+        # 4. 修复常见的JSON结构问题
+        json_str = re.sub(r'\s+', ' ', json_str)  # 压缩空白
+        json_str = json_str.strip()
+        
+        # 5. 确保正确的JSON结构边界
+        if not json_str.startswith('{'):
+            json_str = '{' + json_str
+        if not json_str.endswith('}'):
+            # 找到最后一个有效的右括号位置
+            last_brace = json_str.rfind('}')
+            if last_brace > 0:
+                json_str = json_str[:last_brace + 1]
+            else:
+                json_str = json_str + '}'
+        
+        # 6. 尝试修复不完整的JSON对象
+        try:
+            # 快速验证修复后的JSON
+            json.loads(json_str)
+        except json.JSONDecodeError as e:
+            # 如果仍然有问题，尝试截断到错误位置
+            error_pos = e.pos
+            if error_pos > 100:  # 只有在有足够内容时才截断
+                json_str = json_str[:error_pos]
+                # 尝试找到最后一个完整的键值对
+                last_comma = json_str.rfind(',')
+                if last_comma > 0:
+                    json_str = json_str[:last_comma] + '}'
+                else:
+                    json_str = json_str + '}'
+        
+        return json_str
 
 
 class HTMLGeneratorChain:

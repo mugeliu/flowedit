@@ -24,6 +24,7 @@ class Settings:
         self.host: str = os.getenv("HOST", "127.0.0.1")
         self.port: int = int(os.getenv("PORT", "8000"))
         self.debug: bool = os.getenv("DEBUG", "false").lower() == "true"
+        self.reload: bool = os.getenv("RELOAD", "false").lower() == "true"
         
         # 日志配置
         self.log_level: str = os.getenv("LOG_LEVEL", "INFO")

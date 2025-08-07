@@ -35,45 +35,41 @@ def execute_style_workflow(workflow_type_str: str, initial_state: dict):
 
 @router.post("/v1/styles/create", response_model=StyleResponse)
 async def create_new_style(request: CreateStyleRequest, db: Session = Depends(get_db)):
-    """创建新风格并生成HTML"""
+    """仅创建风格DNA并保存到数据库"""
     try:
-        initial_state = {
-            "raw_content": request.raw_content,
-            "workflow_type": WorkflowType.CREATE_NEW_STYLE,
+        # 直接调用样式DNA生成链，不使用工作流
+        from ..core.langchain_chains import StyleDNAGeneratorChain
+        
+        generator = StyleDNAGeneratorChain()
+        style_dna_result = generator.chain.invoke({
             "theme_name": request.theme_name,
-            "theme_description": request.theme_description,
-            "retry_count": 0,
-            "parsed_content": [],
-            "style_dna": None,
-            "generated_html": None,
-            "validation_errors": [],
-            "is_valid": False
-        }
+            "theme_description": request.theme_description
+        })
         
-        result = execute_style_workflow(
-            WorkflowType.CREATE_NEW_STYLE.value, 
-            initial_state
-        )
-        
-        if not result.get("is_valid", False):
+        # 解析生成的样式DNA
+        try:
+            style_dna = generator.parse_and_clean_style_dna(style_dna_result)
+            style_dna["theme_name"] = request.theme_name
+        except json.JSONDecodeError as e:
             raise HTTPException(
-                status_code=400, 
-                detail=result.get("validation_errors", ["生成的HTML不符合微信规范"])
+                status_code=400,
+                detail=f"样式DNA生成格式错误: {str(e)}"
+            )
+        except Exception as e:
+            raise HTTPException(
+                status_code=400,
+                detail=f"样式DNA解析失败: {str(e)}"
             )
         
         # 保存风格DNA到数据库
         style_service = StyleDNAService(db)
-        style_service.create_style_dna(
-            request.theme_name,
-            result["style_dna"]
-        )
+        style_service.create_style_dna(request.theme_name, style_dna)
         
         return StyleResponse(
-            html_content=result["generated_html"],
-            style_dna=result["style_dna"],
-            theme_name=result["style_dna"]["theme_name"],
-            is_valid=result["is_valid"],
-            errors=result.get("validation_errors", [])
+            style_dna=style_dna,
+            theme_name=request.theme_name,
+            is_valid=True,
+            errors=[]
         )
         
     except HTTPException:

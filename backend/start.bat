@@ -1,25 +1,55 @@
 @echo off
-REM Windows启动脚本
+chcp 65001 >nul
+REM Windows Startup Script
 
-REM 激活虚拟环境（如果存在）
-if exist "venv\Scripts\activate.bat" (
-    call venv\Scripts\activate.bat
-    echo 已激活虚拟环境
-)
+echo =================================
+echo   FlowEdit Backend Service
+echo =================================
+echo.
 
-REM 安装依赖
-echo 安装Python依赖...
-pip install -r requirements.txt
-
-REM 检查环境变量文件
-if not exist ".env" (
-    echo 警告：未找到.env文件，请确保已配置环境变量
+REM Check if virtual environment exists
+if not exist "venv\Scripts\activate.bat" (
+    echo [ERROR] Virtual environment not found!
+    echo.
+    echo Please create and setup virtual environment first:
+    echo   1. python -m venv venv
+    echo   2. venv\Scripts\activate
+    echo   3. pip install -r requirements.txt
+    echo.
     pause
     exit /b 1
 )
 
-REM 启动服务
-echo 启动AI风格化内容生成服务...
+REM Check if dependencies are installed
+if not exist "venv\Lib\site-packages\fastapi" (
+    echo [ERROR] Dependencies not installed!
+    echo.
+    echo Please install dependencies first:
+    echo   1. venv\Scripts\activate
+    echo   2. pip install -r requirements.txt
+    echo.
+    pause
+    exit /b 1
+)
+
+REM Check environment file
+if not exist ".env" (
+    echo [ERROR] .env file not found!
+    echo.
+    echo Please create .env file with required configuration.
+    echo See .env.example for reference.
+    echo.
+    pause
+    exit /b 1
+)
+
+REM Activate virtual environment
+call venv\Scripts\activate.bat
+echo [OK] Virtual environment activated
+
+REM Start service
+echo [START] Starting FlowEdit Backend Service...
+echo.
 python main.py
 
 pause
