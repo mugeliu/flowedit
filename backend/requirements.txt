@@ -1,13 +1,28 @@
+# Web Framework
 fastapi
 uvicorn[standard]
-sqlalchemy
+
+# AI and LangChain
 langchain
 langchain-openai
 langgraph
-pydantic
-python-multipart
-beautifulsoup4
 openai
+
+# Data and Validation
+pydantic
+pydantic-settings
+sqlalchemy
+
+# HTML Processing
+beautifulsoup4
+html5lib
+
+# Utilities
 python-dotenv
-typing_extensions
+python-multipart
+typing-extensions
+
+# Development (optional)
+pytest
+pytest-asyncio
 

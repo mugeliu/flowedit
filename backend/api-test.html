@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FlowEdit Backend API 测试</title>
+    <title>StyleFlow Backend API 测试</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -101,129 +101,91 @@
             border-radius: 6px;
             margin-bottom: 20px;
         }
-        .theme-list {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 10px;
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
         }
-        .theme-tag {
-            background: #007bff;
-            color: white;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            cursor: pointer;
-        }
-        .theme-tag:hover {
-            background: #0056b3;
-        }
+        .status-online { background-color: #28a745; }
+        .status-offline { background-color: #dc3545; }
     </style>
 </head>
 <body>
-    <h1>FlowEdit Backend API 测试工具</h1>
+    <h1>StyleFlow Backend API 测试工具</h1>
     
     <!-- 配置面板 -->
     <div class="config-panel">
-        <h3>API 配置</h3>
+        <h3>🌐 API 配置</h3>
         <div class="form-group">
             <label for="apiBase">API 基础地址:</label>
-            <input type="text" id="apiBase" value="http://localhost:8000/api">
+            <input type="text" id="apiBase" value="http://localhost:8000/api/v1">
         </div>
         <button onclick="checkHealth()">健康检查</button>
-        <button onclick="getStats()">获取统计</button>
-        <button onclick="loadThemes()">加载主题列表</button>
+        <button onclick="clearResults()">清空所有结果</button>
+        <div id="statusIndicator">
+            <span class="status-indicator status-offline"></span>
+            <span id="statusText">未连接</span>
+        </div>
         <div id="healthResult" class="result"></div>
-        <div class="theme-list" id="themeList"></div>
     </div>
 
     <div class="api-section">
-        <!-- 创建新风格 -->
+        <!-- 创建转换任务 -->
         <div class="container">
-            <h2>创建新风格</h2>
-            <form id="createStyleForm">
+            <h2>🎨 创建样式转换任务</h2>
+            <form id="transformForm">
                 <div class="form-group">
-                    <label for="createThemeName">主题名称:</label>
-                    <input type="text" id="createThemeName" value="现代简约" required>
+                    <label for="transformContent">HTML内容:</label>
+                    <textarea id="transformContent" placeholder="输入要转换的HTML内容..." required><h1>AI技术的未来</h1>
+<p>人工智能正在改变我们的世界，从医疗到教育，从制造业到服务业。</p>
+<h2>主要发展方向</h2>
+<ul>
+<li>机器学习算法优化</li>
+<li>自然语言处理突破</li>
+<li>计算机视觉应用</li>
+</ul>
+<p><strong>展望未来</strong>，AI将与人类更好地协作。</p></textarea>
                 </div>
                 <div class="form-group">
-                    <label for="createThemeDesc">主题描述:</label>
-                    <textarea id="createThemeDesc" placeholder="描述这个风格的特点..." required>一个简洁现代的设计风格，使用蓝色系配色，简约排版，适合商务内容</textarea>
+                    <label for="transformStyleName">风格名称:</label>
+                    <input type="text" id="transformStyleName" value="现代专业" required>
                 </div>
                 <div class="form-group">
-                    <label for="createRawContent">原始内容:</label>
-                    <textarea id="createRawContent" placeholder="输入要转换的内容..." required># 这是标题
-
-这是段落内容，用来测试风格转换。
-
-## 子标题
-
-- 列表项目1
-- 列表项目2
-
-**粗体文字** 和 *斜体文字* 的示例。</textarea>
+                    <label for="transformFeatures">风格特征 (逗号分隔):</label>
+                    <input type="text" id="transformFeatures" value="简洁, 现代, 蓝色调, 专业">
                 </div>
-                <button type="button" onclick="createStyle()">创建风格</button>
+                <button type="button" onclick="createTransform()">🚀 创建转换任务</button>
             </form>
-            <div id="createResult" class="result"></div>
+            <div id="transformResult" class="result"></div>
         </div>
 
-        <!-- 使用已有风格 -->
+        <!-- 查询任务状态 -->
         <div class="container">
-            <h2>使用已有风格</h2>
-            <form id="useStyleForm">
+            <h2>📊 查询任务状态</h2>
+            <form id="statusForm">
                 <div class="form-group">
-                    <label for="useThemeName">主题名称:</label>
-                    <input type="text" id="useThemeName" value="现代简约" required>
+                    <label for="taskId">任务ID:</label>
+                    <input type="text" id="taskId" placeholder="输入任务ID..." required>
                 </div>
-                <div class="form-group">
-                    <label for="useRawContent">原始内容:</label>
-                    <textarea id="useRawContent" placeholder="输入要转换的内容..." required># 新的文章标题
-
-这是使用已有风格的测试内容。
-
-## 功能介绍
-
-使用已有的风格主题来格式化新内容：
-
-1. 保持一致的设计风格
-2. 提高内容制作效率
-3. 确保品牌形象统一</textarea>
-                </div>
-                <button type="button" onclick="useStyle()">应用风格</button>
+                <button type="button" onclick="getTaskStatus()">查询状态</button>
+                <button type="button" onclick="getTaskDetails()">查询详情</button>
             </form>
-            <div id="useResult" class="result"></div>
+            <div id="statusResult" class="result"></div>
         </div>
     </div>
 
-    <div class="api-section">
-        <!-- 调整风格 -->
-        <div class="container">
-            <h2>调整风格</h2>
-            <form id="adjustStyleForm">
-                <div class="form-group">
-                    <label for="adjustThemeName">主题名称:</label>
-                    <input type="text" id="adjustThemeName" value="现代简约" required>
-                </div>
-                <div class="form-group">
-                    <label for="adjustRequest">调整要求:</label>
-                    <textarea id="adjustRequest" placeholder="描述如何调整风格..." required>把字体调大一点，颜色改成绿色系</textarea>
-                </div>
-                <button type="button" onclick="adjustStyle()">调整风格</button>
-            </form>
-            <div id="adjustResult" class="result"></div>
-        </div>
-
-        <!-- HTML 预览 -->
-        <div class="container">
-            <h2>HTML 预览</h2>
-            <button onclick="clearPreview()">清空预览</button>
-            <div id="htmlPreview" class="result" style="max-height: 600px; background: white; border: 2px solid #ddd;"></div>
-        </div>
+    <!-- HTML预览区域 -->
+    <div class="container">
+        <h2>🎯 转换结果预览</h2>
+        <button onclick="clearPreview()">清空预览</button>
+        <div id="htmlPreview" class="result" style="max-height: 600px; background: white; border: 2px solid #ddd; font-family: inherit;"></div>
     </div>
 
     <script>
-        let currentApiBase = 'http://localhost:8000/api';
+        let currentApiBase = 'http://localhost:8000/api/v1';
+        let currentTaskId = null;
 
         // 更新API基础地址
         document.getElementById('apiBase').addEventListener('change', function() {
@@ -232,12 +194,7 @@
 
         // 通用请求函数
         async function apiRequest(endpoint, method = 'GET', data = null) {
-            const resultDiv = document.getElementById('healthResult');
-            
             try {
-                resultDiv.textContent = '正在请求...';
-                resultDiv.className = 'result';
-                
                 const config = {
                     method: method,
                     headers: {
@@ -253,12 +210,29 @@
                 const result = await response.json();
                 
                 if (response.ok) {
+                    updateStatus(true);
                     return { success: true, data: result };
                 } else {
-                    return { success: false, error: result.detail || '请求失败' };
+                    updateStatus(false);
+                    return { success: false, error: result.detail || result.error_message || '请求失败' };
                 }
             } catch (error) {
-                return { success: false, error: error.message };
+                updateStatus(false);
+                return { success: false, error: `网络错误: ${error.message}` };
+            }
+        }
+
+        // 更新连接状态
+        function updateStatus(isOnline) {
+            const indicator = document.querySelector('.status-indicator');
+            const statusText = document.getElementById('statusText');
+            
+            if (isOnline) {
+                indicator.className = 'status-indicator status-online';
+                statusText.textContent = '已连接';
+            } else {
+                indicator.className = 'status-indicator status-offline';
+                statusText.textContent = '连接失败';
             }
         }
 
@@ -271,91 +245,94 @@
                 div.textContent = JSON.stringify(result.data, null, 2);
                 
                 // 如果有HTML内容，显示预览
-                if (showPreview && result.data.html_content) {
+                if (showPreview && result.data.result) {
                     const previewDiv = document.getElementById('htmlPreview');
-                    previewDiv.innerHTML = result.data.html_content;
+                    previewDiv.innerHTML = result.data.result;
                     previewDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+                
+                // 保存任务ID
+                if (result.data.task_id) {
+                    currentTaskId = result.data.task_id;
+                    document.getElementById('taskId').value = currentTaskId;
                 }
             } else {
                 div.className = 'result error';
-                div.textContent = `错误: ${result.error}`;
+                div.textContent = `❌ 错误: ${result.error}`;
             }
         }
 
         // 健康检查
         async function checkHealth() {
-            const result = await apiRequest('/v1/monitor/health');
+            document.getElementById('healthResult').textContent = '正在检查健康状态...';
+            const result = await apiRequest('/health');
             showResult('healthResult', result);
         }
 
-        // 获取统计信息
-        async function getStats() {
-            const result = await apiRequest('/v1/monitor/stats');
-            showResult('healthResult', result);
-        }
-
-        // 加载主题列表
-        async function loadThemes() {
-            const result = await apiRequest('/v1/styles/themes');
-            showResult('healthResult', result);
+        // 创建转换任务
+        async function createTransform() {
+            const content = document.getElementById('transformContent').value;
+            const styleName = document.getElementById('transformStyleName').value;
+            const featuresText = document.getElementById('transformFeatures').value;
             
-            if (result.success && result.data.themes) {
-                const themeList = document.getElementById('themeList');
-                themeList.innerHTML = '';
-                
-                result.data.themes.forEach(theme => {
-                    const tag = document.createElement('div');
-                    tag.className = 'theme-tag';
-                    tag.textContent = theme;
-                    tag.onclick = () => fillThemeName(theme);
-                    themeList.appendChild(tag);
-                });
+            if (!content.trim() || !styleName.trim()) {
+                alert('请填写完整的内容和风格名称');
+                return;
             }
-        }
-
-        // 填充主题名称到表单
-        function fillThemeName(themeName) {
-            document.getElementById('useThemeName').value = themeName;
-            document.getElementById('adjustThemeName').value = themeName;
-        }
-
-        // 创建新风格
-        async function createStyle() {
+            
+            const features = featuresText.split(',').map(f => f.trim()).filter(f => f);
+            
             const data = {
-                raw_content: document.getElementById('createRawContent').value,
-                theme_name: document.getElementById('createThemeName').value,
-                theme_description: document.getElementById('createThemeDesc').value
+                content: content,
+                style_name: styleName,
+                style_features: features
             };
             
-            const result = await apiRequest('/v1/styles/create', 'POST', data);
-            showResult('createResult', result, true);
+            document.getElementById('transformResult').textContent = '正在创建转换任务...';
+            const result = await apiRequest('/transform', 'POST', data);
+            showResult('transformResult', result);
         }
 
-        // 使用已有风格
-        async function useStyle() {
-            const data = {
-                raw_content: document.getElementById('useRawContent').value,
-                theme_name: document.getElementById('useThemeName').value
-            };
+        // 查询任务状态
+        async function getTaskStatus() {
+            const taskId = document.getElementById('taskId').value;
             
-            const result = await apiRequest('/v1/styles/apply', 'POST', data);
-            showResult('useResult', result, true);
+            if (!taskId.trim()) {
+                alert('请输入任务ID');
+                return;
+            }
+            
+            document.getElementById('statusResult').textContent = '正在查询任务状态...';
+            const result = await apiRequest(`/task/${taskId}`);
+            showResult('statusResult', result, true);
         }
 
-        // 调整风格
-        async function adjustStyle() {
-            const data = {
-                theme_name: document.getElementById('adjustThemeName').value,
-                adjustment_request: document.getElementById('adjustRequest').value
-            };
+        // 查询任务详情
+        async function getTaskDetails() {
+            const taskId = document.getElementById('taskId').value;
             
-            const result = await apiRequest('/v1/styles/adjust', 'POST', data);
-            showResult('adjustResult', result);
+            if (!taskId.trim()) {
+                alert('请输入任务ID');
+                return;
+            }
+            
+            document.getElementById('statusResult').textContent = '正在查询任务详情...';
+            const result = await apiRequest(`/task/${taskId}/steps`);
+            showResult('statusResult', result);
         }
 
         // 清空预览
         function clearPreview() {
             document.getElementById('htmlPreview').innerHTML = '';
+        }
+
+        // 清空所有结果
+        function clearResults() {
+            ['healthResult', 'transformResult', 'statusResult', 'htmlPreview'].forEach(id => {
+                const element = document.getElementById(id);
+                element.textContent = '';
+                element.className = 'result';
+            });
         }
 
         // 页面加载时自动检查健康状态
