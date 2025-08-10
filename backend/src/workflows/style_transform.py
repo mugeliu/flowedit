@@ -7,6 +7,7 @@ from src.agents.design_adapter import DesignAdapterAgent
 from src.agents.code_engineer import CodeEngineerAgent
 from src.agents.quality_director import QualityDirectorAgent
 from src.database.manager import DatabaseManager
+from src.config.logger import get_agent_logger, get_logger
 import asyncio
 import time
 
@@ -78,9 +79,12 @@ class StyleTransformWorkflow:
     async def execute_workflow(self, task_id: str, original_content: str, 
                               style_requirements: Dict) -> Dict[str, Any]:
         """Execute the complete workflow"""
+        logger = get_agent_logger("Workflow", task_id)
         start_time = time.time()
         
         try:
+            logger.info(f"Starting workflow execution - Content length: {len(original_content)}")
+            
             # Initialize state
             initial_state = AgentState(
                 task_id=task_id,  # 添加必需的task_id字段
@@ -100,6 +104,7 @@ class StyleTransformWorkflow:
             )
             
             # Execute workflow
+            logger.info("Executing LangGraph workflow...")
             final_state_dict = await self.graph.ainvoke(initial_state.dict())
             
             # Convert back to AgentState
@@ -107,14 +112,17 @@ class StyleTransformWorkflow:
             
             # Calculate processing time
             processing_time = time.time() - start_time
+            logger.info(f"Workflow completed in {processing_time:.2f} seconds")
             
             # Determine final status
             if final_state.errors:
                 status = "failed"
                 error_message = "; ".join(final_state.errors)
+                logger.error(f"Workflow failed with errors: {error_message}")
             else:
                 status = "completed"
                 error_message = None
+                logger.info(f"Workflow completed successfully with quality score: {final_state.quality_score:.2f}")
             
             # Update task in database
             self.db_manager.update_task(task_id, {
@@ -148,6 +156,7 @@ class StyleTransformWorkflow:
         except Exception as e:
             processing_time = time.time() - start_time
             error_message = str(e)
+            logger.error(f"Workflow execution failed: {error_message}", exc_info=True)
             
             # Update task as failed
             self.db_manager.update_task(task_id, {
@@ -165,12 +174,17 @@ class StyleTransformWorkflow:
     
     async def _parallel_analysis_node(self, state: Dict) -> Dict:
         """Execute style designer and content analyst in parallel"""
+        logger = get_logger("workflow.parallel_analysis")
+        
         try:
+            logger.info("Starting parallel analysis node")
+            
             # Convert dict to AgentState if needed
             if isinstance(state, dict):
                 # Ensure all required fields are present
                 if "original_content" not in state or "style_requirements" not in state:
-                    print(f"ERROR: Missing required fields in state: {state.keys()}")
+                    error_msg = f"Missing required fields in state: {list(state.keys())}"
+                    logger.error(error_msg)
                     return {
                         "task_id": state.get("task_id", ""),
                         "original_content": state.get("original_content", ""),
@@ -178,7 +192,7 @@ class StyleTransformWorkflow:
                         "current_step": "parallel_analysis_failed",
                         "iteration_count": state.get("iteration_count", 0),
                         "quality_score": state.get("quality_score", 0.0),
-                        "errors": state.get("errors", []) + ["Missing required fields in state"],
+                        "errors": state.get("errors", []) + [error_msg],
                         "content_analysis_summary": None,
                         "design_tokens": None,
                         "css_rules": None,
@@ -188,12 +202,16 @@ class StyleTransformWorkflow:
             else:
                 agent_state = state
             
+            logger.info("Executing style designer and content analyst in parallel")
+            
             # Execute both agents in parallel
             style_task = asyncio.create_task(self._run_style_designer(agent_state))
             content_task = asyncio.create_task(self._run_content_analyst(agent_state))
             
             # Wait for both to complete
             style_result, content_result = await asyncio.gather(style_task, content_task)
+            
+            logger.info("Parallel analysis completed, combining results")
             
             # Combine results
             if hasattr(style_result, 'design_tokens'):
@@ -206,12 +224,14 @@ class StyleTransformWorkflow:
             agent_state.errors.extend(style_result.errors)
             agent_state.errors.extend(content_result.errors)
             
+            logger.info(f"Parallel analysis completed - Errors: {len(agent_state.errors)}")
+            
             # Return as dict for LangGraph
             return agent_state.dict()
             
         except Exception as e:
             error_msg = f"Parallel analysis failed: {str(e)}"
-            print(f"ERROR in parallel_analysis_node: {error_msg}")
+            logger.error(error_msg, exc_info=True)
             # Ensure we return a complete state dict
             base_state = {
                 "task_id": state.get("task_id", ""),
@@ -238,12 +258,15 @@ class StyleTransformWorkflow:
     
     async def _design_adapter_node(self, state: Dict) -> Dict:
         """Execute design adapter agent"""
+        logger = get_logger("workflow.design_adapter")
+        
         try:
             # Convert dict to AgentState if needed
             if isinstance(state, dict):
                 # Ensure all required fields are present
                 if "original_content" not in state or "style_requirements" not in state or "task_id" not in state:
-                    print(f"ERROR: Missing required fields in state: {state.keys()}")
+                    error_msg = f"Missing required fields in state: {list(state.keys())}"
+                    logger.error(error_msg)
                     return {
                         "task_id": state.get("task_id", ""),
                         "original_content": state.get("original_content", ""),
@@ -266,7 +289,7 @@ class StyleTransformWorkflow:
             return result.dict()
         except Exception as e:
             error_msg = f"Design adaptation failed: {str(e)}"
-            print(f"ERROR in design_adapter_node: {error_msg}")
+            logger.error(error_msg, exc_info=True)
             base_state = {
                 "original_content": state.get("original_content", ""),
                 "style_requirements": state.get("style_requirements", {}),
@@ -284,12 +307,15 @@ class StyleTransformWorkflow:
     
     async def _code_engineer_node(self, state: Dict) -> Dict:
         """Execute code engineer agent"""
+        logger = get_logger("workflow.code_engineer")
+        
         try:
             # Convert dict to AgentState if needed
             if isinstance(state, dict):
                 # Ensure all required fields are present
                 if "original_content" not in state or "style_requirements" not in state:
-                    print(f"ERROR: Missing required fields in state: {state.keys()}")
+                    error_msg = f"Missing required fields in state: {list(state.keys())}"
+                    logger.error(error_msg)
                     base_state = {
                         "original_content": state.get("original_content", ""),
                         "style_requirements": state.get("style_requirements", {}),
@@ -312,7 +338,7 @@ class StyleTransformWorkflow:
             return result.dict()
         except Exception as e:
             error_msg = f"Code generation failed: {str(e)}"
-            print(f"ERROR in code_engineer_node: {error_msg}")
+            logger.error(error_msg, exc_info=True)
             base_state = {
                 "original_content": state.get("original_content", ""),
                 "style_requirements": state.get("style_requirements", {}),
@@ -330,12 +356,15 @@ class StyleTransformWorkflow:
     
     async def _quality_director_node(self, state: Dict) -> Dict:
         """Execute quality director agent"""
+        logger = get_logger("workflow.quality_director")
+        
         try:
             # Convert dict to AgentState if needed
             if isinstance(state, dict):
                 # Ensure all required fields are present
                 if "original_content" not in state or "style_requirements" not in state:
-                    print(f"ERROR: Missing required fields in state: {state.keys()}")
+                    error_msg = f"Missing required fields in state: {list(state.keys())}"
+                    logger.error(error_msg)
                     base_state = {
                         "original_content": state.get("original_content", ""),
                         "style_requirements": state.get("style_requirements", {}),
@@ -358,7 +387,7 @@ class StyleTransformWorkflow:
             return result.dict()
         except Exception as e:
             error_msg = f"Quality assessment failed: {str(e)}"
-            print(f"ERROR in quality_director_node: {error_msg}")
+            logger.error(error_msg, exc_info=True)
             base_state = {
                 "original_content": state.get("original_content", ""),
                 "style_requirements": state.get("style_requirements", {}),

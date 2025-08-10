@@ -12,6 +12,12 @@ class Settings(BaseSettings):
     max_tokens: int = 4000
     temperature: float = 0.7
     
+    # Multi-Model Strategy Configuration (Optional - fallback to openai_model if not set)
+    fast_model: Optional[str] = None          # 快速模型：预处理、验证、反馈生成
+    complex_model: Optional[str] = None       # 复杂模型：深度分析、设计、工程  
+    preprocessing_model: Optional[str] = None # 预处理专用模型：HTML解析、文本清理
+    validation_model: Optional[str] = None    # 验证专用模型：结果检查、格式验证
+    
     # Database Configuration
     database_url: str = "sqlite:///./style_flow.db"
     
@@ -41,6 +47,16 @@ class Settings(BaseSettings):
             self.api_port = self.port
         if self.default_model and not kwargs.get('openai_model'):
             self.openai_model = self.default_model
+            
+        # 多模型策略回退机制 - 如果特定模型未配置，回退到主模型
+        if not self.fast_model:
+            self.fast_model = self.openai_model
+        if not self.complex_model:
+            self.complex_model = self.openai_model
+        if not self.preprocessing_model:
+            self.preprocessing_model = self.openai_model
+        if not self.validation_model:
+            self.validation_model = self.openai_model
 
 
 settings = Settings()

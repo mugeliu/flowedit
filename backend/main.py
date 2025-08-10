@@ -1,48 +1,51 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 import uvicorn
-import logging
 from contextlib import asynccontextmanager
+from datetime import datetime
 
 from src.api.routes import router as api_router
 from src.database.manager import DatabaseManager
 from src.config.settings import settings
+from src.config.logger import get_logger
 
-
-# Setup logging
-logging.basicConfig(
-    level=getattr(logging, settings.log_level.upper()),
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
-logger = logging.getLogger(__name__)
+# Setup application logger
+logger = get_logger("main")
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan manager"""
     # Startup
-    logger.info("Starting StyleFlow Backend...")
+    logger.execution_start("application_startup")
     
     # Initialize database
     try:
         db_manager = DatabaseManager()
         logger.info("Database initialized successfully")
     except Exception as e:
-        logger.error(f"Failed to initialize database: {e}")
+        logger.error(f"Failed to initialize database: {e}", exc_info=True)
         raise
     
     # Log configuration
-    logger.info(f"Debug mode: {settings.debug}")
-    logger.info(f"API Host: {settings.api_host}:{settings.api_port}")
-    logger.info(f"OpenAI Model: {settings.openai_model}")
+    logger.info("Application configuration", extra_context={
+        'debug_mode': settings.debug,
+        'api_host': settings.api_host,
+        'api_port': settings.api_port,
+        'openai_model': settings.openai_model,
+        'log_level': settings.log_level
+    })
+    
+    logger.execution_end("application_startup", True)
     
     yield
     
     # Shutdown
-    logger.info("Shutting down StyleFlow Backend...")
+    logger.execution_start("application_shutdown")
+    logger.execution_end("application_shutdown", True)
 
 
 # Create FastAPI app
@@ -129,19 +132,19 @@ async def root():
             
             <div class="features">
                 <div class="feature">
-                    <h3>🎨 Style Transformation</h3>
+                    <h3>Style Transformation</h3>
                     <p>Convert plain HTML into beautifully styled content using AI-driven design systems</p>
                 </div>
                 <div class="feature">
-                    <h3>🤖 Multi-Agent Architecture</h3>
+                    <h3>Multi-Agent Architecture</h3>
                     <p>5 specialized AI agents working together: Style Designer, Content Analyst, Design Adapter, Code Engineer, Quality Director</p>
                 </div>
                 <div class="feature">
-                    <h3>📱 WeChat Optimized</h3>
+                    <h3>WeChat Optimized</h3>
                     <p>Ensures compatibility with WeChat platform constraints and mobile viewing experience</p>
                 </div>
                 <div class="feature">
-                    <h3>⚡ Async Processing</h3>
+                    <h3>Async Processing</h3>
                     <p>Non-blocking task processing with real-time progress tracking</p>
                 </div>
             </div>
@@ -154,8 +157,8 @@ async def root():
             
             <h2>Documentation</h2>
             <p>
-                <a href="/docs" target="_blank">📚 Interactive API Docs (Swagger UI)</a> | 
-                <a href="/redoc" target="_blank">📖 ReDoc Documentation</a>
+                <a href="/docs" target="_blank">Interactive API Docs (Swagger UI)</a> | 
+                <a href="/redoc" target="_blank">ReDoc Documentation</a>
             </p>
             
             <h2>Architecture</h2>
@@ -175,14 +178,16 @@ async def root():
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     """Handle validation errors"""
-    from fastapi.responses import JSONResponse
+    logger.warning("Request validation failed", 
+                  extra_context={'url': str(request.url), 'method': request.method, 'errors': str(exc)})
+    
     return JSONResponse(
         status_code=422,
         content={
             "error_code": "VALIDATION_ERROR",
             "error_message": "Request validation failed",
             "details": str(exc),
-            "timestamp": "2024-01-01T00:00:00Z"
+            "timestamp": datetime.now().isoformat()
         }
     )
 
@@ -190,13 +195,16 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 @app.exception_handler(StarletteHTTPException)
 async def http_exception_handler(request: Request, exc: StarletteHTTPException):
     """Handle HTTP exceptions"""
-    from fastapi.responses import JSONResponse
+    logger.warning("HTTP exception occurred", 
+                  extra_context={'url': str(request.url), 'method': request.method, 
+                               'status_code': exc.status_code, 'detail': exc.detail})
+    
     return JSONResponse(
         status_code=exc.status_code,
         content={
             "error_code": f"HTTP_{exc.status_code}",
             "error_message": exc.detail,
-            "timestamp": "2024-01-01T00:00:00Z"
+            "timestamp": datetime.now().isoformat()
         }
     )
 
@@ -205,10 +213,10 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
 async def general_exception_handler(request: Request, exc: Exception):
     """Handle all other exceptions"""
     import traceback
-    from fastapi.responses import JSONResponse
     
-    logger.error(f"Unhandled exception: {str(exc)}")
-    logger.error(f"Traceback: {traceback.format_exc()}")
+    logger.error("Unhandled exception occurred", 
+                extra_context={'url': str(request.url), 'method': request.method, 
+                             'exception_type': type(exc).__name__}, exc_info=True)
     
     return JSONResponse(
         status_code=500,
@@ -216,7 +224,7 @@ async def general_exception_handler(request: Request, exc: Exception):
             "error_code": "INTERNAL_SERVER_ERROR",
             "error_message": "An unexpected error occurred",
             "details": str(exc) if settings.debug else "Internal server error",
-            "timestamp": "2024-01-01T00:00:00Z"
+            "timestamp": datetime.now().isoformat()
         }
     )
 

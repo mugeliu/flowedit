@@ -276,7 +276,7 @@ Agent协作反馈：{collaboration_feedback}
             
             # 使用LLM进行综合质量评估
             llm_assessment = self._perform_llm_comprehensive_assessment(
-                generated_html, content_analysis, collaboration_feedback, technical_analysis
+                generated_html, content_analysis, collaboration_feedback, technical_analysis, state
             )
             
             # 融合自动化和LLM评估结果
@@ -337,11 +337,10 @@ Agent协作反馈：{collaboration_feedback}
         """收集所有Agent的协作反馈"""
         feedback = {}
         
-        # 收集各个Agent的反馈
-        for agent_name in ["content_analyst", "style_designer", "design_adapter", "code_engineer"]:
-            agent_feedback = state.agent_feedback.get("quality_director", [])
-            if agent_feedback:
-                feedback[agent_name] = "; ".join(agent_feedback)
+        # 收集发送给quality_director的直接反馈
+        direct_feedback = state.agent_feedback.get("quality_director", [])
+        if direct_feedback:
+            feedback["direct_feedback"] = "; ".join(direct_feedback)
         
         # 从collaboration_context收集特征信息
         collab_context = state.collaboration_context
@@ -352,15 +351,25 @@ Agent协作反馈：{collaboration_feedback}
         
         if "design_features" in collab_context:
             design_features = collab_context["design_features"]
-            feedback["style_designer_features"] = f"设计复杂度{design_features.get('design_sophistication', 0):.2f}，高级排版{design_features.get('has_advanced_typography', False)}"
+            feedback["style_designer_features"] = f"设计复杂度{design_features.get('style_complexity', 0)}，完整度{design_features.get('design_completeness', 'unknown')}"
         
         if "css_features" in collab_context:
             css_features = collab_context["css_features"]
-            feedback["design_adapter_features"] = f"CSS规则{css_features.get('total_rules', 0)}个，复杂度{css_features.get('complexity_score', 0):.2f}"
+            feedback["design_adapter_features"] = f"CSS规则{css_features.get('total_rules', 0)}个，完整度{css_features.get('css_completeness', 'unknown')}"
         
         if "html_features" in collab_context:
             html_features = collab_context["html_features"]
-            feedback["code_engineer_features"] = f"HTML复杂度{html_features.get('html_complexity_score', 0):.2f}，移动优化{html_features.get('mobile_optimization_score', 0):.2f}"
+            feedback["code_engineer_features"] = f"HTML长度{html_features.get('html_length', 0)}字符，组装方法{html_features.get('assembly_method', 'unknown')}"
+        
+        # 收集Agent执行链的反馈传递记录
+        feedback_chain_info = []
+        for agent in ["content_analyst", "style_designer", "design_adapter", "code_engineer"]:
+            agent_feedback_count = len(state.agent_feedback.get(agent, []))
+            if agent_feedback_count > 0:
+                feedback_chain_info.append(f"{agent}收到{agent_feedback_count}条反馈")
+        
+        if feedback_chain_info:
+            feedback["feedback_chain_status"] = "; ".join(feedback_chain_info)
         
         return feedback
     
@@ -1048,7 +1057,7 @@ Agent协作反馈：{collaboration_feedback}
     
     def _perform_llm_comprehensive_assessment(self, html_content: str, content_analysis: Dict[str, Any],
                                             collaboration_feedback: Dict[str, str], 
-                                            technical_analysis: Dict[str, Any]) -> Dict[str, Any]:
+                                            technical_analysis: Dict[str, Any], state: AgentState) -> Dict[str, Any]:
         """使用LLM进行综合质量评估"""
         try:
             prompt_text = self.comprehensive_quality_prompt.format(
@@ -1058,8 +1067,8 @@ Agent协作反馈：{collaboration_feedback}
                 technical_analysis=json.dumps(technical_analysis, ensure_ascii=False, indent=2)
             )
             
-            response = self.llm.invoke(prompt_text)
-            llm_assessment = json.loads(response.content)
+            response = self.call_llm(prompt_text, state.task_id, model_type="complex")
+            llm_assessment = json.loads(response)
             
             # 验证LLM返回的结构
             if self._validate_llm_assessment_structure(llm_assessment):
