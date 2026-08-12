@@ -1,107 +1,78 @@
 (function () {
-  // 检查登录状态
-  const uin = window.wx?.uin;
-  if (!uin || uin === "0") {
-    return;
+  "use strict";
+
+  const SOURCE = "flowedit-wechat-bridge";
+
+  function respond(requestId, ok, payload, error) {
+    window.postMessage(
+      {
+        source: SOURCE,
+        direction: "response",
+        requestId,
+        ok,
+        payload,
+        error,
+      },
+      window.location.origin,
+    );
   }
-  
-  // 检查 API 是否存在
-  if (!window.__MP_Editor_JSAPI__) {
-    if (uin && uin !== "0") {
-      console.error("[editor-bridge] 用户已登录但 __MP_Editor_JSAPI__ 不存在，可能存在错误");
+
+  function errorMessage(error) {
+    if (error && typeof error === "object" && "err_msg" in error) {
+      return String(error.err_msg);
     }
-    return;
+    return error instanceof Error ? error.message : String(error);
   }
 
-  window.addEventListener("message", (event) => {
-    if (event.source !== window) return;
-    const { source, type, apiName, apiParam, eventName } = event.data || {};
-    if (source !== "editor-bridge") return;
-
-    // === 获取微信数据 ===
-    if (type === "get-wxdata") {
-      try {
-        const wxData = window.wx?.data || null;
-        window.postMessage(
-          {
-            source: "editor-bridge",
-            type: "wxdata-result",
-            status: "success",
-            payload: {
-              success: true,
-              data: wxData,
-              timestamp: new Date().toISOString()
-            }
-          },
-          "*"
-        );
-      } catch (error) {
-        window.postMessage(
-          {
-            source: "editor-bridge",
-            type: "wxdata-result",
-            status: "error",
-            payload: {
-              success: false,
-              error: error.message,
-              data: null,
-              timestamp: new Date().toISOString()
-            }
-          },
-          "*"
-        );
-      }
+  window.addEventListener("message", function (event) {
+    if (
+      event.source !== window ||
+      event.origin !== window.location.origin ||
+      !event.data ||
+      event.data.source !== SOURCE ||
+      event.data.direction !== "request"
+    ) {
       return;
     }
 
-    // === 调用 API ===
-    if (type === "invoke" && apiName) {
-      window.__MP_Editor_JSAPI__.invoke({
-        apiName,
-        apiParam,
-        sucCb: (res) => {
-          window.postMessage(
-            {
-              source: "editor-bridge",
-              type: "invoke-result",
-              apiName,
-              status: "success",
-              payload: res,
-            },
-            "*"
-          );
-        },
-        errCb: (err) => {
-          window.postMessage(
-            {
-              source: "editor-bridge",
-              type: "invoke-result",
-              apiName,
-              status: "error",
-              payload: err,
-            },
-            "*"
-          );
-        },
-      });
+    const requestId = event.data.requestId;
+    const action = event.data.action;
+    const payload = event.data.payload || {};
+
+    if (!window.wx || !window.wx.uin || window.wx.uin === "0") {
+      respond(requestId, false, undefined, "微信公众号登录状态无效。");
+      return;
     }
 
-    // === 注册事件监听 ===
-    if (type === "listen" && eventName) {
-      window.__MP_Editor_JSAPI__.on({
-        eventName,
-        callBack: (param) => {
-          window.postMessage(
-            {
-              source: "editor-bridge",
-              type: "event",
-              eventName,
-              payload: param,
-            },
-            "*"
-          );
+    if (action !== "invoke") {
+      respond(requestId, false, undefined, "不支持的微信桥接操作。");
+      return;
+    }
+    if (
+      !window.__MP_Editor_JSAPI__ ||
+      typeof window.__MP_Editor_JSAPI__.invoke !== "function"
+    ) {
+      respond(requestId, false, undefined, "微信编辑器 JSAPI 不可用。");
+      return;
+    }
+    if (!payload.apiName || typeof payload.apiName !== "string") {
+      respond(requestId, false, undefined, "微信编辑器 API 名称无效。");
+      return;
+    }
+
+    try {
+      window.__MP_Editor_JSAPI__.invoke({
+        apiName: payload.apiName,
+        apiParam: payload.apiParam || {},
+        sucCb: function (result) {
+          respond(requestId, true, result);
+        },
+        errCb: function (error) {
+          respond(requestId, false, undefined, errorMessage(error));
         },
       });
+    } catch (error) {
+      respond(requestId, false, undefined, errorMessage(error));
     }
   });
 })();
