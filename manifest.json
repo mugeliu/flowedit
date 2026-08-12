@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "FlowEdit",
-  "version": "1.0.1",
-  "description": "增强微信公众平台编辑器体验，提供现代化的富文本编辑功能",
+  "version": "2.0.0",
+  "description": "粘贴 HTML，实时预览并插入微信公众号编辑器",
   "icons": {
     "16": "assets/icons/icon16.png",
     "32": "assets/icons/icon32.png",
@@ -11,8 +11,7 @@
     "128": "assets/icons/icon128.png"
   },
   "action": {
-    "default_popup": "popup/popup.html",
-    "default_title": "FlowEdit - 微信编辑器增强",
+    "default_title": "FlowEdit",
     "default_icon": {
       "16": "assets/icons/icon16.png",
       "32": "assets/icons/icon32.png",
@@ -23,32 +22,15 @@
   "content_scripts": [
     {
       "matches": ["https://mp.weixin.qq.com/cgi-bin/appmsg*"],
-      "js": ["scripts/editorjs-bundle.js", "content/content.js"],
-      "css": ["assets/css/weui.css", "assets/css/content.css"],
+      "js": ["content/content.js"],
       "run_at": "document_end"
     }
   ],
-  "permissions": ["storage"],
   "host_permissions": ["https://mp.weixin.qq.com/*"],
   "web_accessible_resources": [
     {
-      "resources": [
-        "scripts/page-injector.js",
-        "scripts/editorjs-bundle.js",
-        "assets/templates/default.json",
-        "assets/templates/business-minimal.json",
-        "assets/templates/warm-orange.json",
-        "assets/templates/literary-green.json",
-        "assets/templates/abstract-illustration.json",
-        "assets/templates/diffused-gradient.json",
-        "assets/templates/ultra-bold-typography.json",
-        "assets/templates/handcraft-texture.json",
-        "assets/test-data.json"
-      ],
+      "resources": ["scripts/page-injector.js"],
       "matches": ["https://mp.weixin.qq.com/*"]
     }
-  ],
-  "background": {
-    "service_worker": "background.js"
-  }
+  ]
 }

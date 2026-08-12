@@ -1,155 +1,70 @@
 # FlowEdit
 
-**FlowEdit：增强微信公众平台编辑器体验**
+FlowEdit 是一个只运行在微信公众号文章编辑页的 Chrome 扩展，用于粘贴 HTML、实时预览并插入微信编辑器。
 
-FlowEdit 是一个 Chrome 浏览器扩展，专为微信公众平台编辑器设计，通过集成现代化富文本编辑器和智能功能，显著提升内容创作体验。
+## 功能
 
-## ✨ 主要功能
+1. 在左侧输入区粘贴 HTML 源码。
+2. 在右侧无脚本沙箱中自动显示预览。
+3. 通过安全校验后，将完整 HTML 一次性插入微信编辑器。
 
-### 🚀 现代化编辑器
-- 基于 Editor.js 的块级编辑体验
-- 支持标题、段落、引用、列表、图片、代码等内容类型
-- 完整的内联样式支持（粗体、斜体、下划线、标记等）
-- 拖拽排序和直观的编辑界面
+扩展不读取本地 HTML 文件或文章文件夹，不处理 Markdown，不上传本地图片，也不包含 Editor.js、模板、历史记录、React Popup 或后台 AI 服务。
 
-### 📋 内容管理
-- 文章历史记录和版本管理
-- 便捷的侧边栏导航
-- 实时预览功能
-- 搜索和排序工具
+## 工作原理
 
-### 样式系统
-- 多种内置样式模板
-- 实时预览功能
-- HTML 格式转换
-- 微信公众号格式优化
+- FlowEdit 通过 Chrome 内容脚本挂载到微信公众号文章编辑页。
+- 右侧预览使用 `sandbox` iframe 渲染用户粘贴的 HTML，默认禁止脚本执行。
+- 点击“插入微信编辑器”后，扩展通过页面桥接调用微信编辑器的 `mp_editor_insert_html` JSAPI。
+- 预览与插入是两条独立链路；控制台出现 iframe 阻止脚本执行的提示，表示预览沙箱正在生效，不代表微信 JSAPI 调用失败。
 
-### 🖼️ 图片工具
-- 专为微信平台优化的图片处理
-- 支持本地上传和素材库选择
-- 图片格式验证和管理
+## HTML 限制
 
-### 📱 Popup界面
-- 完整的tab式界面（样式/文章/我的）
-- 样式主题选择和预览
-- 文章管理和搜索功能
-- 个人设置和关注更新
+- 内容不能为空。
+- 禁止 `script`、`iframe`、`object`、`embed`、`link`、`meta`、`base` 和 `form` 等高风险标签。
+- 禁止事件属性和 `javascript:` 地址。
+- 图片不能使用 `blob:`、`data:`、`file:` 或相对路径，必须使用微信可访问的远程 URL。
+- 校验或插入失败时，不会向微信编辑器写入残缺正文。
 
-## 🚀 快速开始
+## 使用
 
-### 开发环境安装
-
-1. **克隆项目**
-```bash
-git clone <repository-url>
-cd flowedit
-```
-
-2. **安装依赖**
 ```bash
 npm install
+npm run verify
 ```
 
-3. **构建项目**
+然后：
+
+1. 打开 `chrome://extensions/`。
+2. 开启开发者模式。
+3. 选择“加载已解压的扩展程序”。
+4. 选择项目中的 `dist/`。
+5. 打开微信公众号文章编辑页。
+6. 点击微信工具栏中的 `FlowEdit`。
+7. 在左侧粘贴 HTML，确认右侧预览后点击“插入微信编辑器”。
+
+## 预览安全说明
+
+预览 iframe 不包含 `allow-scripts` 权限。不要为了消除浏览器控制台中的沙箱提示而开启脚本权限，否则用户粘贴的 HTML 可能在微信公众号页面上下文中执行非预期代码。
+
+## 开发命令
+
 ```bash
+npm run typecheck
+npm test
 npm run build
+npm run verify
 ```
 
-4. **加载扩展**
-- 打开 Chrome 浏览器
-- 进入 `chrome://extensions/`
-- 开启「开发者模式」
-- 点击「加载已解压的扩展程序」
-- 选择项目的 `dist` 目录
+## 项目结构
 
-### 使用方法
-
-1. 安装扩展后，访问微信公众平台编辑器
-2. FlowEdit 会自动激活并显示增强功能
-3. 点击扩展图标打开popup界面进行管理
-4. 通过popup的不同tab进行样式、文章、个人设置管理
-
-## 📁 项目结构
-
-```
+```text
 src/
-├── content/           # 内容脚本（主要功能）
-│   ├── main.js        # 入口文件
-│   ├── features/      # 功能模块
-│   ├── services/      # 核心服务
-│   └── utils/         # 工具函数
-├── popup/             # 弹窗应用（主界面）
-├── shared/            # 共享组件和服务
-│   ├── components/    # UI 组件
-│   ├── services/      # 业务服务
-│   └── utils/         # 工具函数
-└── editorjs-bundle.js # 编辑器工具包
+  content/   Chrome 内容脚本入口
+  ui/        HTML 输入与实时预览面板
+  wechat/    微信编辑器桥接与 HTML 插入
+scripts/
+  page-injector.js
+assets/
+  icons/
+tests/
 ```
-
-## 🛠️ 开发命令
-
-```bash
-# 完整构建
-npm run build
-
-# 分别构建各部分
-npm run build:content    # 内容脚本
-npm run build:editorjs   # 编辑器工具包
-npm run build:react      # React 应用（popup）
-
-# 开发模式
-npm run dev
-```
-
-## 🔧 技术栈
-
-- **核心**: Editor.js 富文本编辑器
-- **构建**: Vite 构建工具
-- **UI**: React + TypeScript
-- **样式**: Tailwind CSS + shadcn/ui
-- **平台**: Chrome Extension Manifest V3
-- **存储**: Chrome Storage API
-
-## 📖 使用指南
-
-### 编辑器功能
-- 点击编辑器工具栏添加不同类型的内容块
-- 使用拖拽重新排列内容顺序
-- 通过内联工具栏添加文本样式
-- 支持撤销/重做操作
-
-### 文章管理
-- 所有文章自动保存到本地存储
-- 在popup的文章tab查看和管理已保存的文章
-- 支持文章搜索和状态筛选
-- 可预览历史文章并删除不需要的内容
-
-### 样式转换
-- 使用预览功能查看最终效果
-- 支持转换为微信公众号格式
-- 可导出为 HTML 或其他格式
-
-## 🤝 贡献
-
-欢迎提交 Issue 和 Pull Request！
-
-### 开发规范
-- 使用 ES6+ 语法
-- 遵循项目的代码风格
-- 添加适当的注释和日志
-- 确保新功能不影响现有功能
-
-### 提交信息
-- feat: 新功能
-- fix: 修复问题  
-- docs: 文档更新
-- style: 代码格式调整
-- refactor: 代码重构
-
-## 📄 许可证
-
-本项目采用 MIT 许可证，详见 [LICENSE](LICENSE) 文件。
-
----
-
-**FlowEdit** - 让微信公众号内容创作更高效 🚀
